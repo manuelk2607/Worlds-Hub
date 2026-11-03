@@ -1,0 +1,8 @@
+{
+  "name": "worlds-hub", "main": "dist/server/index.js", "compatibility_date": "2026-11-03",
+  "build": {"command":"npm run build"},
+  "vars": {"SITE_ORIGIN":"https://worlds-hub-maki.divinelynx3.chatgpt.site","AUTH_ENABLED":"false","PUBLIC_INDEXING":"false"}
+  // Dedicated account deploy: configure AUTH_DB binding, apply migrations/0001_auth.sql,
+  // register cron cleanup, replace SITE_ORIGIN and complete docs/OPERATIONS.md first.
+  // Never reuse a project data database or deploy with this origin on another host.
+}
