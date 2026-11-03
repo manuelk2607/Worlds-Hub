@@ -17,21 +17,22 @@ Eigenständiger Hub mit vier Projektlinks und schrittweisem sicherem OIDC-SSO. A
 ## Verifikation
 35 Tests erfolgreich; TypeScript, ESLint, Produktions-Build und ESM-Artefaktprüfung erfolgreich. npm audit: 0 bekannte Schwachstellen. Browser-QA für Desktop/Mobil, Theme/Filter/Navigation erfolgreich. Details und Grenzen: docs/VERIFICATION.md.
 
-## Repository, Zieldeployment und Kosten
-- Repository: https://github.com/manuelk2607/Worlds-Hub (privat, neu angelegt; kein Duplikat).
-- Verbindliches Produktionsziel: https://worlds-hub.maki26.workers.dev/ . Wrangler-Name `worlds-hub`, korrektes bestehendes Cloudflare-Konto/Namespace im Dashboard verifiziert. In der vollständigen Liste noch kein gleichnamiger Worker; URL derzeit 404.
-- Privates Sites-Zwischenergebnis ist bereits erfolgreich deployt, bleibt aber ausdrücklich nur Vorschau. Keine öffentliche Sites-Freigabe wird weiterverfolgt.
-- Gewünschte Canonical-Origin, öffentliche Sitemap/Robots-Regeln und Worker-Konfiguration angepasst. Manuell startbarer GitHub-Actions-Workflow mit optionalem Deploy und produktives Smoke-Skript implementiert. 35 Tests, Typprüfung, Lint, Build und Wrangler-Deployment-Dry-Run erfolgreich.
-- Tatsächliches Cloudflare-Deployment noch offen: lokale Wrangler-Anmeldung abgelaufen. Dashboard ist erreichbar, doch „Continue with GitHub“ wurde wegen einer möglichen Repository-Zugriffsfreigabe automatisch abgelehnt. Konkrete Nutzerfreigabe für Cloudflare-Zugriff ausschließlich auf Worlds-Hub erforderlich.
-- Kosten: Neon-Organisation Free verifiziert; Cloudflare-Dashboard zeigt $0.00 billable usage und 100.000 tägliche Request-Grenze. Keine Upgrades/Domain bestellt. Private Actions-Restkapazität nicht per API feststellbar; deshalb kein Runner gestartet. Geprüfte Grenzen und Mail-/Auth-Kostenfallen: docs/COSTS.md.
+## Repository, produktives Deployment und Kosten
+- Repository: https://github.com/manuelk2607/Worlds-Hub (privat; kein Duplikat).
+- **Produktiv:** https://worlds-hub.maki26.workers.dev/ . Worker `worlds-hub` im bestehenden Konto `ec3c070d8e4f88d2fc533d7d797f2daa`; Namespace zuvor im Dashboard geprüft, kein Namenskonflikt.
+- Erfolgreicher GitHub-Actions-Lauf: https://github.com/manuelk2607/Worlds-Hub/actions/runs/41741651197 . Deployed Source: `47197466126bcd6ac03dc74ca5d9fd771940d32d`, Cloudflare-Version `ffe180c9-a53c-4764-a2a1-053bd0f07817`.
+- CI: 35 Tests, TypeScript, Lint, Build, Audit, Deployment und alle produktiven Smoke-Checks erfolgreich. Zusätzlich HTTP->HTTPS 308, HTTPS 200 mit gültiger TLS-Prüfung und echte Live-Browseransicht ohne Konsolenfehler geprüft. Öffentliche Titel/Canonicals/OG/Sitemap/Robots korrekt; private Konto-/Auth-Seiten noindex/no-store, SSO bleibt gesperrt.
+- Eigener Token `worlds-hub deploy`: Nutzer hat 90 Tage und ausschließlich Account `Workers Scripts: Edit` ausdrücklich bestätigt. Ablauf 2027-02-02. Nur als GitHub-Repository-Secret `CLOUDFLARE_API_TOKEN` gespeichert, weder in Dateien noch Git/Logs. Kein Token eines anderen Projekts wiederverwendet; kein automatischer breit berechtigter Cloudflare-Token erstellt.
+- Workflow bleibt manuell (`workflow_dispatch`), `deploy=false` ist Standard. Account-Billing im Browser vor Start verifiziert: GitHub Free, 0.01 USD / 12.00 USD enthaltenes Compute verwendet, 0 GB / 0.5 GB Actions-Storage. Der kurze Lauf liegt im vorhandenen Kontingent. Keine bezahlten Ressourcen oder Domain bestellt; Neon-Organisation ebenfalls Free.
+- Frühere private Sites-Veröffentlichung bleibt nur Zusatzvorschau; Produktion verwendet die ausdrücklich gewünschte Cloudflare-Adresse. Die damalige Freigabefrage ist durch Nutzerpräzisierung erledigt.
 
 ## Offene Anforderungen und konkrete Blocker
 - Kein produktiv angebundenes Projekt; bisher null Benutzer migriert/verknüpft. Bestehende Konten bleiben unverändert nutzbar.
 - Neon dokumentiert eine OAuth-Schleife mit prompt=login/max_age=0. Die für Linking benötigte zentrale frische Reauth ist damit noch nicht produktiv belegt. Im Code bleibt dieser Modus gesperrt. Details: docs/IDENTITY-PILOT.md.
 - Eigene IdP-Login-/Consent-Seiten, Verifikation/Recovery/Kontoverwaltung, registrierte App-Clients und echte Cross-App-Abnahme fehlen. Globale IdP-Abmeldung ist nicht freigegeben; Hub-Logout beendet nur die lokale Session.
-- Produktive Session-D1, Cleanup und Traffic-Limits noch nicht konfiguriert. Direkter Cloudflare-CLI-Zugang ist abgelaufen; Dashboard/Git-Deployment nach konkreter Zugriffsfreigabe möglich.
+- Für SSO fehlen noch dedizierte Session-D1, Cleanup und Traffic-Limits. Lokaler Wrangler-Login ist abgelaufen; das produktive Repository-Deployment funktioniert über den genehmigten eigenen Actions-Token.
 - Music-Worlds ohne zugängliches Repo oder bestätigte Produktiv-URL.
-- Cloudflare-GitHub-Zugriffsfreigabe ausstehend. Search-Console-Token/Property fehlen. Produktiven SEO-Smoke-Test nach Cloudflare-Deployment ausführen; keine Indexierung garantiert.
+- Search-Console-Token/Property fehlen; Verifizierung ist technisch vorbereitet. Die produktiven SEO-Smoke-Tests sind bestanden. Keine Google-Indexierung garantiert.
 
 ## Nächster konkreter Schritt
-Zuerst Cloudflare-GitHub-Zugriff nur für dieses Repo bestätigen, kostenlosen Build konfigurieren und Landingpage deployen; danach `npm run smoke` plus Browserabnahme. Anschließend auf der neuen, getrennten Pilotinstanz den dokumentierten Neon-Reauth-Blocker klären und die IdP-Login-/Consent-Oberfläche isoliert testen. Erst nach bestandenem echten IT-Worlds-Pilot und Backup-/Rollbackprobe produktive Clients schrittweise aktivieren. Keine riskante Migration vorziehen.
+Auf der neuen, getrennten Pilotinstanz den dokumentierten Neon-Reauth-Blocker klären und die IdP-Login-/Consent-Oberfläche isoliert testen. Erst nach bestandenem echten IT-Worlds-Pilot und Backup-/Rollbackprobe produktive Clients schrittweise aktivieren. Keine riskante Migration vorziehen.

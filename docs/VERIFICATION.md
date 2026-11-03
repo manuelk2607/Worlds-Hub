@@ -16,3 +16,7 @@
 Die 35 Tests belegen den Auth-Client und dessen Sicherheitsverträge mit einem lokalen Testanbieter. Sie belegen **keinen** produktiven Neon-Cross-App-Login oder bereits migrierte Konten. SQLite-Tests ersetzen keine produktive Cloudflare-D1-Bindung. Keine vollständige Screenreader-/WCAG-Zertifizierung, kein externer Penetrationstest und kein Nachweis einer Google-Indexierung.
 
 Noch offen: echter IT-Pilot, Login-/Consent-/Recovery-/Verifikationsabläufe, produktive Rollen/RLS in Kombination mit Mapping, globaler IdP-Logout, reale HF-Authentifizierung/Generierungsfreigaben, verifizierter Backup/Restore und öffentliche SEO-Abnahme. Exakte Ursache der Reauth-Sperre: `IDENTITY-PILOT.md`.
+
+## Produktive Cloudflare-Abnahme
+
+GitHub-Actions-Lauf 41741651197 erfolgreich, Source 4719746, Cloudflare-Version ffe180c9-a53c-4764-a2a1-053bd0f07817. Das produktive Smoke-Skript hat alle zehn genannten Routen plus 404/gesperrtes SSO geprüft. HTTP 308 zur gewünschten HTTPS-Adresse, HTTPS 200, Zertifikat gültig. Live-Desktopansicht ohne Browserfehler; Belegbild im übergeordneten outputs-Verzeichnis. Diese Abnahme gilt für die Landingpage und den gesperrten Auth-Zustand, nicht für noch fehlendes produktives Cross-App-SSO.

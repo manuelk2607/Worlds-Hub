@@ -1,10 +1,10 @@
 # Betrieb, Freischaltung und SEO
 
-## Aktuelle Vorschau
+## Aktuelle Produktion
 
-Sites-ID: `appgprj_6aea673346808191acd302d1a40c3c60`.
-Bestätigte Origin: `https://worlds-hub-maki.divinelynx3.chatgpt.site`. Private Erstveröffentlichung durch native Erfolgsmeldung bestätigt; öffentliche Landingpage-Freigabe durch automatische Prüfung blockiert, bis die ausdrückliche Nutzerbestätigung für diese Site vorliegt.
-Sites erstellt neue Projekte zunächst privat. Der öffentliche Zugang bleibt bis zur ausdrücklich bestätigten Freigabe dieser Site gesperrt. Die Hosting-Zugangskontrolle ist **kein Worlds-SSO**.
+**Produktiv:** https://worlds-hub.maki26.workers.dev/ . Bereitstellung über den manuell gestarteten, geprüften GitHub-Actions-Workflow. Deployment, HTTPS, Navigation, Metadaten und Indexierungsregeln sind produktiv geprüft. Details und Credential-Ablauf: `CLOUDFLARE.md`.
+
+Die frühere Sites-ID `appgprj_6aea673346808191acd302d1a40c3c60` gehört nur zur privaten Zusatzvorschau; dort ist keine öffentliche Freigabe vorgesehen. Der Hub-SSO-Schalter bleibt bis zum echten IdP-/Projektpilot aus.
 
 `npm run check`: TypeScript, ESLint, signierte OIDC-/Linking-/SQLite-/Worker-/SEO-Tests, Build und ESM-Artefaktprüfung.
 `npm audit` für alle Abhängigkeiten. `minimatch` ist zur Schließung GHSA-g3hv-75wg-m249 gezielt auf >=11.0.1 überschrieben; Lint und Build wurden damit geprüft.
@@ -33,8 +33,8 @@ Runtime-Secrets nicht in Git, Build-Logs, `hosting.json` oder Client-JavaScript 
 
 1. Kostenloser Tarif ist bestätigt und die dedizierte Pilotinstanz ist bereitgestellt (siehe `IDENTITY-PILOT.md`). Reauth-Einschränkung klären, ohne Produktionsinstanzen zu ersetzen. Keine kostenpflichtige Erweiterung ohne Freigabe. Eigene vertrauenswürdige Login-/Consent-/Registrierungs-/Verifizierungs-/Passwortreset-/Kontoverwaltungsseiten mit offiziellem Neon-SDK implementieren; erlaubte Origins minimal registrieren. Produktive E-Mail-Zustellung und Recovery wirklich testen.
 2. OAuth-Provider aktivieren: OIDC Discovery, JWKS, S256, Code Flow, genau benötigte Scopes; keine unkontrollierte dynamische Clientregistrierung. Zentraler Login muss eine echte IdP-Session herstellen und zum ursprünglichen Authorization Request zurückkehren.
-3. Hub und isolierten IT-Pilot als getrennte Clients registrieren. Hub-Redirect exakt `https://worlds-hub-maki.divinelynx3.chatgpt.site/auth/callback`. Pilot erhält seine eigene HTTPS-Adresse. Optionaler Backchannel `/auth/backchannel-logout`. Logout-Fähigkeiten real prüfen, keine provider-eigenen Endpunkte raten.
-4. Pro App dedizierte Session-D1 anlegen, Schema `migrations/0001_auth.sql` nur dort anwenden und Cron-Cleanup für abgelaufene Transaktionen/Sessions/Replays konfigurieren. Sites benötigt dafür eine bestätigte D1-Bindung in `.openai/hosting.json`; aktuell ist keine gebunden. Eine separate Cloudflare-Veröffentlichung benötigt Zugang zum richtigen Konto; CLI-Token fehlte in dieser Sitzung.
+3. Hub und isolierten IT-Pilot als getrennte Clients registrieren. Hub-Redirect exakt `https://worlds-hub.maki26.workers.dev/auth/callback`. Pilot erhält seine eigene HTTPS-Adresse. Optionaler Backchannel `/auth/backchannel-logout`. Logout-Fähigkeiten real prüfen, keine provider-eigenen Endpunkte raten.
+4. Pro App dedizierte Session-D1 anlegen, Schema `migrations/0001_auth.sql` nur dort anwenden und Cron-Cleanup für abgelaufene Transaktionen/Sessions/Replays konfigurieren. Sites benötigt dafür eine bestätigte D1-Bindung in `.openai/hosting.json`; aktuell ist keine gebunden. Das Cloudflare-Repository-Deployment ist inzwischen eingerichtet; für Auth-D1 fehlen noch gesonderte Provisionierung und Bindung.
 5. Auth-Routen per Cloudflare-Rate-Limit/WAF und Limits des IdP schützen. Request-Body-Limits sind im Code, ersetzen aber keine Verkehrs-/Login-Limits. Verfügbarkeit/Fehlerraten überwachen; keine Tokens, Codes, Cookies, Passwörter oder personenbezogenen Login-Bodies protokollieren.
 6. Hub zuerst in einer isolierten Umgebung aktivieren. Registrierung, E-Mail-Verifikation, Recovery, Kontoverwaltung, ID-Key-Rotation und Provider-Ausfall prüfen. Echte Cross-App-Anmeldung mit einem Testkonto in mindestens zwei Browsern prüfen; Third-Party-Cookies deaktivieren. Lokale Mock-Tests sind dafür kein Ersatz.
 7. IT-Pilot wie `INTEGRATION.md` umsetzen. Erfolgreiche Backup-/Restore- und Rollbackprobe nachweisen; erst danach Produktions-Clients/Flags schrittweise hinzufügen. Sprachwelten/Slop folgen separat. Music erst bei vorhandenem Projekt.

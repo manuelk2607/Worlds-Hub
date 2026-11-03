@@ -1,45 +1,35 @@
-# Deployment nach worlds-hub.maki26.workers.dev
+# Produktives Cloudflare-Deployment
 
-Repository: https://github.com/manuelk2607/Worlds-Hub (privat)
+- URL: https://worlds-hub.maki26.workers.dev/
+- Repository: https://github.com/manuelk2607/Worlds-Hub (privat)
+- Worker: `worlds-hub`; Konto `ec3c070d8e4f88d2fc533d7d797f2daa`, bestehender Namespace `maki26.workers.dev`.
+- Konfiguration: `wrangler.jsonc`; keine DB-, KI- oder kostenpflichtigen Servicebindungen, `AUTH_ENABLED=false`, `PUBLIC_INDEXING=true`.
+- Erster erfolgreicher Lauf: https://github.com/manuelk2607/Worlds-Hub/actions/runs/41741651197
+- Source: `47197466126bcd6ac03dc74ca5d9fd771940d32d`
+- Cloudflare-Version: `ffe180c9-a53c-4764-a2a1-053bd0f07817`
 
-Worker-Konfiguration: `wrangler.jsonc`, Name `worlds-hub`, Konto `ec3c070d8e4f88d2fc533d7d797f2daa`, `workers_dev=true`. Origin, Canonicals, Sitemap und strukturierte Daten verwenden die gewünschte Adresse. Kein Domainkauf, keine Änderung an bestehenden Workern.
+## Nachvollziehbarer Ablauf
 
-## Geprüfter Zustand
-
-- Vorhandenes Cloudflare-Dashboard ist angemeldet; Account und Subdomain stimmen überein. Vollständige Worker-Liste zeigt die bestehenden drei Workers und eine Pages-Anwendung; `worlds-hub` ist noch nicht angelegt. Öffentliche URL antwortete 404.
-- CLI-Credential unter der bestehenden Wrangler-Konfiguration ist abgelaufen und konnte nicht erneuert werden. Keine Tokens aus Logs oder verschlüsselten Dateien extrahiert.
-- Wrangler 4.157.0 ist als gelockte Entwicklungsabhängigkeit installiert. `npm run deploy:check` bündelt erfolgreich; keine kostenpflichtigen Bindings werden angelegt.
-- Der nächste Dashboard-Schritt „Continue with GitHub“ wurde durch automatische Freigabeprüfung abgelehnt. Grund: eine mögliche neue GitHub-Zugriffsberechtigung für Cloudflare verlangt ausdrückliche Bestätigung des konkreten Repository-Zugriffs. Kein Umgehungsversuch, keine zusätzliche App-Berechtigung erteilt.
-
-## Bevorzugter Weg: Cloudflare Workers Builds
-
-Nach ausdrücklicher Freigabe bestehende GitHub-Integration nur für `manuelk2607/Worlds-Hub` verwenden. Keine Berechtigung für weitere Repositories hinzufügen. Konto, freien Build-Tarif und Quoten im Dashboard bestätigen.
-
-- Repository: `manuelk2607/Worlds-Hub`
-- Produktionsbranch: `main`
-- Worker-/Projektname: `worlds-hub`
-- Root-Verzeichnis: `/`
-- Node-Version: 26 (Buildvariable `NODE_VERSION=26`)
-- Build: `npm run check`
-- Deploy: `npx wrangler deploy`
-- Keine zusätzlichen Datenbank-, KI- oder kostenpflichtigen Servicebindungen
-
-Cloudflare verwaltet seine Build-Deployment-Credentials; kein Token ins Repository kopieren. Das Dashboard liefert Build-Logs, commit-genaue Deployments und Rollback-Revisionen. Falls die GitHub-App den Zugriff auf alle Repositories ausweiten möchte, vor dieser zusätzlichen Freigabe stoppen.
-
-## Optional: GitHub Actions
-
-`.github/workflows/cloudflare.yml` ist ausschließlich manuell startbar (`workflow_dispatch`), benötigt maximal 10 Minuten und verwendet gepinnte Actions-Commits. Standard `deploy=false` führt nur Prüfungen aus. Keine automatischen Runnerkosten auf jeden Push.
-
-Für Deployment erst freies Actions-Kontingent bestätigen und einen minimal berechtigten Cloudflare-Token als Repository-Secret `CLOUDFLARE_API_TOKEN` hinterlegen. Token nur für dieses Cloudflare-Konto/benötigte Worker-Script-Rechte ausstellen. Token-Erstellung bzw. neue Zugriffsberechtigung explizit freigeben lassen. Nicht den breiten persönlichen OAuth-Token kopieren. Der Account-Identifier ist öffentlich konfigurierte Routinginformation, kein Geheimnis.
-
-Nach Einrichtung:
+`.github/workflows/cloudflare.yml` läuft ausschließlich über `workflow_dispatch`. Gepinnte Actions-Commits, `contents: read`, maximal 10 Minuten, keine Artefakt-Uploads. Standard `deploy=false` führt Prüfungen aus. Ein produktiver Lauf prüft und deployt denselben Checkout und führt anschließend `npm run smoke` aus.
 
 ```sh
-gh workflow run cloudflare.yml --repo manuelk2607/Worlds-Hub -f deploy=true
+gh workflow run cloudflare.yml --repo manuelk2607/Worlds-Hub --ref main -f deploy=true
 ```
 
-CLI-Direktdeployment nach bestätigter Wiederanmeldung: `npm run check`, `npm run deploy:cloudflare`, `npm run smoke`. Das Smoke-Skript prüft tatsächliches HTTPS, Status, Canonicals, Metadaten, fünf Sitemap-URLs, private noindex/no-store-Header, Projektlinks, 404 und deaktivierte SSO-Routen.
+Vor jedem weiteren Lauf das vorhandene freie Actions-Kontingent beachten. Beim ersten Lauf: GitHub Free, 0.01 USD von 12.00 USD verwendet, 0 GB von 0.5 GB Storage. Keine zusätzlichen Kosten oder Upgrades veranlasst. Aktuelle Grenzen in `COSTS.md`.
 
-## Private Sites-Vorschau
+## Credential und Freigaben
 
-Die bereits bestätigte private Vorschau unter `https://worlds-hub-maki.divinelynx3.chatgpt.site` ist kein Ersatz für die gewünschte Cloudflare-Adresse. Sie bleibt privat; die öffentliche Freigabefrage für diese andere Adresse ist durch die Nutzerpräzisierung gegenstandslos. Diese Publikation wird für die Produktion nicht weiterverwendet.
+Der Nutzer hat Cloudflare-Zugriff nur zusätzlich auf `manuelk2607/Worlds-Hub` bestätigt. Bestehende GitHub-App-Zuordnungen anderer Projekte wurden nicht verändert. Ein wiederverwendeter `it-worlds`-Build-Token und der breite automatische Cloudflare-Token wurden verworfen; die automatische Prüfung hatte Cross-Projekt-Reuse abgelehnt.
+
+Nach separater ausdrücklicher Genehmigung wurde ein eigener Token `worlds-hub deploy` mit ausschließlich `Workers Scripts: Edit` für das bestehende Konto angelegt, Ablauf **2027-02-02**. Dieses Cloudflare-Recht ist kontoweit und kann technisch auch andere Worker-Scripts bearbeiten; diese Restreichweite wurde vor Freigabe ausdrücklich genannt. Der Workflow nutzt ihn nur für `worlds-hub`.
+
+Der Token liegt ausschließlich verschlüsselt unter `CLOUDFLARE_API_TOKEN` in den Repository-Secrets. Kein Klartext in Dateien/Git/Logs und keine Übernahme in persönliche CLI-Konfiguration. Rechtzeitig vor Ablauf einen gleich begrenzten Token genehmigt rotieren und das Secret aktualisieren; nie stattdessen einen persönlichen Global API Key einsetzen.
+
+Die bestehende lokale Wrangler-Anmeldung ist abgelaufen. Das hat keinen Einfluss auf die erfolgreiche Actions-Bereitstellung. `npm run deploy:check` funktioniert ohne produktiven Zugang.
+
+## Verifikation
+
+35 Tests, Typprüfung, ESLint, Build, Dependency-Audit, Worker-Upload und produktive Smoke-Tests erfolgreich. Alle fünf öffentlichen Seiten, Konto, Styles/Script, robots.txt, Sitemap, Canonicals, OG, 404 und die deaktivierten SSO-Routen wurden real abgerufen. HTTP liefert 308 zur gewünschten HTTPS-Adresse; HTTPS liefert 200 mit gültiger Zertifikatsprüfung. Live-Browseransicht funktioniert ohne Konsolenfehler.
+
+Die ursprüngliche Sites-Veröffentlichung bleibt private Zusatzvorschau. Cloudflare Workers Builds wurde nicht mit einem breiten automatisch erzeugten Token aktiviert; die Produktion verwendet den geprüften GitHub-Actions-Weg.

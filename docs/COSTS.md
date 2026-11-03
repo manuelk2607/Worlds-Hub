@@ -5,9 +5,9 @@ Stand: 2026-11-04. Kein Upgrade, kein kostenpflichtiger Dienst und keine Domain 
 ## Aktueller Betrieb
 
 - Neon-Organisation `Nebenprojekte`: API bestätigt `plan: free`; die getrennte Identity-Pilotinstanz liegt darin. Sie enthält noch keine Benutzer oder aktiven OAuth-Clients.
-- Cloudflare-Konto im Dashboard geprüft: Account `ec3c070d8e4f88d2fc533d7d797f2daa`, Subdomain `maki26.workers.dev`, 309/100.000 Requests am angezeigten Tag, $0.00 billable usage. Vier bestehende Anwendungen, kein `worlds-hub` in der vollständigen Liste. Öffentliche Wunschadresse lieferte vor Erstellung 404.
+- Cloudflare-Konto im Dashboard geprüft: Account `ec3c070d8e4f88d2fc533d7d797f2daa`, Subdomain `maki26.workers.dev`, 309/100.000 Requests am angezeigten Tag, $0.00 billable usage. Vor Anlage: vier bestehende Anwendungen und kein `worlds-hub`. Danach wurde der gewünschte Worker über Actions erfolgreich bereitgestellt.
 - Landingpage benötigt keine Datenbank, kein R2/KV, keine KI und keine Mailzustellung. Worker-Artefakt: ungefähr 143 KiB, gzip 38 KiB. Auth bleibt deaktiviert.
-- GitHub-Repository bleibt privat. Kein kostenpflichtiger Actions-Lauf wurde gestartet; verfügbare private Runner-Kapazität ließ sich über die authentifizierte Billing-API nicht feststellen (404).
+- GitHub-Repository bleibt privat. Das Billing-Dashboard bestätigte vor dem ersten Lauf 0.01 USD / 12.00 USD enthaltenes Compute und 0 GB / 0.5 GB Storage im Free-Plan. Der erste kurze Actions-Lauf ist erfolgreich und liegt im vorhandenen Kontingent. Die alte Billing-API lieferte 404; die UI wurde als aktuelle Quelle genutzt.
 
 ## Aktuell dokumentierte Freikontingente
 
@@ -18,7 +18,7 @@ Stand: 2026-11-04. Kein Upgrade, kein kostenpflichtiger Dienst und keine Domain 
 | Neon Free | 100 Projekte, je 100 CU-Stunden/Monat, 1 GB DB und 5 GB Datentransfer; Auth bis 60.000 MAU pro Projekt | Häufiges Session-Polling verbraucht Compute/Transfer; Quoten und Suspend-Verhalten beobachten. Kein Upgrade aktivieren. |
 | GitHub Actions privat | Monatlich im jeweiligen Plan enthaltene Compute-Nutzung; Cache/Artefakte separat begrenzt | Nicht blind als unbegrenzt kostenlos behandeln. Workflow ist manuell, maximal 10 Minuten, ohne Artefakt-Uploads. Vor Nutzung Restbudget prüfen. |
 
-Cloudflare-natives Workers Builds ist die bevorzugte Alternative für automatische Bereitstellung aus dem Repository, wenn das vorhandene freie Build-Kontingent bestätigt ist. Die GitHub-Integration ist noch nicht freigegeben. Der manuelle Actions-Workflow liegt zusätzlich bereit und läuft nicht bei jedem Push.
+Cloudflare Workers Builds enthält 3.000 Build-Minuten monatlich im Free-Plan. Die dortige automatische Token-Erstellung verlangt jedoch viele weitere Berechtigungen. Die produktive Umsetzung verwendet deshalb den vom Nutzer genehmigten minimalen eigenen Token und manuell gestartete GitHub Actions innerhalb des verifizierten Kontingents; keine doppelten Builds bei jedem Push.
 
 ## E-Mail, Authentifizierung und Wachstum
 
