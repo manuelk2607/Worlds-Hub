@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
 import {projects} from '../src/projects.ts';
 const {default:worker}=await import(pathToFileURL(resolve('dist/server/index.js')).href);
-const origin='https://worlds-hub-maki.divinelynx3.chatgpt.site';
+const origin='https://worlds-hub.maki26.workers.dev';
 const request=(path:string,env:Record<string,unknown>={},options?:RequestInit)=>worker.fetch(new Request(origin+path,options),env) as Promise<Response>;
 test('landing page and all four unique descriptions are server-rendered with correct links',async()=>{const r=await request('/'),html=await r.text();assert.equal(r.status,200);assert.match(html,/<html lang="de">/);assert.equal((html.match(/<h1/g)??[]).length,1);for(const p of projects){assert.ok(html.includes(p.name));if(p.url)assert.ok(html.includes('href="'+p.url+'"'));const d=await request('/welten/'+p.id);assert.equal(d.status,200);assert.ok((await d.text()).includes('<h1>'+p.name+'</h1>'));}assert.doesNotMatch(html,/Adventskalender|token=|access_token|lorem ipsum/i);assert.match(html,/application\/ld\+json/);});
 test('unconfigured SSO fails closed with no account creation/session and honest UI',async()=>{for(const path of ['/auth/login','/auth/callback','/auth/logout','/auth/backchannel-logout']){const r=await request(path,{}, {method:'POST'});assert.equal(r.status,503);assert.equal(r.headers.get('set-cookie'),null);assert.equal(r.headers.get('cache-control'),'no-store');assert.match(r.headers.get('x-robots-tag')!,/noindex/);}const r=await request('/konto');assert.match(await r.text(),/momentan noch kein zentrales Konto/);});

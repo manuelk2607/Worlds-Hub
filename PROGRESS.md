@@ -17,16 +17,21 @@ Eigenständiger Hub mit vier Projektlinks und schrittweisem sicherem OIDC-SSO. A
 ## Verifikation
 35 Tests erfolgreich; TypeScript, ESLint, Produktions-Build und ESM-Artefaktprüfung erfolgreich. npm audit: 0 bekannte Schwachstellen. Browser-QA für Desktop/Mobil, Theme/Filter/Navigation erfolgreich. Details und Grenzen: docs/VERIFICATION.md.
 
-## Veröffentlichung / aktuell
-Private Erstveröffentlichung erfolgreich: https://worlds-hub-maki.divinelynx3.chatgpt.site . Quellcode e7b807b auf Sites und in das neue private GitHub-Repository https://github.com/manuelk2607/Worlds-Hub gepusht. Öffentliche Freigabe durch automatische Prüfung abgelehnt: explizite Bestätigung für diese konkrete Site fehlt. Freigabefrage steht beim Nutzer aus. PUBLIC_INDEXING=false, AUTH_ENABLED=false; Zugriff bleibt privat. Kein öffentlicher SEO-Smoke-Test möglich.
+## Repository, Zieldeployment und Kosten
+- Repository: https://github.com/manuelk2607/Worlds-Hub (privat, neu angelegt; kein Duplikat).
+- Verbindliches Produktionsziel: https://worlds-hub.maki26.workers.dev/ . Wrangler-Name `worlds-hub`, korrektes bestehendes Cloudflare-Konto/Namespace im Dashboard verifiziert. In der vollständigen Liste noch kein gleichnamiger Worker; URL derzeit 404.
+- Privates Sites-Zwischenergebnis ist bereits erfolgreich deployt, bleibt aber ausdrücklich nur Vorschau. Keine öffentliche Sites-Freigabe wird weiterverfolgt.
+- Gewünschte Canonical-Origin, öffentliche Sitemap/Robots-Regeln und Worker-Konfiguration angepasst. Manuell startbarer GitHub-Actions-Workflow mit optionalem Deploy und produktives Smoke-Skript implementiert. 35 Tests, Typprüfung, Lint, Build und Wrangler-Deployment-Dry-Run erfolgreich.
+- Tatsächliches Cloudflare-Deployment noch offen: lokale Wrangler-Anmeldung abgelaufen. Dashboard ist erreichbar, doch „Continue with GitHub“ wurde wegen einer möglichen Repository-Zugriffsfreigabe automatisch abgelehnt. Konkrete Nutzerfreigabe für Cloudflare-Zugriff ausschließlich auf Worlds-Hub erforderlich.
+- Kosten: Neon-Organisation Free verifiziert; Cloudflare-Dashboard zeigt $0.00 billable usage und 100.000 tägliche Request-Grenze. Keine Upgrades/Domain bestellt. Private Actions-Restkapazität nicht per API feststellbar; deshalb kein Runner gestartet. Geprüfte Grenzen und Mail-/Auth-Kostenfallen: docs/COSTS.md.
 
 ## Offene Anforderungen und konkrete Blocker
 - Kein produktiv angebundenes Projekt; bisher null Benutzer migriert/verknüpft. Bestehende Konten bleiben unverändert nutzbar.
 - Neon dokumentiert eine OAuth-Schleife mit prompt=login/max_age=0. Die für Linking benötigte zentrale frische Reauth ist damit noch nicht produktiv belegt. Im Code bleibt dieser Modus gesperrt. Details: docs/IDENTITY-PILOT.md.
 - Eigene IdP-Login-/Consent-Seiten, Verifikation/Recovery/Kontoverwaltung, registrierte App-Clients und echte Cross-App-Abnahme fehlen. Globale IdP-Abmeldung ist nicht freigegeben; Hub-Logout beendet nur die lokale Session.
-- Produktive Session-D1, Cleanup und Traffic-Limits noch nicht konfiguriert. Direkter Cloudflare-CLI-Zugang fehlt; Sites-Deployment ist verfügbar.
+- Produktive Session-D1, Cleanup und Traffic-Limits noch nicht konfiguriert. Direkter Cloudflare-CLI-Zugang ist abgelaufen; Dashboard/Git-Deployment nach konkreter Zugriffsfreigabe möglich.
 - Music-Worlds ohne zugängliches Repo oder bestätigte Produktiv-URL.
-- Öffentliche Site-Freigabe benötigt ausdrückliche Bestätigung nach automatischer Ablehnung. Search-Console-Token/Property fehlen. Öffentlicher SEO-Smoke-Test erst nach Freigabe; keine Indexierung garantiert.
+- Cloudflare-GitHub-Zugriffsfreigabe ausstehend. Search-Console-Token/Property fehlen. Produktiven SEO-Smoke-Test nach Cloudflare-Deployment ausführen; keine Indexierung garantiert.
 
-## Nächster konkreter Schritt nach Veröffentlichung
-Auf der neuen, getrennten Pilotinstanz den dokumentierten Neon-Reauth-Blocker klären und die IdP-Login-/Consent-Oberfläche isoliert testen. Erst nach bestandenem echten IT-Worlds-Pilot und Backup-/Rollbackprobe produktive Clients schrittweise aktivieren. Keine riskante Migration vorziehen.
+## Nächster konkreter Schritt
+Zuerst Cloudflare-GitHub-Zugriff nur für dieses Repo bestätigen, kostenlosen Build konfigurieren und Landingpage deployen; danach `npm run smoke` plus Browserabnahme. Anschließend auf der neuen, getrennten Pilotinstanz den dokumentierten Neon-Reauth-Blocker klären und die IdP-Login-/Consent-Oberfläche isoliert testen. Erst nach bestandenem echten IT-Worlds-Pilot und Backup-/Rollbackprobe produktive Clients schrittweise aktivieren. Keine riskante Migration vorziehen.

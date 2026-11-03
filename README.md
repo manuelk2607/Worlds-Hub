@@ -25,7 +25,12 @@ Worker und Browserlogik sind TypeScript; esbuild bündelt alle Assets in einen E
 - `docs/OPERATIONS.md`: Konfiguration, Bereitstellung, Aktivierungs- und SEO-Prüfung.
 - `PROGRESS.md`: verifizierter Fortschritt, offene Aufgaben und nächste Schritte.
 
-## Veröffentlichung
+## Produktion und Veröffentlichung
+
+Ziel: https://worlds-hub.maki26.workers.dev/ . Cloudflare-Konfiguration und vollständiger Ablauf in `docs/CLOUDFLARE.md`; laufende Kosten/Free-Limits in `docs/COSTS.md`.
+GitHub: https://github.com/manuelk2607/Worlds-Hub. `npm run deploy:check` prüft das Worker-Paket, `npm run smoke` das echte Deployment.
+
+## Private Zusatzvorschau
 
 Sites-ID steht in `.openai/hosting.json`. Das Build-Artefakt ist `dist/server/index.js`.
 Separate Cloudflare-Worker-Konfiguration liegt in `wrangler.jsonc`. Deren Origin vor eigener

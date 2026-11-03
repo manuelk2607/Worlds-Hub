@@ -5,7 +5,7 @@ const client=await transform(await readFile('src/client.ts','utf8'),{loader:'ts'
 // Hash only the structured metadata script. CSP permits no arbitrary inline JavaScript.
 // JSON-LD is data; browsers still enforce script-src for this script element.
 const {projects}=await import('../src/projects.ts');
-const origin=process.env.SITE_ORIGIN??'https://worlds-hub-maki.divinelynx3.chatgpt.site';
+const origin=process.env.SITE_ORIGIN??'https://worlds-hub.maki26.workers.dev';
 const description='Entdecke Music-Worlds, Sprachwelten, IT-Worlds und Slop Urself. Dein zentraler Einstieg in vier eigenständige Welten.';
 const schema=JSON.stringify({'@context':'https://schema.org','@type':'WebSite',name:'Worlds Hub',url:origin+'/',description,hasPart:projects.filter(p=>p.url).map(p=>({'@type':'WebSite',name:p.name,url:p.url}))}).replace(/</g,'\\u003c');
 const hash=createHash('sha256').update(schema).digest('base64');

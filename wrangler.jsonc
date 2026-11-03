@@ -1,8 +1,20 @@
 {
-  "name": "worlds-hub", "main": "dist/server/index.js", "compatibility_date": "2026-11-03",
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "worlds-hub",
+  "account_id": "ec3c070d8e4f88d2fc533d7d797f2daa",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2026-11-03",
+  "workers_dev": true,
+  "preview_urls": false,
+  "keep_vars": true,
+  "logpush": false,
   "build": {"command":"npm run build"},
-  "vars": {"SITE_ORIGIN":"https://worlds-hub-maki.divinelynx3.chatgpt.site","AUTH_ENABLED":"false","PUBLIC_INDEXING":"false"}
-  // Dedicated account deploy: configure AUTH_DB binding, apply migrations/0001_auth.sql,
-  // register cron cleanup, replace SITE_ORIGIN and complete docs/OPERATIONS.md first.
-  // Never reuse a project data database or deploy with this origin on another host.
+  "vars": {
+    "SITE_ORIGIN":"https://worlds-hub.maki26.workers.dev",
+    "AUTH_ENABLED":"false",
+    "OIDC_REAUTH_ENABLED":"false",
+    "PUBLIC_INDEXING":"true"
+  }
+  // No database, paid service or auth binding is created by this deployment.
+  // Before SSO activation: dedicated AUTH_DB, migrations and provider pilot acceptance.
 }

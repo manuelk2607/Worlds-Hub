@@ -13,7 +13,10 @@
     "test": "npm run build && node --experimental-strip-types --test tests/*.test.ts",
     "build": "node --experimental-strip-types scripts/build.ts",
     "validate": "node scripts/validate-artifact.mjs",
-    "check": "npm run typecheck && npm run lint && npm test && npm run validate"
+    "check": "npm run typecheck && npm run lint && npm test && npm run validate",
+    "deploy:check": "wrangler deploy --dry-run",
+    "deploy:cloudflare": "wrangler deploy",
+    "smoke": "node --experimental-strip-types scripts/smoke.ts"
   },
   "dependencies": {
     "jose": "^6.2.15",
@@ -26,7 +29,8 @@
     "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.1",
+    "wrangler": "^4.157.0"
   },
   "overrides": {
     "minimatch": "^11.0.1"
