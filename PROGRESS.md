@@ -18,7 +18,7 @@ Eigenständiger Hub mit vier Projektlinks und schrittweisem sicherem OIDC-SSO. A
 35 Tests erfolgreich; TypeScript, ESLint, Produktions-Build und ESM-Artefaktprüfung erfolgreich. npm audit: 0 bekannte Schwachstellen. Browser-QA für Desktop/Mobil, Theme/Filter/Navigation erfolgreich. Details und Grenzen: docs/VERIFICATION.md.
 
 ## Veröffentlichung / aktuell
-Quellen und Dokumentation fertig zur Commit-/Push-/Deployment-Phase. Die neue Sites-Veröffentlichung bleibt zunächst privat; AUTH_ENABLED und PUBLIC_INDEXING bleiben false. Deployment-Ergebnis wird nach der nativen Veröffentlichung separat protokolliert.
+Private Erstveröffentlichung erfolgreich: https://worlds-hub-maki.divinelynx3.chatgpt.site . Quellcode e7b807b auf Sites und in das neue private GitHub-Repository https://github.com/manuelk2607/Worlds-Hub gepusht. Öffentliche Freigabe durch automatische Prüfung abgelehnt: explizite Bestätigung für diese konkrete Site fehlt. Freigabefrage steht beim Nutzer aus. PUBLIC_INDEXING=false, AUTH_ENABLED=false; Zugriff bleibt privat. Kein öffentlicher SEO-Smoke-Test möglich.
 
 ## Offene Anforderungen und konkrete Blocker
 - Kein produktiv angebundenes Projekt; bisher null Benutzer migriert/verknüpft. Bestehende Konten bleiben unverändert nutzbar.
@@ -26,7 +26,7 @@ Quellen und Dokumentation fertig zur Commit-/Push-/Deployment-Phase. Die neue Si
 - Eigene IdP-Login-/Consent-Seiten, Verifikation/Recovery/Kontoverwaltung, registrierte App-Clients und echte Cross-App-Abnahme fehlen. Globale IdP-Abmeldung ist nicht freigegeben; Hub-Logout beendet nur die lokale Session.
 - Produktive Session-D1, Cleanup und Traffic-Limits noch nicht konfiguriert. Direkter Cloudflare-CLI-Zugang fehlt; Sites-Deployment ist verfügbar.
 - Music-Worlds ohne zugängliches Repo oder bestätigte Produktiv-URL.
-- Öffentliche Freigabe, vollständige Verantwortlichen-/Datenschutzangaben, Search-Console-Token/Property und produktiver SEO-Smoke-Test stehen aus.
+- Öffentliche Site-Freigabe benötigt ausdrückliche Bestätigung nach automatischer Ablehnung. Search-Console-Token/Property fehlen. Öffentlicher SEO-Smoke-Test erst nach Freigabe; keine Indexierung garantiert.
 
 ## Nächster konkreter Schritt nach Veröffentlichung
 Auf der neuen, getrennten Pilotinstanz den dokumentierten Neon-Reauth-Blocker klären und die IdP-Login-/Consent-Oberfläche isoliert testen. Erst nach bestandenem echten IT-Worlds-Pilot und Backup-/Rollbackprobe produktive Clients schrittweise aktivieren. Keine riskante Migration vorziehen.

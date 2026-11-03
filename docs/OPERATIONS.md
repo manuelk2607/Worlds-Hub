@@ -3,8 +3,8 @@
 ## Aktuelle Vorschau
 
 Sites-ID: `appgprj_6aea673346808191acd302d1a40c3c60`.
-Geplante Origin: `https://worlds-hub-maki.divinelynx3.chatgpt.site` (Deployment erst durch native Erfolgsmeldung bestätigt).
-Sites erstellt neue Projekte zunächst privat. Diese zusätzliche Hosting-Zugangskontrolle ist **kein Worlds-SSO**.
+Bestätigte Origin: `https://worlds-hub-maki.divinelynx3.chatgpt.site`. Private Erstveröffentlichung durch native Erfolgsmeldung bestätigt; öffentliche Landingpage-Freigabe durch automatische Prüfung blockiert, bis die ausdrückliche Nutzerbestätigung für diese Site vorliegt.
+Sites erstellt neue Projekte zunächst privat. Der öffentliche Zugang bleibt bis zur ausdrücklich bestätigten Freigabe dieser Site gesperrt. Die Hosting-Zugangskontrolle ist **kein Worlds-SSO**.
 
 `npm run check`: TypeScript, ESLint, signierte OIDC-/Linking-/SQLite-/Worker-/SEO-Tests, Build und ESM-Artefaktprüfung.
 `npm audit` für alle Abhängigkeiten. `minimatch` ist zur Schließung GHSA-g3hv-75wg-m249 gezielt auf >=11.0.1 überschrieben; Lint und Build wurden damit geprüft.
@@ -49,7 +49,7 @@ Nicht geprüft: echter zentraler Provider, SMTP/E-Mail-Roundtrip, produktive D1-
 
 Der Worker erzeugt serverseitige Projektbeschreibungen, individuelle Titel und Descriptions, absolute Canonicals, OG-Metadaten und WebSite-Strukturdaten. Öffentlicher Modus listet nur `/` und die vier `/welten/*`-Seiten. Private Konto-, Auth-, API-, Logout- und Fehlerseiten erhalten noindex/no-store; Robots-Regeln sind zusätzliche Crawlerhinweise, kein Zugriffsschutz.
 
-1. Öffentlichen Hosting-Zugang bewusst konfigurieren; Canonical-Origin bestätigen. Datenschutz-/Verantwortlichenangaben ergänzen. Solange privat, `PUBLIC_INDEXING=false` belassen.
+1. Öffentlichen Hosting-Zugang bewusst konfigurieren; Canonical-Origin bestätigen. Die Datenschutzhinweise beschreiben das technische Verhalten. Solange privat, `PUBLIC_INDEXING=false` belassen.
 2. Bei öffentlicher Freigabe `PUBLIC_INDEXING=true` setzen und deployen; in echten HTTP-Antworten Status, Titel, Canonical, robots.txt, sitemap.xml und private Noindex-/Cache-Header prüfen.
 3. Für die neue Sites-/workers.dev-URL eine URL-Präfix-Property in Google Search Console anlegen. Bei eigener DNS-kontrollierter Domain alternativ Domain-Property mit DNS-TXT-Verifikation. Verifizierungswert in Runtime setzen; keine erfundenen Tokens.
 4. Sitemap `https://<bestätigte-origin>/sitemap.xml` einreichen, öffentliche URLs inspizieren. Keine Aufnahme in den Index garantieren.
