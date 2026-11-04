@@ -1,3 +1,4 @@
+import './identity-client.ts';
 const root=document.documentElement;
 const themeButton=document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
 function updateThemeButton(){if(themeButton){const dark=root.dataset.theme==='dark';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',dark?'Hellen Modus aktivieren':'Dunklen Modus aktivieren');}}

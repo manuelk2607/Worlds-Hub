@@ -14,7 +14,7 @@ for(const path of paths){
     assert.match(body,/property="og:title"/);assert.equal(response.headers.get('x-robots-tag'),null);
   }
   if(path==='/'){
-    for(const url of ['https://sprachwelten.maki26.workers.dev/','https://it-worlds.maki26.workers.dev/','https://slopurself.maki26.workers.dev/'])assert.ok(body.includes('href="'+url+'"'));
+    for(const url of ['https://music-worlds.maki26.workers.dev/','https://sprachwelten.maki26.workers.dev/','https://it-worlds.maki26.workers.dev/','https://slopurself.maki26.workers.dev/'])assert.ok(body.includes('href="'+url+'"'));
     assert.match(body,/href="\/welten\/music-worlds"/);assert.match(body,/application\/ld\+json/);
     assert.match(response.headers.get('content-security-policy')!,/frame-ancestors 'none'/);
   }
@@ -25,4 +25,5 @@ for(const path of paths){
 }
 const missing=await fetch(origin+'/definitely-not-a-page',{redirect:'manual'});assert.equal(missing.status,404);
 const auth=await fetch(origin+'/auth/login',{method:'POST',headers:{origin},redirect:'manual'});assert.equal(auth.status,503);assert.match(auth.headers.get('x-robots-tag')!,/noindex/);
+for(const path of ['/identity/login','/api/identity/get-session']){const response=await fetch(origin+path,{redirect:'manual'});assert.equal(response.status,503);assert.match(response.headers.get('x-robots-tag')!,/noindex/);assert.equal(response.headers.get('cache-control'),'no-store');}
 console.log('PASS 404 and disabled SSO. HTTPS, public SEO, private headers and navigation verified.');

@@ -9,7 +9,7 @@ Stand: 2026-11-04. Entscheidung für die nächste Integrationsphase, kein bereit
 | Sprachwelten | manuelk2607/Sprachwelten · 933c841 | Next.js/Cloudflare; `@neondatabase/auth/next`; eigenes Neon-Projekt `calm-tooth-60944868`, Branch `br-delicate-field-b96d9qc4`; Managed Better Auth. Beiträge, Audio, Notebooks, Adminrechte an bestehenden IDs. |
 | IT-Worlds | manuelk2607/IT-Worlds · 64f71e5 | Astro/Worker, Neon Auth Proxy; eigenes Neon-Projekt `lingering-morning-59761503`, Branch `br-long-violet-ba34agj1`; Progress-UUID referenziert `neon_auth.user`, RLS nutzt `app.user_id`. |
 | Slop Urself | manuelk2607/Slop_Urself · 97c07c8 | Worker/Durable Objects und Node-Server, eigenes Neon-Projekt `autumn-leaf-19858358`; kein Neon Auth. `user_profiles`, Passwortschutz soweit vorhanden, signierte Sessions mit `authVersion`. HF-Verbindung an historische Account-ID gebunden. |
-| Music-Worlds | Kein zugängliches Repository / keine bestätigte URL | Neues unabhängiges Projekt; vorerst interne Beschreibungsseite. |
+| Music-Worlds | Produktive workers.dev-Adresse bestätigt; zugängliches Repository aktuell leer | Frühe Version direkt verlinkt; Auth-Quelltextprüfung noch ausstehend. |
 
 Sprachwelten und IT-Worlds: OAuth Provider laut Neon-API deaktiviert. Slop Urself: Auth-Integration nicht vorhanden (404). Alle drei öffentlichen Homepages antworteten 200. Bestehende Systeme wurden nicht verändert, keine Userdaten ausgelesen. Adventskalender wird nicht eingebunden.
 
@@ -60,7 +60,7 @@ HF-Tokens bleiben ausschließlich in Slops bestehender HF-Verwaltung, unter ders
 
 ## Restliche Produktionsanforderungen
 
-- Die zentrale Instanz ist angelegt, aber deren OAuth-Provider bleibt deaktiviert; Login-/Consent-/Verifizierungs-/Recovery-/Kontoverwaltungs-UI und E-Mail-Zustellung einrichten und testen.
+- Die zentrale Instanz ist angelegt, aber deren OAuth-Provider bleibt deaktiviert; Login-/Consent-/Verifizierungs-/Recovery-/Kontoverwaltungs-UI ist mit offiziellem SDK vorbereitet und lokal geprüft; echte E-Mail-Zustellung und OAuth-Fortsetzung noch testen.
 - Pro App eigene Session-Datenbank/-Secrets; `AUTH_DB` produktiv binden, Schema anwenden, regelmäßige Ablaufbereinigung und Rate Limits konfigurieren.
 - TLS, exakte Origins, gesperrte Dynamic Client Registration, minimale Scopes, festgelegter Signaturalgorithmus und vertrauenswürdiger Issuer.
 - Reale Wiederherstellung/Backups, Geheimnisrotation, Audit-Aufbewahrung, Überwachung, Schlüsselwechsel und IdP-Ausfall testen.

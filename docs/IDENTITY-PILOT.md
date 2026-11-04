@@ -18,11 +18,13 @@ Der erste Erstellungsversuch mit explizitem Suspend-Intervall wurde vom Free-Tar
 
 Die aktuelle Herstellerdokumentation nennt ausdrücklich eine Schleife für `prompt=login` bzw. `max_age=0` beim Fortsetzen des OAuth-Flows. Damit ist die geplante zentrale frische OIDC-Reauthentifizierung für sichere Kontoverknüpfung noch nicht produktionsreif belegt. Ohne belastbaren Nachweis darf kein Legacy-Konto verknüpft werden.
 
-Außerdem sind eigene Login- und Consent-Seiten zwingend, es gibt keine standardmäßige Hosted-Login-Seite. Deren Session-Fortsetzung und das Verhalten ohne Drittanbieter-Cookies müssen im echten Pilot geprüft werden. SMTP/Verifikation/Recovery und globaler Logout sind noch offen.
+Eigene Login- und Consent-Seiten sind zwingend, es gibt keine standardmäßige Hosted-Login-Seite. Diese einschließlich Registrierung/OTP/Recovery/Kontoverwaltung sind inzwischen mit @neon/auth/server 0.8.2 implementiert und lokal geprüft. Deren Session-Fortsetzung und das Verhalten ohne Drittanbieter-Cookies müssen im echten Pilot geprüft werden. SMTP/Verifikation/Recovery und globaler Logout sind noch offen.
 
 Der Hub-Client unterstützt bereits den dokumentierten Userinfo-Abruf: Neon-ID-Tokens enthalten kein E-Mail-/Namensprofil. Userinfo muss exakt denselben `sub` wie das signaturgeprüfte ID-Token haben und `email_verified=true` liefern. `resource` wird bei Konfiguration an beide OAuth-Anfragen angefügt; vertrauliche Clients verwenden standardmäßig `client_secret_basic`.
 
 Quelle, vollständig am 2026-11-04 gelesen:
 https://neon.com/docs/auth/guides/plugins/oauth-provider
 
-Nächster Schritt: isolierte Login-/Consent-Implementierung auf dieser Pilotinstanz und Klärung des Reauth-Limits beim Anbieter bzw. Nachweis eines dokumentierten sicheren Workflows. Bis dahin kein produktiver Cutover, keine Legacy-Migration. Falls das Limit bestehen bleibt, vor Bindung realer Nutzer einen anderen voll geeigneten OIDC-Provider auswählen; keine kostenpflichtige Alternative stillschweigend aktivieren.
+Der aktuelle Upstream-Provider 1.7.12 enthält eine Behandlung frischer Sessions sowie signierten auth_time. Das beweist nicht die Version oder das Verhalten der Managed-Instanz. Deshalb wird die dokumentierte Einschränkung im realen Pilot überprüft; es wird kein definitiver Anbieterfehler behauptet.
+
+Nächster Schritt: das in PILOT-ACTIVATION.md konkretisierte, vom Nutzer am 2026-11-04 freigegebene isolierte Setup ausführen und den echten Ablauf prüfen. Bis dahin kein produktiver Cutover, keine Legacy-Migration. Falls das Limit bestehen bleibt, vor Bindung realer Nutzer einen anderen voll geeigneten OIDC-Provider auswählen; keine kostenpflichtige Alternative stillschweigend aktivieren.

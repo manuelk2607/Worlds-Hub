@@ -1,11 +1,13 @@
-import { css } from './styles.ts';
+import { identityConfig,identityProxy,identityCsrf,type IdentityEnv } from './identity.ts';
+import { identityPage } from './identity-pages.ts';
+import { css,identityCss } from './styles.ts';
 import { layout,home,detail,account,loggedOut,privacy } from './pages.ts';
 import { projects,escapeHtml } from './projects.ts';
 import { D1AuthStore } from '../packages/auth/store.ts';
 import { session,startLogin,callback,logout,backchannelLogout,type AuthConfig } from '../packages/auth/oidc.ts';
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
-export interface Env { SITE_ORIGIN?:string; PUBLIC_INDEXING?:string; GOOGLE_SITE_VERIFICATION?:string; AUTH_ENABLED?:string; OIDC_ISSUER?:string; OIDC_CLIENT_ID?:string; OIDC_CLIENT_SECRET?:string; OIDC_RESOURCE?:string; OIDC_REAUTH_ENABLED?:string; OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post'; OIDC_ID_TOKEN_ALG?:string; OIDC_ACCOUNT_URL?:string; AUTH_DB?:D1Database }
+export interface Env extends IdentityEnv { SITE_ORIGIN?:string; PUBLIC_INDEXING?:string; GOOGLE_SITE_VERIFICATION?:string; AUTH_ENABLED?:string; OIDC_ISSUER?:string; OIDC_CLIENT_ID?:string; OIDC_CLIENT_SECRET?:string; OIDC_RESOURCE?:string; OIDC_REAUTH_ENABLED?:string; OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post'; OIDC_ID_TOKEN_ALG?:string; OIDC_ACCOUNT_URL?:string; AUTH_DB?:D1Database }
 export const DEFAULT_ORIGIN='https://worlds-hub.maki26.workers.dev';
 export function authConfig(env:Env):AuthConfig|null {
   if(env.AUTH_ENABLED!=='true'||!env.SITE_ORIGIN||!env.OIDC_ISSUER||!env.OIDC_CLIENT_ID||!env.AUTH_DB||!env.OIDC_ID_TOKEN_ALG)return null;
@@ -29,11 +31,22 @@ export default {
     const isPrivate=!['/','/styles.css','/client.js','/favicon.svg','/robots.txt','/sitemap.xml',...projects.map(p=>'/welten/'+p.id)].includes(path);
     const finish=(r:Response)=>secure(r,isPrivate);
     if(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))return finish(new Response(null,{status:308,headers:{location:'https://'+url.host+url.pathname+url.search}}));
-    if(path==='/styles.css'&&request.method==='GET')return finish(text(css,'text/css'));
+    if(path==='/styles.css'&&request.method==='GET')return finish(text(css+identityCss,'text/css'));
     if(path==='/client.js'&&request.method==='GET')return finish(text(clientScript,'text/javascript'));
     if(path==='/favicon.svg'&&request.method==='GET')return finish(text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#f7f7f2"/><rect x="8" y="8" width="10" height="10" rx="3" fill="#ac95d2"/><rect x="22" y="8" width="10" height="10" rx="3" fill="#dba677"/><rect x="8" y="22" width="10" height="10" rx="3" fill="#8faec3"/><rect x="22" y="22" width="10" height="10" rx="3" fill="#9fb681"/></svg>','image/svg+xml'));
-    if(path==='/robots.txt'&&request.method==='GET')return finish(text(env.PUBLIC_INDEXING==='true'?`User-agent: *\nAllow: /\nDisallow: /konto\nDisallow: /anmelden\nDisallow: /registrieren\nDisallow: /auth/\nDisallow: /api/\nDisallow: /abgemeldet\nDisallow: /datenschutz\nSitemap: ${origin}/sitemap.xml\n`:'User-agent: *\nDisallow: /\n','text/plain'));
+    if(path==='/robots.txt'&&request.method==='GET')return finish(text(env.PUBLIC_INDEXING==='true'?`User-agent: *\nAllow: /\nDisallow: /konto\nDisallow: /anmelden\nDisallow: /registrieren\nDisallow: /auth/\nDisallow: /api/\nDisallow: /identity/\nDisallow: /abgemeldet\nDisallow: /datenschutz\nSitemap: ${origin}/sitemap.xml\n`:'User-agent: *\nDisallow: /\n','text/plain'));
     if(path==='/sitemap.xml'&&request.method==='GET')return finish(text(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${env.PUBLIC_INDEXING==='true'?['/',...projects.map(p=>'/welten/'+p.id)].map(p=>`<url><loc>${escapeHtml(origin+p)}</loc></url>`).join(''):''}</urlset>`,'application/xml'));
+    const central=identityConfig(env);
+    if(path.startsWith('/api/identity/'))return finish(central?await identityProxy(request,central):Response.json({error:'IDENTITY_NOT_CONFIGURED'},{status:503}));
+    if(path.startsWith('/identity/')){
+      if(!central)return finish(text('Die zentrale Identität wird noch vorbereitet.','text/plain',503));
+      if(!['/identity/login','/identity/consent','/identity/account','/identity/reset'].includes(path))return finish(text('Seite nicht gefunden.','text/plain',404));
+      if(url.origin!==central.origin)return finish(text('Unzulässiger Host.','text/plain',421));
+      if(request.method!=='GET')return finish(text('Methode nicht erlaubt.','text/plain',405));
+      const csrf=identityCsrf(request),page=identityPage(path,url.search.slice(1),csrf.value,central);
+      const response=finish(text(layout(page.body,{origin:central.origin,path,title:page.title,description:'Zentrale Worlds-Identität im abgesicherten Pilotbetrieb.',indexing:false}),'text/html',page.status));
+      response.headers.append('set-cookie',csrf.setCookie);return response;
+    }
     const config=authConfig(env);
     // Never accept forwarded host headers or use the request host as an OAuth redirect origin.
     if((path.startsWith('/auth/')||path.startsWith('/api/')||path==='/konto')&&config&&url.origin!==config.origin)return finish(text('Unzulässiger Host.','text/plain',421));
@@ -63,5 +76,5 @@ export default {
     if(env.PUBLIC_INDEXING!=='true')response.headers.set('X-Robots-Tag','noindex, nofollow');
     return response;
   },
-  async scheduled(_event:unknown,env:Env) {if(env.AUTH_DB)await env.AUTH_DB.batch(['auth_transactions','auth_sessions','auth_replays'].map(t=>env.AUTH_DB!.prepare(`DELETE FROM ${t} WHERE expires < ?`).bind(Date.now())));}
+  async scheduled(_event:unknown,env:Env) {if(env.AUTH_DB)await env.AUTH_DB.batch(['auth_transactions','auth_sessions','auth_replays','identity_rate_limits'].map(t=>env.AUTH_DB!.prepare(`DELETE FROM ${t} WHERE id IN (SELECT id FROM ${t} WHERE expires < ? ORDER BY expires LIMIT 500)`).bind(Date.now())));}
 };

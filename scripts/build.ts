@@ -1,7 +1,8 @@
-import { build, transform } from 'esbuild';
+import { build } from 'esbuild';
 import { readFile,mkdir,copyFile,rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-const client=await transform(await readFile('src/client.ts','utf8'),{loader:'ts',minify:true,target:'es2022'});
+const clientBuild=await build({entryPoints:['src/client.ts'],bundle:true,write:false,format:'iife',minify:true,target:'es2022'});
+const client={code:clientBuild.outputFiles[0].text};
 // Hash only the structured metadata script. CSP permits no arbitrary inline JavaScript.
 // JSON-LD is data; browsers still enforce script-src for this script element.
 const {projects}=await import('../src/projects.ts');

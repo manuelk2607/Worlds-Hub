@@ -1,24 +1,5 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {DatabaseSync} from 'node:sqlite';
-import {readFile} from 'node:fs/promises';
+import {sqliteD1} from './sqlite-helper.ts';
 import {D1AuthStore,type Transaction,type Session} from '../packages/auth/store.ts';
-export async function sqliteD1(){
-  const db=new DatabaseSync(':memory:');
-  db.exec(await readFile('migrations/0001_auth.sql','utf8'));
-  const binding={
-    prepare(query:string){
-      const statement=db.prepare(query);
-      return {
-        bind(...values:(string|number|null)[]){
-          return {
-            async first(){return statement.get(...values)??null;},
-            async run(){const result=statement.run(...values);return {meta:{changes:Number(result.changes)}};}
-          };
-        }
-      };
-    }
-  };
-  return {db,binding:binding as unknown as D1Database};
-}
 test('real SQLite schema: atomic single-use transaction and revocable opaque sessions',async()=>{const {db,binding}=await sqliteD1();try{const store=new D1AuthStore(binding),tx:Transaction={verifier:'verifier',state:'state',nonce:'nonce',next:'/konto',expires:Date.now()+5000};await store.putTransaction('hash',tx);const taken=await Promise.all([store.takeTransaction('hash'),store.takeTransaction('hash')]);assert.equal(taken.filter(Boolean).length,1);const value:Session={issuer:'https://idp.test',sub:'u1',sid:'sid',csrf:'csrf',expires:Date.now()+10000};await store.putSession('opaque-hash',value);assert.deepEqual(await store.getSession('opaque-hash'),value);await store.putSession('other',{...value,issuer:'https://other.test'});await store.revokeIdentity(value.issuer,value.sub,value.sid);assert.equal(await store.getSession('opaque-hash'),null);assert.ok(await store.getSession('other'));assert.equal(await store.claimReplay('jti-hash',Date.now()+5000),true);assert.equal(await store.claimReplay('jti-hash',Date.now()+5000),false);await assert.rejects(()=>store.revokeIdentity(value.issuer));}finally{db.close();}});

@@ -12,6 +12,7 @@
   "vars": {
     "SITE_ORIGIN":"https://worlds-hub.maki26.workers.dev",
     "AUTH_ENABLED":"false",
+    "IDENTITY_ENABLED":"false",
     "OIDC_REAUTH_ENABLED":"false",
     "PUBLIC_INDEXING":"true"
   }

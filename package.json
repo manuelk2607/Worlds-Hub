@@ -19,6 +19,7 @@
     "smoke": "node --experimental-strip-types scripts/smoke.ts"
   },
   "dependencies": {
+    "@neon/auth": "0.8.2",
     "jose": "^6.2.15",
     "oauth4webapi": "^3.8.8"
   },

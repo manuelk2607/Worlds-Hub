@@ -8,6 +8,10 @@ on:
         description: Deploy checked commit to worlds-hub.maki26.workers.dev
         type: boolean
         default: false
+      initialize_identity_secret:
+        description: Initialize missing identity signing secret (explicit pilot setup only)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -36,6 +40,12 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing repository secret CLOUDFLARE_API_TOKEN'; exit 1; }
+      - name: Initialize identity secret only when explicitly requested
+        if: inputs.deploy && inputs.initialize_identity_secret
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          INITIALIZE_IDENTITY_SECRET: 'true'
+        run: node --experimental-strip-types scripts/init-identity-secret.ts
       - name: Deploy only the checked Worlds Hub Worker
         if: inputs.deploy
         env:

@@ -34,7 +34,7 @@ Kleinster Umfang: nur persönliche Lernfortschritte; daher zuerst isolierte IT-W
 
 ## Music-Worlds
 
-Noch kein zugängliches Repository oder produktiver Host. Später als eigenes Projekt mit eigener DB anlegen, direkt denselben zentralen IdP als eigenen Client verwenden. Neue lokale Benutzer-ID nach expliziter Registrierung; keine Migration bestehender Music-Daten behaupten. Hub-URL erst bei bestätigter HTTPS-Produktionsadresse austauschen.
+Produktive Adresse am 2026-11-04 bestätigt: https://music-worlds.maki26.workers.dev/ (HTTP 200). Der Hub verlinkt die frühe Version direkt. Repository https://github.com/manuelk2607/Music-Worlds ist zugänglich, aber beim read-only Checkout noch leer. Die ausgelieferte Auth-/Datenarchitektur ist deshalb nicht prüfbar; keine Quelltexte oder Konten verändern. Nach Vorliegen des Codes eigenen OIDC-Client und eigene Session-DB integrieren. Neue lokale Benutzer-ID nur nach expliziter Registrierung; keine Migration bestehender Music-Daten behaupten.
 
 ## Projektübergreifende Navigation / Fortschritte
 

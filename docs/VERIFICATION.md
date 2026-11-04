@@ -3,7 +3,9 @@
 ## Erfolgreich
 
 - TypeScript-Typprüfung und ESLint.
-- 35 Node-Tests: signierter isolierter OIDC-Anbieter, zwei getrennte Relying Parties, PKCE/State/Nonce/JWKS/Claims/Userinfo, frischer auth_time und Sperre unfreigegebener Reauth, Sessionrotation/CSRF/Logout/Replay, begrenzte Request-Bodies, Mapping-/HF-Guards.
+- 44 Node-Tests: signierter isolierter OIDC-Anbieter, zwei getrennte Relying Parties, PKCE/State/Nonce/JWKS/Claims/Userinfo, frischer auth_time und Sperre unfreigegebener Reauth, Sessionrotation/CSRF/Logout/Replay, begrenzte Request-Bodies, Mapping-/HF-Guards.
+- Offizieller Neon-SDK-Proxy: eingeschränkte Endpunkte/Felder, Origin/CSRF, signierte Query unverändert, Tokenfilter, exakte Redirects und atomare Rate-Limits. Ed25519-Signatur zusätzlich geprüft. Ablaufbereinigung auf 500 Datensätze pro Tabelle begrenzt.
+- Lokale Identity-Oberfläche im Browser: Formularwechsel, E-Mail-/OTP-Felder und mobile 390-Pixel-Ansicht ohne horizontalen Überlauf geprüft; keine echte Anmeldung ausgeführt.
 - Migration und atomare Session-/Transaktionsoperationen auf echter SQLite-In-Memory-Datenbank (D1-kompatibles SQL), keine produktive DB-Verbindung für Tests.
 - HTTP-/SEO-/Security-Header-Prüfungen gegen den tatsächlich gebauten Worker, beide Indexierungsmodi.
 - Produktions-Build und Import-/ESM-Artefaktprüfung.
@@ -13,9 +15,9 @@
 
 ## Bewusste Grenzen
 
-Die 35 Tests belegen den Auth-Client und dessen Sicherheitsverträge mit einem lokalen Testanbieter. Sie belegen **keinen** produktiven Neon-Cross-App-Login oder bereits migrierte Konten. SQLite-Tests ersetzen keine produktive Cloudflare-D1-Bindung. Keine vollständige Screenreader-/WCAG-Zertifizierung, kein externer Penetrationstest und kein Nachweis einer Google-Indexierung.
+Die 44 Tests belegen den Auth-Client und dessen Sicherheitsverträge mit einem lokalen Testanbieter. Sie belegen **keinen** produktiven Neon-Cross-App-Login oder bereits migrierte Konten. SQLite-Tests ersetzen keine produktive Cloudflare-D1-Bindung. Keine vollständige Screenreader-/WCAG-Zertifizierung, kein externer Penetrationstest und kein Nachweis einer Google-Indexierung.
 
-Noch offen: echter IT-Pilot, Login-/Consent-/Recovery-/Verifikationsabläufe, produktive Rollen/RLS in Kombination mit Mapping, globaler IdP-Logout, reale HF-Authentifizierung/Generierungsfreigaben, verifizierter Backup/Restore und öffentliche SEO-Abnahme. Exakte Ursache der Reauth-Sperre: `IDENTITY-PILOT.md`.
+Noch offen: echter IT-Pilot, Login-/Consent-/Recovery-/Verifikationsabläufe, produktive Rollen/RLS in Kombination mit Mapping, globaler IdP-Logout, reale HF-Authentifizierung/Generierungsfreigaben, verifizierter Backup/Restore ; öffentliche SEO-Abnahme für die Landingpage bestanden. Exakte Ursache der Reauth-Sperre: `IDENTITY-PILOT.md`.
 
 ## Produktive Cloudflare-Abnahme
 
