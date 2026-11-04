@@ -41,6 +41,8 @@ export async function startLogin(request:Request,config:AuthConfig) {
   if(reauth){authorization.searchParams.set('max_age','0');authorization.searchParams.set('prompt','login');}
   if(config.resource)authorization.searchParams.set('resource',config.resource);
   // Registration, verification and password recovery are handled by the IdP's login UI.
+  const headers=new Headers({'cache-control':'no-store','set-cookie':cookie(TX_COOKIE,binding,600)});
+  if(request.headers.get('accept')?.includes('application/json'))return Response.json({url:authorization.href},{headers});
   return redirect(authorization.href,[cookie(TX_COOKIE,binding,600)]);
 }
 export async function callback(request:Request,config:AuthConfig) {
@@ -101,7 +103,8 @@ export async function backchannelLogout(request:Request,config:AuthConfig) {
   const as=await metadata(config);if(!as.jwks_uri)throw new Error('Missing JWKS');
   const {payload}=await jwtVerify(raw,createRemoteJWKSet(new URL(as.jwks_uri)),{issuer:config.issuer,audience:config.clientId,algorithms:[config.algorithm],maxTokenAge:'5m',requiredClaims:['iat','jti']});
   const events=payload.events as Record<string,unknown>|undefined;
-  if(typeof payload.jti!=='string'||!payload.jti||!events||typeof events!=='object'||!Object.hasOwn(events,'http://schemas.openid.net/event/backchannel-logout')||payload.nonce!==undefined||(!payload.sub&&typeof payload.sid!=='string'))throw new Error('Invalid logout token');
+  const event=events?.['http://schemas.openid.net/event/backchannel-logout'];
+  if(typeof payload.jti!=='string'||!payload.jti||!event||typeof event!=='object'||Array.isArray(event)||payload.nonce!==undefined||(payload.sub!==undefined&&(typeof payload.sub!=='string'||!payload.sub))||(payload.sid!==undefined&&(typeof payload.sid!=='string'||!payload.sid))||(!payload.sub&&!payload.sid))throw new Error('Invalid logout token');
   if(!await config.store.claimReplay(await hash(config.issuer+':'+payload.jti),Date.now()+600_000))throw new Error('Replay');
   await config.store.revokeIdentity(config.issuer,payload.sub,typeof payload.sid==='string'?payload.sid:undefined);
   return new Response(null,{status:200,headers:{'cache-control':'no-store'}});

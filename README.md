@@ -3,8 +3,8 @@
 Eigenständiger Einstieg für Music-Worlds, Sprachwelten, IT-Worlds und Slop Urself.
 Adventskalender wird nicht integriert.
 
-**Stand:** funktionsfähige Landingpage, Auth-/Session-Bibliothek und isolierte Sicherheitstests.
-**Kein produktives Cross-App-SSO:** Separate Neon-Auth-Pilotinstanz angelegt; OAuth-Freischaltung, App-Clients und echter Cross-App-Pilot fehlen noch.
+**Stand:** Landingpage produktiv auf Cloudflare, zentrale Neon-Identität als isolierter Live-Pilot, Auth-/Session-Bibliothek und Sicherheitstests.
+**Kein produktives Cross-App-SSO:** Separate Neon-Auth-Pilotinstanz mit verpflichtender OTP-E-Mail-Verifikation, fünf getrennten PKCE-Clients und eigener Hub-D1 eingerichtet. Nutzer bestätigt erfolgreiche E-Mail-Verifikation. Hub als erste Relying Party aktiviert; echte Cross-App-Abnahme und Bestandsintegration noch offen.
 Bestehende Auth-Systeme wurden ausschließlich gelesen; keine Benutzer-/Passwortmigration.
 
 ## Lokal
@@ -27,7 +27,7 @@ Worker und Browserlogik sind TypeScript; esbuild bündelt alle Assets in einen E
 
 ## Produktion und Veröffentlichung
 
-Ziel: https://worlds-hub.maki26.workers.dev/ . Cloudflare-Konfiguration und vollständiger Ablauf in `docs/CLOUDFLARE.md`; laufende Kosten/Free-Limits in `docs/COSTS.md`.
+Produktiv: https://worlds-hub.maki26.workers.dev/ . Cloudflare-Konfiguration und vollständiger Ablauf in `docs/CLOUDFLARE.md`; laufende Kosten/Free-Limits in `docs/COSTS.md`.
 GitHub: https://github.com/manuelk2607/Worlds-Hub. `npm run deploy:check` prüft das Worker-Paket, `npm run smoke` das echte Deployment.
 
 ## Private Zusatzvorschau
@@ -37,5 +37,5 @@ Separate Cloudflare-Worker-Konfiguration liegt in `wrangler.jsonc`. Deren Origin
 Bereitstellung anpassen; keine Secrets einchecken. Die drei Bestandsanwendungen behalten ihre
 Repositories, Deployments, Datenbanken, URLs, Canonicals und Search-Console-Properties.
 
-Standard: `AUTH_ENABLED=false`, `PUBLIC_INDEXING=false`. Eine Vorschau ist ausdrücklich keine
+Ohne explizite Konfiguration bleiben Auth und Indexierung gesperrt. Die produktive Cloudflare-Konfiguration aktiviert den Hub-Pilot und öffentliche Landingpages; erzwungene Reauth bleibt aus. Eine Vorschau ist ausdrücklich keine
 fertige SSO-Einführung. Es gibt keinen Fake-Login und keine simulierten persönlichen Fortschritte.

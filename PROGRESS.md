@@ -15,7 +15,7 @@ Eigenständiger Hub mit vier Projektlinks und schrittweisem sicherem OIDC-SSO. A
 - Pro Repository konkrete Integrations-, Test- und Rollback-Anleitung in docs/INTEGRATION.md dokumentiert.
 
 ## Verifikation
-44 Tests erfolgreich; TypeScript, ESLint, Produktions-Build und ESM-Artefaktprüfung erfolgreich. npm audit: 0 bekannte Schwachstellen. Browser-QA für Desktop/Mobil, Theme/Filter/Navigation erfolgreich. Details und Grenzen: docs/VERIFICATION.md.
+45 Tests erfolgreich; TypeScript, ESLint, Produktions-Build und ESM-Artefaktprüfung erfolgreich. npm audit: 0 bekannte Schwachstellen. Browser-QA für Desktop/Mobil, Theme/Filter/Navigation erfolgreich. Details und Grenzen: docs/VERIFICATION.md.
 
 ## Repository, produktives Deployment und Kosten
 - Repository: https://github.com/manuelk2607/Worlds-Hub (privat; kein Duplikat).
@@ -36,3 +36,6 @@ Eigenständiger Hub mit vier Projektlinks und schrittweisem sicherem OIDC-SSO. A
 
 ## Nächster konkreter Schritt
 Nutzer hat das konkrete isolierte Setup in docs/PILOT-ACTIVATION.md am 2026-11-04 freigegeben: OTP-Pflicht, getrennte PKCE-Clients, zentrale Origin, kostenlose Hub-D1 und Cookie-Signaturschlüssel. Deaktivierte Oberfläche erfolgreich mit Source `ea28a97` deployt (Actions 41802178235, 44 Tests und Produktions-Smoke erfolgreich). OTP-/Origin-/Client-Setup und D1-Schema eingerichtet. Cookie-Signatur per CI direkt in Cloudflare gespeichert, Oberfläche mit D1 erfolgreich deployt: Actions 41802848674, Source fdbe0a5, Version 8601e0db-653e-413b-8a27-2fdd639ab9d2. 44 Tests, Audit und alle Live-Smoke-Checks erfolgreich. Nutzer bestätigt E-Mail-Verifikation. Discovery/EdDSA/S256, öffentlicher PKCE-Client (invalid_grant für nicht ausgestellten Code) und normaler Browser-Redirect zur signierten Login-Anfrage geprüft. Als Nächstes Hub-RP aktivieren und realen Consent/Callback prüfen. Erst nach bestandenem echten IT-Worlds-Pilot und Backup-/Rollbackprobe produktive Clients schrittweise aktivieren. Keine riskante Migration vorziehen.
+
+## Aktueller Pilot-Checkpoint
+Hub-RP-Deployment Source 7c43c3a erfolgreich: Actions 41803781288 inklusive Live-Smoke für PKCE-Start/Callback-Ablehnung und private Identity-Endpunkte. Aggregierte Pilot-DB-Abfrage bestätigt ein registriertes, verifiziertes Konto; keine E-Mail-/Tokenwerte abgerufen. Normaler Browser-Formularstart zeigte einen Navigationsfehler. Loginstart wird deshalb per gleichursprünglichem JSON-POST ausgeführt und anschließend als normale Top-Level-OIDC-Navigation geöffnet; gleicher State-/Nonce-/PKCE-/HttpOnly-Cookie-Vertrag bleibt erhalten. Regressionstest ergänzt. Kein Bestandsprojekt umgestellt.

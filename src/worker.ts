@@ -29,7 +29,11 @@ export default {
   async fetch(request:Request,env:Env={}):Promise<Response> {
     const url=new URL(request.url),path=url.pathname,origin=env.SITE_ORIGIN??DEFAULT_ORIGIN;
     const isPrivate=!['/','/styles.css','/client.js','/favicon.svg','/robots.txt','/sitemap.xml',...projects.map(p=>'/welten/'+p.id)].includes(path);
-    const finish=(r:Response)=>secure(r,isPrivate);
+    const finish=(r:Response)=>{const response=secure(r,isPrivate);
+      // Native account POST forms need a non-null Origin. Never send referrers across hosts.
+      // Keep no-referrer on identity/reset/callback pages, whose query may contain credentials.
+      if(['/konto','/anmelden','/registrieren'].includes(path))response.headers.set('Referrer-Policy','same-origin');
+      return response;};
     if(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))return finish(new Response(null,{status:308,headers:{location:'https://'+url.host+url.pathname+url.search}}));
     if(path==='/styles.css'&&request.method==='GET')return finish(text(css+identityCss,'text/css'));
     if(path==='/client.js'&&request.method==='GET')return finish(text(clientScript,'text/javascript'));
