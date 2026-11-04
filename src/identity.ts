@@ -45,7 +45,7 @@ function allowedResultUrl(raw:unknown,oauthQuery:string|undefined,config:Identit
 /** Atomic per-IP/action bucket; raw IP addresses never enter the database. */
 export async function limitIdentity(request:Request,path:string,config:IdentityConfig,now=Date.now()) {
   const ip=request.headers.get('cf-connecting-ip');if(!ip)throw new Error('RATE_LIMIT_IDENTITY_UNAVAILABLE');
-  const window=path==='get-session'?60_000:600_000,limit=path==='get-session'?90:path.includes('sign-')?12:6;
+  const window=path==='get-session'?60_000:600_000,limit=path==='get-session'?90:path.includes('sign-')?12:path.startsWith('oauth2/')?60:6;
   const bucket=Math.floor(now/window),key=await hash(config.cookieSecret+':'+ip+':'+path+':'+bucket);
   const row=await config.db.prepare('INSERT INTO identity_rate_limits (id, count, expires) VALUES (?, 1, ?) ON CONFLICT(id) DO UPDATE SET count = count + 1 RETURNING count').bind(key,(bucket+1)*window).first<{count:number}>();
   return !!row&&row.count<=limit;

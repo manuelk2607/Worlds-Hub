@@ -30,3 +30,7 @@ Actions 41802848674 / Source fdbe0a5 / Cloudflare-Version 8601e0db-653e-413b-8a2
 ## Browser-Regression beim Loginstart
 
 Native POST-Formulare unter Referrer-Policy no-referrer senden laut MDN Origin:null; strenge Origin-Prüfung lehnt diese ab. Für die Konto-Einstiegsseiten gilt deshalb same-origin (weiterhin kein Cross-Origin-Referrer); Reset-/Identity-/Callbackseiten bleiben no-referrer. Loginstart erfolgt zusätzlich per gleichursprünglichem JSON-POST und normaler Top-Level-Navigation zum unveränderten OIDC-Ziel. Keine Aufweichung der Origin-/CSRF-Prüfung. Quelle: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy , gelesen 2026-11-04. Regression: JSON-Start, browsergebundener Cookie, Code-/PKCE-Abschluss und Header-Trennung geprüft.
+
+## Erfolgreicher echter Hub-OIDC-Abschluss
+
+Safari wurde nach persönlicher Freigabe des Nutzers auf `/konto` mit „Hallo, Manuel.“ und gültiger eigener Hub-Sitzung beobachtet. Damit sind der echte Code-/PKCE-/Token-/EdDSA-/Userinfo-/Sessionablauf und die bestätigte E-Mail im Hub belegt. Das ist noch keine Cross-App-Abnahme der vier Welten. Der zuvor manuelle Weiter-Schritt wird automatisch fortgesetzt; die überarbeitete kompakte Oberfläche ist lokal bei Desktop und 390 Pixeln einschließlich Formularwechsel ohne horizontalen Überlauf geprüft.

@@ -60,7 +60,7 @@ HF-Tokens bleiben ausschließlich in Slops bestehender HF-Verwaltung, unter ders
 
 ## Restliche Produktionsanforderungen
 
-- Die zentrale Instanz ist angelegt, aber deren OAuth-Provider bleibt deaktiviert; Login-/Consent-/Verifizierungs-/Recovery-/Kontoverwaltungs-UI ist mit offiziellem SDK vorbereitet und lokal geprüft; echte E-Mail-Zustellung und OAuth-Fortsetzung noch testen.
+- Die separate zentrale Pilotinstanz mit OAuth-Provider, fünf Clients und Hub-RP ist aktiv; Login-/Consent-/Verifizierungs-/Recovery-/Kontoverwaltungs-UI ist mit offiziellem SDK vorbereitet und lokal geprüft; E-Mail-Zustellung/OTP und Hub-OAuth-Fortsetzung inzwischen im echten Safari-Ablauf bestätigt. Cross-App-Abnahme bleibt offen.
 - Pro App eigene Session-Datenbank/-Secrets; `AUTH_DB` produktiv binden, Schema anwenden, regelmäßige Ablaufbereinigung und Rate Limits konfigurieren.
 - TLS, exakte Origins, gesperrte Dynamic Client Registration, minimale Scopes, festgelegter Signaturalgorithmus und vertrauenswürdiger Issuer.
 - Reale Wiederherstellung/Backups, Geheimnisrotation, Audit-Aufbewahrung, Überwachung, Schlüsselwechsel und IdP-Ausfall testen.

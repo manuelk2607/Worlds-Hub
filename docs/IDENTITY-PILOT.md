@@ -9,8 +9,8 @@ Kostenloser Neon-Organisationstarif wurde am 2026-11-04 verifiziert (`plan: free
 - Neon Auth: Managed Better Auth aktiviert
 - Auth-URL: `https://ep-bold-boat-batl101c.neonauth.c-8.eu-central-1.aws.neon.tech/worlds_identity/auth`
 - JWKS: dieselbe Auth-URL plus `/.well-known/jwks.json`
-- OAuth-Provider: nach ausdrücklicher Pilotfreigabe aktiviert; fünf getrennte öffentliche Clients mit Consent registriert (identity-clients.json). Noch keine Benutzer oder produktiven App-Verknüpfungen.
-- Hub: App-SSO bleibt deaktiviert; zentrale Oberfläche wird separat als Pilot aktiviert. Keine DB-Zugangsdaten oder Auth-Secrets in Git
+- OAuth-Provider: nach ausdrücklicher Pilotfreigabe aktiviert; fünf getrennte öffentliche Clients mit Consent registriert (identity-clients.json). Ein verifiziertes zentrales Pilotkonto; Hub-RP-Code-/Consent-/Sessionablauf real in Safari erfolgreich. Noch keine bestehenden Welt-Konten verknüpft.
+- Hub-Relying-Party und zentrale Oberfläche im Pilot aktiv; die vier Welten sind noch nicht umgestellt. Keine DB-Zugangsdaten oder Auth-Secrets in Git
 
 Der erste Erstellungsversuch mit explizitem Suspend-Intervall wurde vom Free-Tarif abgelehnt (HTTP 412); Abfrage bestätigte, dass dabei kein Projekt entstanden war. Anschließend wurde genau eine Instanz mit den erlaubten Standardeinstellungen und 0.25 CU angelegt. Keine Bestandsinstanz wurde umkonfiguriert.
 
@@ -31,4 +31,4 @@ Nächster Schritt: das in PILOT-ACTIVATION.md konkretisierte, vom Nutzer am 2026
 
 ## Ausgeführtes Setup
 
-Am 2026-11-04 nach expliziter Freigabe: OTP-Verifikation verpflichtend, Versand bei Registrierung/Anmeldung aktiviert, automatische Anmeldung nach Verifikation aus. Zentrale Hub-Origin registriert; OAuth-Login-/Consent-URLs und fünf Ressourcen/Clients eingerichtet. Neue kostenlose EU-D1 mit vier Tabellen und Ablauf-Indizes angelegt; keine Bestandsdaten migriert. Cookie-Signaturschlüssel und erster Live-Pilot-Deploy stehen im nächsten CI-Schritt an.
+Am 2026-11-04 nach expliziter Freigabe: OTP-Verifikation verpflichtend, Versand bei Registrierung/Anmeldung aktiviert, automatische Anmeldung nach Verifikation aus. Zentrale Hub-Origin registriert; OAuth-Login-/Consent-URLs und fünf Ressourcen/Clients eingerichtet. Neue kostenlose EU-D1 mit vier Tabellen und Ablauf-Indizes angelegt; keine Bestandsdaten migriert. Cookie-Signaturschlüssel direkt in Cloudflare gespeichert; Live-Pilot mit D1 erfolgreich deployt. Eigene Hub-Sitzung nach persönlicher OAuth-Freigabe real bestätigt.
