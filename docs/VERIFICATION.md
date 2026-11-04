@@ -3,7 +3,7 @@
 ## Erfolgreich
 
 - TypeScript-Typprüfung und ESLint.
-- 45 Node-Tests: signierter isolierter OIDC-Anbieter, zwei getrennte Relying Parties, PKCE/State/Nonce/JWKS/Claims/Userinfo, frischer auth_time und Sperre unfreigegebener Reauth, Sessionrotation/CSRF/Logout/Replay, begrenzte Request-Bodies, Mapping-/HF-Guards.
+- 52 Node-Tests: signierter isolierter OIDC-Anbieter, zwei getrennte Relying Parties, PKCE/State/Nonce/JWKS/Claims/Userinfo, frischer auth_time und Sperre unfreigegebener Reauth, Sessionrotation/CSRF/Logout/Replay, begrenzte Request-Bodies, Mapping-/HF-Guards.
 - Offizieller Neon-SDK-Proxy: eingeschränkte Endpunkte/Felder, Origin/CSRF, signierte Query unverändert, Tokenfilter, exakte Redirects und atomare Rate-Limits. Ed25519-Signatur zusätzlich geprüft. Ablaufbereinigung auf 500 Datensätze pro Tabelle begrenzt.
 - Lokale Identity-Oberfläche im Browser: Formularwechsel, E-Mail-/OTP-Felder und mobile 390-Pixel-Ansicht ohne horizontalen Überlauf geprüft; keine echte Anmeldung ausgeführt.
 - Migration und atomare Session-/Transaktionsoperationen auf echter SQLite-In-Memory-Datenbank (D1-kompatibles SQL), keine produktive DB-Verbindung für Tests.
@@ -15,7 +15,7 @@
 
 ## Bewusste Grenzen
 
-Die 45 Tests belegen den Auth-Client und dessen Sicherheitsverträge mit einem lokalen Testanbieter. Sie belegen **keinen** produktiven Neon-Cross-App-Login oder bereits migrierte Konten. SQLite-Tests ersetzen keine produktive Cloudflare-D1-Bindung. Keine vollständige Screenreader-/WCAG-Zertifizierung, kein externer Penetrationstest und kein Nachweis einer Google-Indexierung.
+Die 52 Tests belegen den Auth-Client und dessen Sicherheitsverträge mit einem lokalen Testanbieter. Sie belegen **keinen** produktiven Neon-Cross-App-Login oder bereits migrierte Konten. SQLite-Tests ersetzen keine produktive Cloudflare-D1-Bindung. Keine vollständige Screenreader-/WCAG-Zertifizierung, kein externer Penetrationstest und kein Nachweis einer Google-Indexierung.
 
 Noch offen: echter IT-Pilot, Login-/Consent-/Recovery-/Verifikationsabläufe, produktive Rollen/RLS in Kombination mit Mapping, globaler IdP-Logout, reale HF-Authentifizierung/Generierungsfreigaben, verifizierter Backup/Restore ; öffentliche SEO-Abnahme für die Landingpage bestanden. Exakte Ursache der Reauth-Sperre: `IDENTITY-PILOT.md`.
 
@@ -34,3 +34,7 @@ Native POST-Formulare unter Referrer-Policy no-referrer senden laut MDN Origin:n
 ## Erfolgreicher echter Hub-OIDC-Abschluss
 
 Safari wurde nach persönlicher Freigabe des Nutzers auf `/konto` mit „Hallo, Manuel.“ und gültiger eigener Hub-Sitzung beobachtet. Damit sind der echte Code-/PKCE-/Token-/EdDSA-/Userinfo-/Sessionablauf und die bestätigte E-Mail im Hub belegt. Das ist noch keine Cross-App-Abnahme der vier Welten. Der zuvor manuelle Weiter-Schritt wird automatisch fortgesetzt; die überarbeitete kompakte Oberfläche ist lokal bei Desktop und 390 Pixeln einschließlich Formularwechsel ohne horizontalen Überlauf geprüft.
+
+## Lokaler atomarer Postgres-Mapping-Store
+
+Echtes Postgres/WASM über PGlite 0.5.15 ausschließlich im Speicher für Tests. Parametrisierter Store prüft Owner-Constraints und Audit-Rollback in einer atomaren Anweisung. Zielgerichtete Tests bestanden einschließlich nicht existierendem Legacy-Konto und unveränderten historischen IDs/Rollen; reale Neon-Multi-Connection-/RLS-Abnahme bleibt offen. Kein bestehendes App-Schema verändert.

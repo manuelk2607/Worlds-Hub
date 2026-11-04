@@ -8,7 +8,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv: https://worlds-hub.maki26.workers.dev/ ; privates Repository https://github.com/manuelk2607/Worlds-Hub . Kein Duplikat.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter Deploy: Source 266f937, Actions https://github.com/manuelk2607/Worlds-Hub/actions/runs/41804879438 , Cloudflare-Version 4b6de522-078c-4f9d-a8e4-22de0c575f82. 45 Tests, Typprüfung, Lint, Build, Audit und Live-Smoke bestanden.
+- Aktueller geprüfter UI-Deploy: Source 8b5ff08, Actions https://github.com/manuelk2607/Worlds-Hub/actions/runs/41808644353 . 45 Tests, Typprüfung, Lint, Build, Audit und Live-Smoke bestanden.
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 
@@ -24,7 +24,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 - P3: Titel, Descriptions, Canonicals, OG/JSON-LD, robots.txt und Sitemap produktiv geprüft. Fünf öffentliche Seiten indexierbar; Konto/Auth/Identity/API noindex/no-store. HTTPS 200, HTTP->HTTPS 308, keine pauschalen Alt-URL-Redirects. Search-Console-HTML-Verifizierung vorbereitet.
 
 ## Aktuelles Arbeitspaket
-Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuellen Weiter-Schritt. Der echte Callback wurde anschließend mit persönlicher Freigabe erfolgreich nachgewiesen. Automatische Fortsetzung bestätigter Sitzungen und kompaktere Konto-/Consent-Oberfläche umgesetzt: zweispaltige Desktopansicht, mobile Karte, eindeutige Hauptaktion, keine Login-/Registrierungsbuttons bei aktiver Sitzung. Lokal Desktop/Mobil 390px, Theme und Formularwechsel ohne horizontalen Überlauf geprüft. Geprüften UI-Stand als Nächstes deployen und automatische Wiederanmeldung in Safari testen.
+Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuellen Weiter-Schritt. Der echte Callback wurde anschließend mit persönlicher Freigabe erfolgreich nachgewiesen. Automatische Fortsetzung bestätigter Sitzungen und kompaktere Konto-/Consent-Oberfläche umgesetzt: zweispaltige Desktopansicht, mobile Karte, eindeutige Hauptaktion, keine Login-/Registrierungsbuttons bei aktiver Sitzung. Lokal Desktop/Mobil 390px, Theme und Formularwechsel ohne horizontalen Überlauf geprüft. UI erfolgreich deployt und live mit sichtbaren Formularen sowie fehlerfreier Browserkonsole geprüft; neue Vorschau outputs/worlds-hub-identity-refined.jpg. Automatische Wiederanmeldung mit bestehender Sitzung noch real zu prüfen; Safari wird aktuell für andere Aufgaben genutzt.
 
 ## Offen / Abnahmegrenzen
 - Kein bestehendes Welt-Projekt produktiv per SSO angebunden. P1-Pilot mit IT-Worlds und anschließend P2 noch erforderlich; vor Legacy-Schemaänderungen echte isolierte Backup-/Restore-/Rollbackprobe und Rollen-/RLS-Abnahme.
@@ -34,4 +34,6 @@ Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuell
 - Search-Console-Property/Token fehlt; keine Google-Indexierung garantiert. Bestehende Properties/Canonicals unangetastet.
 
 ## Nächster konkreter Schritt
-UI-Deploy + Safari-Wiederanmeldung abschließen. Danach atomaren Postgres-Mapping-Store mit echten lokalen SQL-Tests konkretisieren und IT-Worlds auf einem isolierten Ziel anbinden. Erst nach Pilot und Restore/Rollback produktive Bestands-Clients schrittweise ergänzen. Keine riskante Migration vorziehen.
+Safari-Wiederanmeldung noch prüfen. Atomarer Postgres-Mapping-Store ist konkret implementiert und mit Postgres/WASM im Speicher getestet: 52 Tests sowie Typprüfung/Lint/Build/Audit erfolgreich, keine produktive App-DB verändert. Als Nächstes IT-Worlds auf isoliertem Ziel anbinden. Erst nach Pilot und Restore/Rollback produktive Bestands-Clients schrittweise ergänzen. Keine riskante Migration vorziehen.
+
+Mapping-Store: Proof-Verbrauch, eindeutiges historisches Mapping und Audit in einer Postgres-Anweisung; Konflikte überschreiben nichts, Audit-/FK-Fehler rollen alles zurück. Tests behalten IDs/Rollen und prüfen Parameterisierung. PGlite ist ausschließlich Dev-Abhängigkeit; echte Neon-Parallelität und RLS bleiben Pilotpflicht. Music-Worlds hat inzwischen einen Repository-HEAD (52b78fd); aktualisierte Quelltextprüfung läuft.

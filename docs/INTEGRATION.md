@@ -43,3 +43,11 @@ Ein normaler Link „Worlds Hub“ pro Projekt genügt zunächst. Optional ein g
 ## Rollback
 
 Feature-Flag abschalten, neue OIDC-Sessions widerrufen, alte Anmeldungen weiter anbieten. Additive Links/Proofs zur Prüfung erhalten; nicht Daten/Accounts zurückmigrieren oder Tabellen ungeprüft löschen. Bei Widerruf einer Verknüpfung alle dazugehörigen App-Sessions und Proofs invalidieren. Rollen, Inhalte, Lernstände und HF-Zuordnungen bleiben auf alten IDs und benötigen keine Rückschreibung.
+
+## Konkreter Postgres-Mapping-Store
+
+`packages/auth/postgres-links.ts` implementiert den LinkStore-Vertrag mit parametrisierten Abfragen im jeweiligen Projekt-Postgres. Bestätigen ist ein einzelnes datenänderndes CTE: Proof nur mit passender validierter Sitzung und vor Ablauf löschen, Mapping ohne UPSERT einfügen und Audit schreiben. Jede Unique-/FK-/Audit-Verletzung rollt den gesamten Befehl einschließlich Proof-Verbrauch zurück. Ein Konflikt überschreibt niemals einen Eigentümer.
+
+Die Schema-Vorlage bleibt REVIEW ONLY. Vor Aktivierung im jeweiligen Repository dessen tatsächlichen historischen Kontoschlüssel/Fremdschlüssel, Runtime-Rolle, Rechte und Migrationstest ergänzen. Keine zentrale Mapping-Datenbank für alle Apps, kein PUBLIC-Grant und keine Übernahme einer zentralen Rolle. Query-Adapter ausschließlich serverseitig; Identitäten/Proofs niemals aus einem Browser-Body übernehmen.
+
+Lokale PGlite-Tests (Postgres/WASM, nur Dev-Abhängigkeit) führen dieses echte SQL aus: dualer Proof, konkurrierende Bestätigung, Sitzung/Expiry, beide Eigentümer-Constraints, FK, SQL-Parameter und absichtlich scheiterndes Audit mit vollständigem Rollback. Historische IDs und Rollen bleiben gleich. PGlite hat eine einzelne Verbindung; echte parallele Neon-Verbindungen und produktive RLS müssen weiterhin im isolierten App-Pilot geprüft werden. Keine produktive Datenbank für diese Tests verwendet.

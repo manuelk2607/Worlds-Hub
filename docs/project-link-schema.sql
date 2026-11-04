@@ -17,6 +17,7 @@ CREATE TABLE worlds_link_proofs (
   session_hash TEXT NOT NULL,
   expires_at TIMESTAMPTZ NOT NULL
 );
+CREATE INDEX worlds_link_proofs_expiry ON worlds_link_proofs(expires_at);
 CREATE TABLE worlds_link_audit (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   issuer TEXT NOT NULL,
