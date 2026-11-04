@@ -1,6 +1,7 @@
 import { handleAuthProxyRequest, resolveNeonAuthLogging } from '@neon/auth/server';
 import { boundedBody, cookie, readCookie, sameOrigin, token } from '../packages/auth/oidc.ts';
 import { hash } from '../packages/auth/store.ts';
+import {requestLocale,t} from './i18n/core.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database }
 export interface IdentityEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database }
@@ -82,7 +83,7 @@ export async function identityProxy(request:Request,config:IdentityConfig) {
     if(path==='oauth2/continue')data={selected:true,oauth_query:oauthQuery};
     if(path==='oauth2/consent'){if(typeof data.accept!=='boolean')return json({error:'EXPLICIT_CONSENT_REQUIRED'},400);data={accept:data.accept,oauth_query:oauthQuery};}
   }
-  try{if(!await limitIdentity(request,path,config))return json({error:'RATE_LIMITED',message:'Bitte warte einige Minuten und versuche es erneut.'},429);}catch{return json({error:'RATE_LIMIT_UNAVAILABLE'},503);}
+  try{if(!await limitIdentity(request,path,config))return json({error:'RATE_LIMITED',message:t(requestLocale(request),'error.rateLimited')},429);}catch{return json({error:'RATE_LIMIT_UNAVAILABLE'},503);}
   // Revalidate every session lookup at the provider; never rely on cached identity for consent/account actions.
   const proxyUrl=new URL(request.url);if(path==='get-session')proxyUrl.searchParams.set('disableCookieCache','true');
   const upstreamRequest=new Request(proxyUrl,{method:request.method,headers:request.headers,...(data?{body:JSON.stringify(data)}:{})});

@@ -1,7 +1,7 @@
 import * as oauth from 'oauth4webapi';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { hash, type AuthStore, type Session } from './store.ts';
-export interface AuthConfig { origin:string; issuer:string; clientId:string; clientSecret?:string; reauthEnabled?:boolean; resource?:string; tokenAuthMethod?:'client_secret_basic'|'client_secret_post'; algorithm:string; store:AuthStore }
+export interface AuthConfig { origin:string; issuer:string; clientId:string; clientSecret?:string; reauthEnabled?:boolean; resource?:string; tokenAuthMethod?:'client_secret_basic'|'client_secret_post'; algorithm:string; store:AuthStore; returnPaths?:readonly string[]; signedOutPaths?:{de:string;en:string} }
 export const SESSION_COOKIE='__Host-worlds-session';
 const TX_COOKIE='__Host-worlds-transaction';
 export const token = () => oauth.generateRandomState();
@@ -10,7 +10,7 @@ export function readCookie(request:Request,name:string) {
   const found=(request.headers.get('cookie')??'').split(';').map(x=>x.trim()).filter(x=>x.startsWith(name+'='));
   return found.length===1 ? found[0].slice(name.length+1) : undefined;
 }
-export function safeNext(value:string|null) { return value && ['/','/konto'].includes(value) ? value : '/konto'; }
+export function safeNext(value:string|null,allowed:readonly string[]=['/','/konto']) { return value&&allowed.includes(value)?value:(allowed.includes('/konto')?'/konto':allowed[0]??'/'); }
 export function sameOrigin(request:Request,origin:string) { return request.headers.get('origin')===origin && !['cross-site','none'].includes(request.headers.get('sec-fetch-site')??''); }
 export async function session(request:Request,config:AuthConfig):Promise<Session|null> {
   const value=readCookie(request,SESSION_COOKIE);
@@ -36,10 +36,12 @@ export async function startLogin(request:Request,config:AuthConfig) {
   const authorization=new URL(as.authorization_endpoint);
   if (authorization.protocol!=='https:') throw new Error('HTTPS required');
   const verifier=oauth.generateRandomCodeVerifier(),state=token(),nonce=oauth.generateRandomNonce(),binding=token();
-  await config.store.putTransaction(await hash(binding),{verifier,state,nonce,next:safeNext(new URL(request.url).searchParams.get('next')),expires:Date.now()+600_000,reauth});
+  const requestUrl=new URL(request.url);
+  await config.store.putTransaction(await hash(binding),{verifier,state,nonce,next:safeNext(requestUrl.searchParams.get('next'),config.returnPaths),expires:Date.now()+600_000,reauth});
   authorization.search=new URLSearchParams({client_id:config.clientId,response_type:'code',redirect_uri:config.origin+'/auth/callback',scope:'openid profile email',code_challenge:await oauth.calculatePKCECodeChallenge(verifier),code_challenge_method:'S256',state,nonce}).toString();
   if(reauth){authorization.searchParams.set('max_age','0');authorization.searchParams.set('prompt','login');}
   if(config.resource)authorization.searchParams.set('resource',config.resource);
+  const uiLocale=requestUrl.searchParams.get('ui_locales');if(uiLocale==='de'||uiLocale==='en')authorization.searchParams.set('ui_locales',uiLocale);
   // Registration, verification and password recovery are handled by the IdP's login UI.
   const headers=new Headers({'cache-control':'no-store','set-cookie':cookie(TX_COOKIE,binding,600)});
   if(request.headers.get('accept')?.includes('application/json'))return Response.json({url:authorization.href},{headers});
@@ -86,15 +88,16 @@ export async function boundedBody(request:Request,limit:number) {
 export async function logout(request:Request,config:AuthConfig) {
   if(request.method!=='POST')return new Response(null,{status:405});
   if(!sameOrigin(request,config.origin))return new Response(null,{status:403});
+  const preferred=new URL(request.url).searchParams.get('locale');const target=preferred==='en'?(config.signedOutPaths?.en??'/abgemeldet'):(config.signedOutPaths?.de??'/abgemeldet');
   const current=await session(request,config);
-  if(!current)return redirect('/abgemeldet',[cookie(SESSION_COOKIE,'',0)]);
+  if(!current)return redirect(target,[cookie(SESSION_COOKIE,'',0)]);
   if(Number(request.headers.get('content-length')??0)>4096)return new Response(null,{status:413});
   const body=await boundedBody(request,4096);
   if(new URLSearchParams(body).get('csrf')!==current.csrf)return new Response(null,{status:403});
   const raw=readCookie(request,SESSION_COOKIE)!;
   await config.store.deleteSession(await hash(raw));
   // Always complete local revocation, even if provider discovery is unavailable.
-  return redirect('/abgemeldet',[cookie(SESSION_COOKIE,'',0)]);
+  return redirect(target,[cookie(SESSION_COOKIE,'',0)]);
 }
 export async function backchannelLogout(request:Request,config:AuthConfig) {
   if(request.method!=='POST')return new Response(null,{status:405});
