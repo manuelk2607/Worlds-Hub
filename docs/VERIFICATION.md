@@ -22,3 +22,7 @@ Noch offen: echter IT-Pilot, Login-/Consent-/Recovery-/Verifikationsabläufe, pr
 ## Produktive Cloudflare-Abnahme
 
 GitHub-Actions-Lauf 41741651197 erfolgreich, Source 4719746, Cloudflare-Version ffe180c9-a53c-4764-a2a1-053bd0f07817. Das produktive Smoke-Skript hat alle zehn genannten Routen plus 404/gesperrtes SSO geprüft. HTTP 308 zur gewünschten HTTPS-Adresse, HTTPS 200, Zertifikat gültig. Live-Desktopansicht ohne Browserfehler; Belegbild im übergeordneten outputs-Verzeichnis. Diese Abnahme gilt für die Landingpage und den gesperrten Auth-Zustand, nicht für noch fehlendes produktives Cross-App-SSO.
+
+## Zentraler Live-Pilot
+
+Actions 41802848674 / Source fdbe0a5 / Cloudflare-Version 8601e0db-653e-413b-8a27-2fdd639ab9d2 erfolgreich. Cookie-Signaturschlüssel direkt in Cloudflare initialisiert, Hub-D1 gebunden, zentrale Loginseite 200 mit CSRF-Cookie und private Header. Echter Neon-Sitzungsabruf anonym 200 mit null/null; fehlender CSRF bei sign-out 403. Discovery bestätigt exakten Issuer, S256 und EdDSA. Normaler Browser-Authorize-Aufruf erreicht die signierte und allowlistgeprüfte Hub-Loginseite. Öffentlicher Token-Client akzeptiert, nicht ausgestellter Code korrekt mit invalid_grant abgewiesen. Nutzer bestätigt Registrierung/E-Mail-Verifikation mit Erfolgsmeldung. Vollständiger Hub-Code-/Token-/Consent-/Sessionablauf und zweiter echter App-Client noch offen.
