@@ -67,7 +67,7 @@ export default {
       try{current=config?await session(request,config):null;}catch{return finish(text('Der Kontodienst ist vorübergehend nicht erreichbar.','text/plain',503));}
       let accountUrl: string|undefined;
       if(env.OIDC_ACCOUNT_URL) {const u=new URL(env.OIDC_ACCOUNT_URL);if(u.protocol==='https:'&&!u.username&&!u.password)accountUrl=u.href;}
-      body=account(current,!!config,accountUrl);title='Dein Konto | Worlds Hub';description='Bestehende Konten nutzen und den Stand der zentralen Worlds-Anmeldung ansehen.';
+      body=account(current,!!config,accountUrl,!!central);title='Dein Konto | Worlds Hub';description='Bestehende Konten nutzen und den Stand der zentralen Worlds-Anmeldung ansehen.';
     }else if(path==='/abgemeldet'){body=loggedOut;title='Abgemeldet | Worlds Hub';}
     else if(path==='/datenschutz'){body=privacy;title='Datenschutz | Worlds Hub';}
     else {const project=projects.find(p=>path==='/welten/'+p.id);if(project){body=detail(project);title=project.name+' – '+project.eyebrow+' | Worlds Hub';description=project.description;}else{status=404;title='Seite nicht gefunden | Worlds Hub';body='<div class="wrap content-page"><h1>Hier ist noch<br>keine Welt.</h1><p>Diese Seite wurde nicht gefunden.</p><a class="button" href="/">Zur Startseite →</a></div>';}}

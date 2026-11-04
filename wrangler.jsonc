@@ -9,13 +9,17 @@
   "keep_vars": true,
   "logpush": false,
   "build": {"command":"npm run build"},
+  "d1_databases": [{"binding":"AUTH_DB","database_name":"worlds-hub-auth","database_id":"e9da655e-ef44-457b-8b85-d1d6268456e4","migrations_dir":"migrations"}],
+  "triggers":{"crons":["17 * * * *"]},
   "vars": {
     "SITE_ORIGIN":"https://worlds-hub.maki26.workers.dev",
     "AUTH_ENABLED":"false",
-    "IDENTITY_ENABLED":"false",
+    "IDENTITY_ENABLED":"true",
+    "IDENTITY_AUTH_URL":"https://ep-bold-boat-batl101c.neonauth.c-8.eu-central-1.aws.neon.tech/worlds_identity/auth",
+    "IDENTITY_CLIENTS":"[{\"clientId\":\"ZdsCztFyWllqKYEiiJYCeAEPfacTuTXE\",\"name\":\"Worlds Hub\",\"redirects\":[\"https://worlds-hub.maki26.workers.dev/auth/callback\"],\"resource\":\"https://worlds-hub.maki26.workers.dev/api\"},{\"clientId\":\"CxxmMJaWneXdwCQNckMcEOxWGvDnczVp\",\"name\":\"Music-Worlds\",\"redirects\":[\"https://music-worlds.maki26.workers.dev/auth/callback\"],\"resource\":\"https://music-worlds.maki26.workers.dev/api\"},{\"clientId\":\"nBYLdsjNgkrhTjZSgRtsxWYghUxBWwDc\",\"name\":\"Sprachwelten\",\"redirects\":[\"https://sprachwelten.maki26.workers.dev/auth/callback\"],\"resource\":\"https://sprachwelten.maki26.workers.dev/api\"},{\"clientId\":\"JFHXaKKNmqXgxVeccXcsLlMRJxAxFnfH\",\"name\":\"IT-Worlds\",\"redirects\":[\"https://it-worlds.maki26.workers.dev/auth/callback\"],\"resource\":\"https://it-worlds.maki26.workers.dev/api\"},{\"clientId\":\"BBHPxFFlfMahuTkpeBpLeUfkqjVGYfPO\",\"name\":\"Slop Urself\",\"redirects\":[\"https://slopurself.maki26.workers.dev/auth/callback\"],\"resource\":\"https://slopurself.maki26.workers.dev/api\"}]",
     "OIDC_REAUTH_ENABLED":"false",
     "PUBLIC_INDEXING":"true"
   }
-  // No database, paid service or auth binding is created by this deployment.
-  // Before SSO activation: dedicated AUTH_DB, migrations and provider pilot acceptance.
+  // Only the explicitly approved new isolated Hub D1 is bound.
+  // OIDC and central identity remain gated until the configured pilot is deployed.
 }

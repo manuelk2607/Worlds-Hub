@@ -3,7 +3,7 @@
 - URL: https://worlds-hub.maki26.workers.dev/
 - Repository: https://github.com/manuelk2607/Worlds-Hub (privat)
 - Worker: `worlds-hub`; Konto `ec3c070d8e4f88d2fc533d7d797f2daa`, bestehender Namespace `maki26.workers.dev`.
-- Konfiguration: `wrangler.jsonc`; keine DB-, KI- oder kostenpflichtigen Servicebindungen, `AUTH_ENABLED=false`, `PUBLIC_INDEXING=true`.
+- Konfiguration: `wrangler.jsonc`; ausschließlich neue freigegebene Hub-D1, keine KI- oder kostenpflichtigen Servicebindungen. `AUTH_ENABLED=false`, zentrale Identität separat als Pilot, `PUBLIC_INDEXING=true`.
 - Erster erfolgreicher Lauf: https://github.com/manuelk2607/Worlds-Hub/actions/runs/41741651197
 - Source: `47197466126bcd6ac03dc74ca5d9fd771940d32d`
 - Cloudflare-Version: `ffe180c9-a53c-4764-a2a1-053bd0f07817`
@@ -30,6 +30,12 @@ Die bestehende lokale Wrangler-Anmeldung ist abgelaufen. Das hat keinen Einfluss
 
 ## Verifikation
 
-35 Tests, Typprüfung, ESLint, Build, Dependency-Audit, Worker-Upload und produktive Smoke-Tests erfolgreich. Alle fünf öffentlichen Seiten, Konto, Styles/Script, robots.txt, Sitemap, Canonicals, OG, 404 und die deaktivierten SSO-Routen wurden real abgerufen. HTTP liefert 308 zur gewünschten HTTPS-Adresse; HTTPS liefert 200 mit gültiger Zertifikatsprüfung. Live-Browseransicht funktioniert ohne Konsolenfehler.
+44 Tests, Typprüfung, ESLint, Build, Dependency-Audit, Worker-Upload und produktive Smoke-Tests erfolgreich. Alle fünf öffentlichen Seiten, Konto, Styles/Script, robots.txt, Sitemap, Canonicals, OG, 404 und die deaktivierten SSO-Routen wurden real abgerufen. HTTP liefert 308 zur gewünschten HTTPS-Adresse; HTTPS liefert 200 mit gültiger Zertifikatsprüfung. Live-Browseransicht funktioniert ohne Konsolenfehler.
 
 Die ursprüngliche Sites-Veröffentlichung bleibt private Zusatzvorschau. Cloudflare Workers Builds wurde nicht mit einem breiten automatisch erzeugten Token aktiviert; die Produktion verwendet den geprüften GitHub-Actions-Weg.
+
+Aktualisierte Landingpage/Music-Verknüpfung und deaktivierte Identity-Komponenten: Actions 41802178235, Source ea28a97, erfolgreich einschließlich 44 Tests und Live-Smoke.
+
+## Isolierter Identity-Pilot
+
+Neue D1 worlds-hub-auth, UUID e9da655e-ef44-457b-8b85-d1d6268456e4, EU-Jurisdiktion; Schema ausschließlich dort über die Dashboard-Konsole angewandt und Tabellen/Indizes verifiziert. Der begrenzte Deploy-Token erhält keine zusätzlichen D1-Verwaltungsrechte. Binding nutzt die bekannte UUID. Cookie-Signatur wird ausschließlich auf ausdrücklichen Workflow-Aufruf initialisiert; bestehende Schlüssel bleiben erhalten.

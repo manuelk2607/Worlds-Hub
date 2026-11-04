@@ -1,6 +1,6 @@
 # Konkretes Freigabepaket: isolierter Worlds-Hub-SSO-Pilot
 
-**Vom Nutzer am 2026-11-04 ausdrücklich freigegeben; Ausführung steht noch aus.** Die automatische Freigabeprüfung hat am 2026-11-04 die Änderung der Neon-E-Mail-/Authentifizierungseinstellungen zunächst ohne ausdrückliche Zustimmung abgelehnt; die anschließende konkrete Freigabe liegt nun vor. Die Landingpage läuft unabhängig weiter. Keine Änderungen an produktiven Auth-Instanzen oder alten Benutzerkonten.
+**Vom Nutzer am 2026-11-04 ausdrücklich freigegeben; OTP-/Origin-/Client-Konfiguration und neue D1 samt Schema eingerichtet; Secret-/Pilot-Deployment folgt.** Die automatische Freigabeprüfung hat am 2026-11-04 die Änderung der Neon-E-Mail-/Authentifizierungseinstellungen zunächst ohne ausdrückliche Zustimmung abgelehnt; die anschließende konkrete Freigabe liegt nun vor. Die Landingpage läuft unabhängig weiter. Keine Änderungen an produktiven Auth-Instanzen oder alten Benutzerkonten.
 
 ## Vorbereitete und geprüfte Komponenten
 

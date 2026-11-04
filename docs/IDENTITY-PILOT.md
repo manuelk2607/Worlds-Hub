@@ -9,8 +9,8 @@ Kostenloser Neon-Organisationstarif wurde am 2026-11-04 verifiziert (`plan: free
 - Neon Auth: Managed Better Auth aktiviert
 - Auth-URL: `https://ep-bold-boat-batl101c.neonauth.c-8.eu-central-1.aws.neon.tech/worlds_identity/auth`
 - JWKS: dieselbe Auth-URL plus `/.well-known/jwks.json`
-- OAuth-Provider: nicht aktiviert; keine Clients, keine Benutzer, keine App-Verknüpfungen angelegt
-- Hub: Auth bleibt deaktiviert; keine DB-Zugangsdaten oder Auth-Secrets in Git
+- OAuth-Provider: nach ausdrücklicher Pilotfreigabe aktiviert; fünf getrennte öffentliche Clients mit Consent registriert (identity-clients.json). Noch keine Benutzer oder produktiven App-Verknüpfungen.
+- Hub: App-SSO bleibt deaktiviert; zentrale Oberfläche wird separat als Pilot aktiviert. Keine DB-Zugangsdaten oder Auth-Secrets in Git
 
 Der erste Erstellungsversuch mit explizitem Suspend-Intervall wurde vom Free-Tarif abgelehnt (HTTP 412); Abfrage bestätigte, dass dabei kein Projekt entstanden war. Anschließend wurde genau eine Instanz mit den erlaubten Standardeinstellungen und 0.25 CU angelegt. Keine Bestandsinstanz wurde umkonfiguriert.
 
@@ -28,3 +28,7 @@ https://neon.com/docs/auth/guides/plugins/oauth-provider
 Der aktuelle Upstream-Provider 1.7.12 enthält eine Behandlung frischer Sessions sowie signierten auth_time. Das beweist nicht die Version oder das Verhalten der Managed-Instanz. Deshalb wird die dokumentierte Einschränkung im realen Pilot überprüft; es wird kein definitiver Anbieterfehler behauptet.
 
 Nächster Schritt: das in PILOT-ACTIVATION.md konkretisierte, vom Nutzer am 2026-11-04 freigegebene isolierte Setup ausführen und den echten Ablauf prüfen. Bis dahin kein produktiver Cutover, keine Legacy-Migration. Falls das Limit bestehen bleibt, vor Bindung realer Nutzer einen anderen voll geeigneten OIDC-Provider auswählen; keine kostenpflichtige Alternative stillschweigend aktivieren.
+
+## Ausgeführtes Setup
+
+Am 2026-11-04 nach expliziter Freigabe: OTP-Verifikation verpflichtend, Versand bei Registrierung/Anmeldung aktiviert, automatische Anmeldung nach Verifikation aus. Zentrale Hub-Origin registriert; OAuth-Login-/Consent-URLs und fünf Ressourcen/Clients eingerichtet. Neue kostenlose EU-D1 mit vier Tabellen und Ablauf-Indizes angelegt; keine Bestandsdaten migriert. Cookie-Signaturschlüssel und erster Live-Pilot-Deploy stehen im nächsten CI-Schritt an.

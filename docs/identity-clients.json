@@ -1,0 +1,42 @@
+[
+  {
+    "clientId": "ZdsCztFyWllqKYEiiJYCeAEPfacTuTXE",
+    "name": "Worlds Hub",
+    "redirects": [
+      "https://worlds-hub.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://worlds-hub.maki26.workers.dev/api"
+  },
+  {
+    "clientId": "CxxmMJaWneXdwCQNckMcEOxWGvDnczVp",
+    "name": "Music-Worlds",
+    "redirects": [
+      "https://music-worlds.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://music-worlds.maki26.workers.dev/api"
+  },
+  {
+    "clientId": "nBYLdsjNgkrhTjZSgRtsxWYghUxBWwDc",
+    "name": "Sprachwelten",
+    "redirects": [
+      "https://sprachwelten.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://sprachwelten.maki26.workers.dev/api"
+  },
+  {
+    "clientId": "JFHXaKKNmqXgxVeccXcsLlMRJxAxFnfH",
+    "name": "IT-Worlds",
+    "redirects": [
+      "https://it-worlds.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://it-worlds.maki26.workers.dev/api"
+  },
+  {
+    "clientId": "BBHPxFFlfMahuTkpeBpLeUfkqjVGYfPO",
+    "name": "Slop Urself",
+    "redirects": [
+      "https://slopurself.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://slopurself.maki26.workers.dev/api"
+  }
+]

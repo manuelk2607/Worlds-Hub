@@ -25,5 +25,6 @@ for(const path of paths){
 }
 const missing=await fetch(origin+'/definitely-not-a-page',{redirect:'manual'});assert.equal(missing.status,404);
 const auth=await fetch(origin+'/auth/login',{method:'POST',headers:{origin},redirect:'manual'});assert.equal(auth.status,503);assert.match(auth.headers.get('x-robots-tag')!,/noindex/);
-for(const path of ['/identity/login','/api/identity/get-session']){const response=await fetch(origin+path,{redirect:'manual'});assert.equal(response.status,503);assert.match(response.headers.get('x-robots-tag')!,/noindex/);assert.equal(response.headers.get('cache-control'),'no-store');}
-console.log('PASS 404 and disabled SSO. HTTPS, public SEO, private headers and navigation verified.');
+for(const path of ['/identity/login','/api/identity/get-session']){const response=await fetch(origin+path,{redirect:'manual'});assert.equal(response.status,200);assert.match(response.headers.get('x-robots-tag')!,/noindex/);assert.equal(response.headers.get('cache-control'),'no-store');const body=await response.text();if(path.endsWith('get-session'))assert.deepEqual(JSON.parse(body),{user:null,session:null});else assert.match(body,/worlds-identity-csrf/);}
+const identityMutation=await fetch(origin+'/api/identity/sign-out',{method:'POST',headers:{origin,'content-type':'application/json'},body:'{}',redirect:'manual'});assert.equal(identityMutation.status,403);
+console.log('PASS 404, disabled app SSO, live identity pilot and CSRF. HTTPS, public SEO, private headers and navigation verified.');
