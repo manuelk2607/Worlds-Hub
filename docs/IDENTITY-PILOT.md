@@ -27,6 +27,11 @@ https://neon.com/docs/auth/guides/plugins/oauth-provider
 
 Der aktuelle Upstream-Provider 1.7.12 enthält eine Behandlung frischer Sessions sowie signierten auth_time. Das beweist nicht die Version oder das Verhalten der Managed-Instanz. Deshalb wird die dokumentierte Einschränkung im realen Pilot überprüft; es wird kein definitiver Anbieterfehler behauptet.
 
+Die Discovery-Antwort der eingerichteten Instanz vom 05.11.2026 meldet S256,
+RP-initiierten Logout und Backchannel-Logout mit Sitzungs-ID. `auth_time`
+steht nicht in den angekündigten Claims. Für die Freigabe der Verknüpfung
+ist der tatsächlich signierte Claim im Browser-Pilot maßgeblich.
+
 Nächster Schritt: das in PILOT-ACTIVATION.md konkretisierte, vom Nutzer am 2026-11-04 freigegebene isolierte Setup ausführen und den echten Ablauf prüfen. Bis dahin kein produktiver Cutover, keine Legacy-Migration. Falls das Limit bestehen bleibt, vor Bindung realer Nutzer einen anderen voll geeigneten OIDC-Provider auswählen; keine kostenpflichtige Alternative stillschweigend aktivieren.
 
 ## Ausgeführtes Setup

@@ -52,9 +52,19 @@ offene Verbindung nach Logout auch nach einem versuchten Wechsel zu einem
 Legacy-Spieltoken. PostgreSQL-Tests bestätigen getrennte HF-Anbindung,
 Fremdkontoschutz, gezielten signierten Backchannel-Logout und den verweigerten
 HF-Codeaustausch nach Sitzungswiderruf. 147 Unit-Tests, Build,
-HF-/Worlds-Laufzeittests und Worker-Trockenlauf bestanden. Der frühere
-Slop-CI-Lauf `42009556891` ist für Chromium und WebKit grün. Vor echtem
-Pilotdeploy folgen Bereinigung abgelaufener Sitzungen und Provider-Abnahme.
+HF-/Worlds-Laufzeittests und Worker-Trockenlauf bestanden. Der zugehörige
+Slop-CI-Lauf `42043378970` ist für Chromium und WebKit grün.
+
+Slop `f7bad9d` bereitet den separaten Worker `slopurself-worlds-pilot` vor.
+Er akzeptiert nur das explizit konfigurierte isolierte Datenbankziel und
+simulierte Videos. Pilotseiten und Assets tragen noindex. Die stündliche
+Bereinigung entfernt bis zu 250 abgelaufene Zeilen je Anmeldetabelle.
+Der echte lokale PostgreSQL-17-Test prüfte Cleanup, Node-Login über
+Proxy-Header, den HF-Zugangsschutz in Socket.IO und den Widerruf nach
+Logout. 148 Unit-Tests, Build, beide workerd-Integrationen und Trockenlauf
+der Pilotkonfiguration bestanden. Nächster Schritt ist das separate
+Testziel mit exaktem Pilot-Client und die Browserabnahme am echten Anbieter.
+Die erneute Wrangler-Prüfung meldet weiterhin abgelaufenen lokalen Login.
 
 Sprachwelten `9fa19b6` ergänzt Mapping, Proofs, Audit und private OIDC-Sitzungen
 auf `feature/worlds-hub-sso`. Migration 027 lief im kurzlebigen, separaten Neon-QA-Zweig.
