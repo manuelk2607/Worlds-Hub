@@ -11,9 +11,15 @@ export interface AuthStore {
   claimReplay(key:string,expires:number):Promise<boolean>;
 }
 export const hash = async (v:string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v))),b=>b.toString(16).padStart(2,'0')).join('');
+interface D1Statement {
+  bind(...values:unknown[]):D1Statement;
+  run():Promise<{meta:{changes:number}}>;
+  first<T>():Promise<T|null>;
+}
+interface D1StoreDatabase { prepare(sql:string):D1Statement }
 export class D1AuthStore implements AuthStore {
-  db:D1Database;
-  constructor(db:D1Database) { this.db=db; }
+  db:D1StoreDatabase;
+  constructor(db:D1StoreDatabase) { this.db=db; }
   async putTransaction(key:string,v:Transaction) { await this.db.prepare('INSERT INTO auth_transactions (id, payload, expires) VALUES (?, ?, ?)').bind(key,JSON.stringify(v),v.expires).run(); }
   async takeTransaction(key:string) { const row=await this.db.prepare('DELETE FROM auth_transactions WHERE id = ? RETURNING payload').bind(key).first<{payload:string}>();return row?JSON.parse(row.payload) as Transaction:null; }
   async putSession(key:string,v:Session) { await this.db.prepare('INSERT INTO auth_sessions (id, issuer, subject, sid, payload, expires) VALUES (?, ?, ?, ?, ?, ?)').bind(key,v.issuer,v.sub,v.sid??null,JSON.stringify(v),v.expires).run(); }

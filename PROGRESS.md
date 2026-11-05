@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-04 (Europe/Stockholm)
+Stand: 2026-11-05 (Europe/Stockholm)
 
 ## Ziel und Grenzen
 Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC-SSO. Anwendungen, Repositories, Datenbanken und Berechtigungen bleiben getrennt. Adventskalender ist vollständig ausgeschlossen. Keine E-Mail-basierte Kontozusammenführung, keine Passwortübernahme; Slops persönliche HF-Anbindung, Kontingente, Jobs und Moderation bleiben verpflichtend und unverändert.
@@ -34,6 +34,8 @@ Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuell
 - Search-Console-Property/Token fehlt; keine Google-Indexierung garantiert. Bestehende Properties/Canonicals unangetastet.
 
 ## Nächster konkreter Schritt
+In Arbeit: IT-Worlds besitzt im Pilotbranch jetzt OIDC-Routen, eigenen Postgres-Sessionstore, gemeinsame Identitätsauflösung für Fortschritt/Schreibtrainer und eine DE/EN-Kontokarte. Featureflag bleibt standardmäßig aus. Reale isolierte Sessionprüfung einschließlich parallelem einmaligem Transaktions-/Replay-Verbrauch, Mapping, lokaler Sperre, Sperrablauf und issuergebundenem Widerruf bestanden. Gemeinsames Auth-Modul um PostgresAuthStore ergänzt; Hub-Check mit 58 Tests erfolgreich. Lokale visuelle Testansicht prüft nur UI-Zustände und ist kein echter Provider-/Browser-SSO-Nachweis. Noch nicht produktiv aktiviert.
+
 Als Nächstes IT-Worlds-OIDC-/Session-Adapter hinter Featureflag auf dem isolierten Ziel anbinden. Zentraler Postgres-Mapping-Store lokal getestet; projektspezifische Migration und eingeschränkte Neon-Rolle nun zusätzlich real geprüft. Frische Reauth, zwei Konten/Verbindungen, Browserablauf und Deployment-Rollback vor produktiver Aktivierung nachweisen. Bestehenden Better-Auth-Auditbefund bezüglich verwendeter Plugins und kompatibler Updates prüfen. Safari-Wiederanmeldung bleibt offen.
 
 Mapping-Store: Proof-Verbrauch, eindeutiges historisches Mapping und Audit in einer Postgres-Anweisung; Konflikte überschreiben nichts, Audit-/FK-Fehler rollen alles zurück. Tests behalten IDs/Rollen und prüfen Parameterisierung. PGlite ist ausschließlich Dev-Abhängigkeit; echte Neon-Parallelität und RLS bleiben Pilotpflicht. Music-Worlds hat inzwischen einen Repository-HEAD (52b78fd); aktualisierte Quelltextprüfung läuft.
