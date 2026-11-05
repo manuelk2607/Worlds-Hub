@@ -44,8 +44,17 @@ signierte PKCE-Testanbieter, parallele Bestätigung, Revocation, Replay, lokaler
 Node-Start, Cloudflare-Trockenlauf und workerd-HF-Test bestanden. 147 Tests
 grün. Der bestehende Audit hat dieselben sechs Befunde wie die Basis.
 Die produktive Origin und ihr Datenbankendpunkt sind im Pilot gesperrt.
-Als Nächstes die lokale UUID in HTTP- und WebSocket-Sitzungen übernehmen und
-den persönlichen HF-Nachweis mit einer verknüpften Worlds-Sitzung prüfen.
+Slop `838d2d4` bindet die bestätigte lokale ID an HTTP und WebSocket. Die
+Spielersitzung verfällt bei Logout oder Änderung der lokalen Passwortversion.
+Der workerd-Test öffnet mit Worlds einen echten lokalen WebSocket, verlangt
+für die Raumerstellung die persönliche HF-Verbindung und sperrt die bereits
+offene Verbindung nach Logout auch nach einem versuchten Wechsel zu einem
+Legacy-Spieltoken. PostgreSQL-Tests bestätigen getrennte HF-Anbindung,
+Fremdkontoschutz, gezielten signierten Backchannel-Logout und den verweigerten
+HF-Codeaustausch nach Sitzungswiderruf. 147 Unit-Tests, Build,
+HF-/Worlds-Laufzeittests und Worker-Trockenlauf bestanden. Der frühere
+Slop-CI-Lauf `42009556891` ist für Chromium und WebKit grün. Vor echtem
+Pilotdeploy folgen Bereinigung abgelaufener Sitzungen und Provider-Abnahme.
 
 Sprachwelten `9fa19b6` ergänzt Mapping, Proofs, Audit und private OIDC-Sitzungen
 auf `feature/worlds-hub-sso`. Migration 027 lief im kurzlebigen, separaten Neon-QA-Zweig.
