@@ -26,6 +26,11 @@ Kleinster Umfang: nur persönliche Lernfortschritte; daher zuerst isolierte IT-W
 
 ## Slop Urself
 
+- `feature/worlds-hub-sso` enthält den deaktivierten Callback- und Linking-Pilot
+  für Node und Cloudflare. `docs/WORLDS-PILOT.md` im Projekt dokumentiert
+  Schema, isoliertes Ziel, exakte OIDC-Redirects und die lokale Abnahme.
+  Die Link-Transaktion behält `user_profiles.id` und prüft Passwortversion,
+  zentrale Sitzung, signiertes `auth_time` und Audit gemeinsam.
 - Website-Login in `src/auth/session.ts` um optionalen OIDC-/Mapping-Pfad erweitern. Rückgabevertrag `Account` mit bestehender `id`, `name`, `authVersion` erhalten. `profileAuthConfig`, `accountIsCurrent`, Passwortschutz, Kontosperren und bestehende Adminsitzung bleiben wirksam.
 - Die Pfade in `src/server/cloudflare/worker.ts`, `room.ts`, `services.ts` UND `src/server/node.ts` müssen dieselbe Identität serverseitig validieren. WebSocket-/Raum-Authentifizierung und bestehende Session-Widerrufe mitprüfen. Zentralen Browsercookie niemals als Spiel-Bearertoken ausgeben.
 - `src/database/schema.ts`/bestehenden Migrationsprozess für lokale Links ergänzen; keine historischen Profile/Spieler/Statistiken/Jobs umschlüsseln. Besonderheit passwortloser Profile siehe Architekturentscheidung: Name allein ist keine Eigentümerschaft.

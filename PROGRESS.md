@@ -34,6 +34,19 @@ Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuell
 - Search-Console-Property/Token fehlt; keine Google-Indexierung garantiert. Bestehende Properties/Canonicals unangetastet.
 
 ## Nächster konkreter Schritt
+Slop Urself `6a1ebc3` auf `feature/worlds-hub-sso` enthält private, standardmäßig
+deaktivierte OIDC-Pilotrouten für Cloudflare und Node sowie die transaktionale
+Verknüpfung geschützter Profile. Der lokale Passwortnachweis ist an die aktive
+UUID und Passwortversion gebunden. Die Datenbank prüft beim Schreiben nochmals
+die zentrale Sitzung und das frische signierte `auth_time`. Profile ohne
+Passwort und das Admin-Konto bleiben für die Pilotverknüpfung gesperrt. Der
+signierte PKCE-Testanbieter, parallele Bestätigung, Revocation, Replay, lokaler
+Node-Start, Cloudflare-Trockenlauf und workerd-HF-Test bestanden. 147 Tests
+grün. Der bestehende Audit hat dieselben sechs Befunde wie die Basis.
+Die produktive Origin und ihr Datenbankendpunkt sind im Pilot gesperrt.
+Als Nächstes die lokale UUID in HTTP- und WebSocket-Sitzungen übernehmen und
+den persönlichen HF-Nachweis mit einer verknüpften Worlds-Sitzung prüfen.
+
 Sprachwelten `9fa19b6` ergänzt Mapping, Proofs, Audit und private OIDC-Sitzungen
 auf `feature/worlds-hub-sso`. Migration 027 lief im kurzlebigen, separaten Neon-QA-Zweig.
 Ein echtes synthetisches Managed-Auth-Konto behielt UUID und privates Testheft.
@@ -41,7 +54,8 @@ Die gemeinsamen Postgres-Adapter bestanden konkurrierenden Proof-/State-Verbrauc
 Replay-Schutz, Ausstellertrennung und atomisches Audit. Das Prüfszenario verwendete
 synthetische OIDC-Nachweise. Lern-/Heft-/Spiel-/Redaktions-/Managed-Auth-Integration
 und 193 Unit-Tests bestanden. `a5294a4` behebt den beim Branch-CI entdeckten
-`minimatch`-Auditbefund. Nächster Schritt: reproduzierbarer privater Paketbezug,
+`minimatch`-Auditbefund. Die erneute CI ist grün, inklusive 154 Browserfällen
+auf Desktop und Mobil (Lauf `42007280919`). Nächster Schritt: reproduzierbarer privater Paketbezug,
 OIDC-Routen und serverseitiger Resolver für die lokale UUID.
 
 QA-Zugriff: Eine CLI-Auswertung gab das vom leeren QA-Template geerbte Passwort
