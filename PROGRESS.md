@@ -42,6 +42,18 @@ Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuell
 - Search-Console-Property/Token fehlt; keine Google-Indexierung garantiert. Bestehende Properties/Canonicals unangetastet.
 
 ## Nächster konkreter Schritt
+Die zentrale Kontoseite bietet Passwortwechsel und einen Export der eigenen
+Identitätsdaten auf Deutsch und Englisch. Beide Aktionen prüfen die bestätigte
+Provider-Sitzung ohne Sitzungscache. Der Passwortwechsel reicht nur aktuelles
+und neues Passwort an Neon Auth weiter und erzwingt den Widerruf anderer
+zentraler Sitzungen. Nach Erfolg widerruft der Hub seine Sitzungen derselben
+Identität. Der Export enthält das zentrale Profil und die gespeicherte
+Hub-Sprache. Fremde Profile, Sitzungstokens und Projektdaten sind ausgeschlossen.
+61 Tests und Browserprüfung in Chromium und WebKit bei 320 px bestanden.
+Die Browserprüfung verwendete synthetische Provider-Antworten.
+Kontolöschung, zentrale Migrationsnachweise und projektübergreifender
+Sitzungswiderruf bleiben offen.
+
 Slop Urself `6a1ebc3` auf `feature/worlds-hub-sso` enthält private, standardmäßig
 deaktivierte OIDC-Pilotrouten für Cloudflare und Node sowie die transaktionale
 Verknüpfung geschützter Profile. Der lokale Passwortnachweis ist an die aktive

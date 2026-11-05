@@ -1,6 +1,6 @@
 import { handleAuthProxyRequest, resolveNeonAuthLogging } from '@neon/auth/server';
 import { boundedBody, cookie, readCookie, sameOrigin, token } from '../packages/auth/oidc.ts';
-import { hash } from '../packages/auth/store.ts';
+import { D1AuthStore, hash } from '../packages/auth/store.ts';
 import {requestLocale,t} from './i18n/core.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database }
@@ -11,6 +11,7 @@ const endpoints:Record<string,string>={
   'get-session':'GET','sign-in/email':'POST','sign-up/email':'POST','sign-out':'POST',
   'email-otp/send-verification-otp':'POST','email-otp/verify-email':'POST',
   'request-password-reset':'POST','reset-password':'POST','update-user':'POST',
+  'change-password':'POST','export':'POST',
   'oauth2/continue':'POST','oauth2/consent':'POST'
 };
 export function identityConfig(env:IdentityEnv):IdentityConfig|null {
@@ -51,6 +52,25 @@ export async function limitIdentity(request:Request,path:string,config:IdentityC
   const row=await config.db.prepare('INSERT INTO identity_rate_limits (id, count, expires) VALUES (?, 1, ?) ON CONFLICT(id) DO UPDATE SET count = count + 1 RETURNING count').bind(key,(bucket+1)*window).first<{count:number}>();
   return !!row&&row.count<=limit;
 }
+
+function requestProvider(request:Request,config:IdentityConfig,path:string,data?:Record<string,unknown>) {
+  const url=new URL(request.url);
+  if(path==='get-session')url.searchParams.set('disableCookieCache','true');
+  const upstream=new Request(url,{method:data?'POST':'GET',headers:request.headers,...(data?{body:JSON.stringify(data)}:{})});
+  return handleAuthProxyRequest({request:upstream,path,baseUrl:config.baseUrl,cookieSecret:config.cookieSecret,sessionDataTtl:1,sameSite:'lax',log:quiet});
+}
+
+async function verifiedAccount(request:Request,config:IdentityConfig) {
+  const response=await requestProvider(request,config,'get-session');
+  if(response.status===401||response.status===403)return null;
+  if(!response.ok)throw new Error('Session lookup failed');
+  const data=await response.json() as {user?:{id?:unknown;email?:unknown;name?:unknown;emailVerified?:unknown};session?:{userId?:unknown}}|null;
+  const user=data?.user;
+  if(!data?.session||!user||typeof user.id!=='string'||!user.id||typeof user.email!=='string'||user.emailVerified!==true)return null;
+  if(data.session.userId!==undefined&&data.session.userId!==user.id)return null;
+  return {id:user.id,email:user.email,name:typeof user.name==='string'?user.name:null,emailVerified:true};
+}
+
 export async function identityProxy(request:Request,config:IdentityConfig) {
   const url=new URL(request.url),path=url.pathname.slice('/api/identity/'.length);
   const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
@@ -69,7 +89,7 @@ export async function identityProxy(request:Request,config:IdentityConfig) {
       'sign-in/email':['email','password','oauth_query'],'sign-up/email':['email','password','name'],
       'email-otp/send-verification-otp':['email'],'email-otp/verify-email':['email','otp'],
       'request-password-reset':['email'],'reset-password':['token','newPassword'],
-      'update-user':['name'],'sign-out':[]
+      'update-user':['name'],'sign-out':[],'change-password':['currentPassword','newPassword'],'export':[]
     };
     if(fields[path]){
       data=Object.fromEntries(fields[path].filter(k=>data![k]!==undefined).map(k=>[k,data![k]]));
@@ -80,17 +100,47 @@ export async function identityProxy(request:Request,config:IdentityConfig) {
     // Never accept arbitrary callback/redirect fields from the browser.
     if(path==='sign-in/email')delete data.callbackURL;
     if(path==='email-otp/send-verification-otp')data.type='email-verification';
+    if(path==='change-password'){
+      const {currentPassword,newPassword}=data;
+      if(typeof currentPassword!=='string'||!currentPassword.length||currentPassword.length>200||
+        typeof newPassword!=='string'||newPassword.length<12||newPassword.length>200)return json({error:'INVALID_FIELDS'},400);
+      data.revokeOtherSessions=true;
+    }
     if(path==='oauth2/continue')data={selected:true,oauth_query:oauthQuery};
     if(path==='oauth2/consent'){if(typeof data.accept!=='boolean')return json({error:'EXPLICIT_CONSENT_REQUIRED'},400);data={accept:data.accept,oauth_query:oauthQuery};}
   }
   try{if(!await limitIdentity(request,path,config))return json({error:'RATE_LIMITED',message:t(requestLocale(request),'error.rateLimited')},429);}catch{return json({error:'RATE_LIMIT_UNAVAILABLE'},503);}
-  // Revalidate every session lookup at the provider; never rely on cached identity for consent/account actions.
-  const proxyUrl=new URL(request.url);if(path==='get-session')proxyUrl.searchParams.set('disableCookieCache','true');
-  const upstreamRequest=new Request(proxyUrl,{method:request.method,headers:request.headers,...(data?{body:JSON.stringify(data)}:{})});
-  let response:Response;try{response=await handleAuthProxyRequest({request:upstreamRequest,path,baseUrl:config.baseUrl,cookieSecret:config.cookieSecret,sessionDataTtl:1,sameSite:'lax',log:quiet});}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+  let account:Awaited<ReturnType<typeof verifiedAccount>>=null;
+  if(path==='change-password'||path==='export'){
+    try{account=await verifiedAccount(request,config);}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+    if(!account)return json({error:'SIGN_IN_REQUIRED'},401);
+  }
+  if(path==='export'&&account){
+    try{
+      const preference=await config.db.prepare('SELECT locale FROM user_preferences WHERE issuer = ? AND subject = ?')
+        .bind(config.baseUrl,account.id).first<{locale:string}>();
+      const response=json({exportedAt:new Date().toISOString(),identity:{issuer:config.baseUrl,...account},
+        preferences:{locale:preference?.locale??null}});
+      response.headers.set('Content-Disposition','attachment; filename="worlds-identity.json"');
+      return response;
+    }catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+  }
+  let response:Response;try{response=await requestProvider(request,config,path,data);}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
   const headers=new Headers({'content-type':'application/json','cache-control':'no-store','x-robots-tag':'noindex, nofollow'});
   response.headers.getSetCookie().forEach(c=>headers.append('set-cookie',c));
   let body:Record<string,unknown>;try{const parsed=await response.json();body=parsed&&typeof parsed==='object'&&!Array.isArray(parsed)?parsed as Record<string,unknown>:{};}catch{return json({error:'IDENTITY_UNAVAILABLE'},502);}
+  if(path==='change-password'&&account){
+    if(!response.ok){
+      const code=typeof body.code==='string'&&/^[A-Z0-9_]{1,80}$/.test(body.code)?body.code:'IDENTITY_UNAVAILABLE';
+      return json({error:code},response.status);
+    }
+    const changedUser=body.user as {id?:unknown}|undefined;
+    if(changedUser?.id!==account.id)return json({error:'IDENTITY_UNAVAILABLE'},502);
+    let hubSessionsRevoked=true;
+    try{await new D1AuthStore(config.db).revokeIdentity(config.baseUrl,account.id);}
+    catch{hubSessionsRevoked=false;}
+    return new Response(JSON.stringify({success:true,hubSessionsRevoked}),{status:response.status,headers});
+  }
   // Do not expose raw session tokens or set-auth-token/set-auth-jwt headers from the managed API.
   const result:Record<string,unknown>={};
   const session=body.session as {expiresAt?:unknown}|undefined,user=body.user as {id?:unknown;name?:unknown;email?:unknown;emailVerified?:unknown}|undefined;

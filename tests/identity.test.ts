@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {identityConfig,identityCsrf,authorizationClient,identityProxy,limitIdentity,type IdentityConfig} from '../src/identity.ts';
 import {identityPage} from '../src/identity-pages.ts';
 import {sqliteD1} from './sqlite-helper.ts';
+import {D1AuthStore} from '../packages/auth/store.ts';
 const origin='https://worlds-hub.maki26.workers.dev',baseUrl='https://central.neonauth.test/worlds/auth';
 const client={clientId:'hub-pilot',name:'Worlds Hub',redirects:[origin+'/auth/callback'],resource:origin+'/api'};
 const rawQuery=new URLSearchParams({client_id:client.clientId,redirect_uri:client.redirects[0],scope:'openid profile email',resource:client.resource,response_type:'code',state:'test-state',nonce:'test-nonce',code_challenge_method:'S256',code_challenge:'test-challenge'}).toString()+'&sig=signed%2Bquery%3D&exp=9999999999';
@@ -15,3 +16,70 @@ test('managed SDK proxy preserves signed oauth_query and strips credentials from
 test('signup cannot set roles, verified status or arbitrary callbacks',async t=>{const f=await fixture();let seen:Record<string,unknown>={};t.mock.method(globalThis,'fetch',async(_input:RequestInfo|URL,init?:RequestInit)=>{seen=JSON.parse(String(init?.body));return Response.json({user:{id:'central-1',name:'Ada',email:'ada@example.test',emailVerified:false}});});try{await identityProxy(f.request('sign-up/email',{email:'ada@example.test',password:'test-only-long-password',name:'Ada',emailVerified:true,role:'admin',callbackURL:'https://evil.test'}),f.config);assert.equal(seen.emailVerified,undefined);assert.equal(seen.role,undefined);assert.equal(seen.callbackURL,origin+'/identity/account');}finally{f.db.close();}});
 test('anonymous SDK session responses are safe; provider cannot inject an external redirect',async t=>{const f=await fixture();t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL)=>String(input).includes('get-session')?Response.json(null):Response.json({url:'https://evil.test/steal?code=secret'}));try{const anonymous=await identityProxy(new Request(origin+'/api/identity/get-session',{headers:f.headers}),f.config);assert.deepEqual(await anonymous.json(),{user:null,session:null});assert.equal((await identityProxy(f.request('oauth2/continue',{selected:true,oauth_query:rawQuery}),f.config)).status,502);}finally{f.db.close();}});
 test('D1 rate buckets are atomic, bounded and contain no raw IP or credentials',async()=>{const f=await fixture();try{const outcomes=await Promise.all(Array.from({length:16},()=>limitIdentity(f.request('sign-in/email'),'sign-in/email',f.config,1_000_000)));assert.equal(outcomes.filter(Boolean).length,12);const rows=f.db.prepare('SELECT * FROM identity_rate_limits').all();assert.equal(rows.length,1);assert.doesNotMatch(JSON.stringify(rows),/192\.0\.2|test-only-cookie/);assert.match(String(rows[0].id),/^[0-9a-f]{64}$/);const continuations=await Promise.all(Array.from({length:61},()=>limitIdentity(f.request('oauth2/continue'),'oauth2/continue',f.config,1_000_000)));assert.equal(continuations.filter(Boolean).length,60);}finally{f.db.close();}});
+
+const fixtureUser={id:'central-1',email:'ada@example.test',name:'Ada',emailVerified:true};
+const providerSession=()=>Response.json({user:fixtureUser,session:{userId:fixtureUser.id,token:'provider-session-secret'}});
+
+test('password change rechecks the central session, forces provider revocation and removes only this identity’s Hub sessions',async t=>{
+ const f=await fixture();
+ f.db.exec(await readFile('migrations/0001_auth.sql','utf8'));
+ const store=new D1AuthStore(f.binding),expires=Date.now()+60_000;
+ const session={issuer:baseUrl,sub:fixtureUser.id,expires,csrf:'fixture'};
+ await store.putSession('self',session);
+ await store.putSession('other',{...session,sub:'other-user'});
+ await store.putSession('foreign',{...session,issuer:'https://other.test'});
+ const received:Record<string,unknown>[]=[];
+ let accepted=false;
+ t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+  const url=new URL(String(input));
+  if(url.pathname.endsWith('/get-session')){
+   assert.equal(url.searchParams.get('disableCookieCache'),'true');
+   return providerSession();
+  }
+  assert.equal(String(input),baseUrl+'/change-password');
+  received.push(JSON.parse(String(init?.body)));
+  return accepted?Response.json({user:fixtureUser,token:'provider-token-secret'}):
+   Response.json({code:'INVALID_PASSWORD',message:'credential detail should not leave the provider'},{status:400});
+ });
+ try{
+  const body={currentPassword:'old-only-fixture',newPassword:'new-only-fixture',revokeOtherSessions:false,userId:'other-user'};
+  assert.equal((await identityProxy(f.request('change-password',body,{origin:'https://other.test'}),f.config)).status,403);
+  assert.equal((await identityProxy(f.request('change-password',{...body,newPassword:'short'}),f.config)).status,400);
+  const refused=await identityProxy(f.request('change-password',body),f.config);
+  assert.deepEqual(await refused.json(),{error:'INVALID_PASSWORD'});
+  assert.ok(await store.getSession('self'));
+  accepted=true;
+  const changed=await identityProxy(f.request('change-password',body),f.config);
+  assert.deepEqual(await changed.json(),{success:true,hubSessionsRevoked:true});
+  assert.deepEqual(received,Array(2).fill({currentPassword:'old-only-fixture',newPassword:'new-only-fixture',revokeOtherSessions:true}));
+  assert.equal(await store.getSession('self'),null);
+  assert.ok(await store.getSession('other'));
+  assert.ok(await store.getSession('foreign'));
+ }finally{f.db.close();}
+});
+
+test('identity export contains only the authenticated profile and its Hub preference',async t=>{
+ const f=await fixture();
+ f.db.exec(await readFile('migrations/0003_user_preferences.sql','utf8'));
+ const insert=f.db.prepare('INSERT INTO user_preferences VALUES (?,?,?,?)');
+ insert.run(baseUrl,fixtureUser.id,'en',1);
+ insert.run(baseUrl,'other-user','de',1);
+ let signedIn=false;
+ t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL)=>{
+  assert.ok(new URL(String(input)).pathname.endsWith('/get-session'));
+  return signedIn?providerSession():Response.json(null);
+ });
+ try{
+  assert.equal((await identityProxy(f.request('export',{}, {'x-worlds-identity-csrf':'wrong'}),f.config)).status,403);
+  assert.equal((await identityProxy(f.request('export'),f.config)).status,401);
+  signedIn=true;
+  const response=await identityProxy(f.request('export',{userId:'other-user'}),f.config);
+  assert.equal(response.status,200);
+  assert.match(response.headers.get('content-disposition')!,/attachment/);
+  const data=await response.json() as {identity:unknown;preferences:unknown;exportedAt:string};
+  assert.deepEqual(data.identity,{issuer:baseUrl,...fixtureUser});
+  assert.deepEqual(data.preferences,{locale:'en'});
+  assert.ok(Number.isFinite(Date.parse(data.exportedAt)));
+  assert.doesNotMatch(JSON.stringify(data),/provider-session-secret|other-user/);
+ }finally{f.db.close();}
+});

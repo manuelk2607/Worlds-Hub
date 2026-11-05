@@ -45,6 +45,8 @@ export function status(element:HTMLElement,key:MessageKey,values:Values={}){elem
 export function clearStatus(element:HTMLElement){delete element.dataset.statusKey;delete element.dataset.statusValues;element.textContent='';}
 export function errorKey(code:unknown):MessageKey {
  const normalized=typeof code==='string'?code.toLowerCase().replace(/[^a-z0-9]+/g,'_'):'';
+ if(normalized==='invalid_password')return 'error.invalidCurrentPassword';
+ if(normalized==='sign_in_required'||normalized==='unauthorized')return 'error.signInRequired';
  const map:Record<string,MessageKey>={rate_limited:'error.rateLimited',too_many_requests:'error.rateLimited',invalid_credentials:'error.invalidCredentials',invalid_email:'error.invalidEmail',email_not_verified:'error.emailNotVerified',email_already_exists:'error.emailExists',user_already_exists:'error.emailExists',password_too_short:'error.passwordShort',password_too_long:'error.passwordLong',invalid_otp:'error.invalidCode',otp_expired:'error.invalidCode',invalid_token:'error.invalidLink',token_expired:'error.invalidLink',signup_disabled:'error.signupDisabled',invalid_request:'error.invalidRequest',identity_unavailable:'error.identityUnavailable',rate_limit_unavailable:'error.identityUnavailable'};
  return map[normalized]??'error.tryAgain';
 }
