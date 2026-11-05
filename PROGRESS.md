@@ -16,7 +16,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv unter https://worlds-hub.maki26.workers.dev/. Das Repository https://github.com/manuelk2607/Worlds-Hub ist am 05.11.2026 öffentlich lesbar. Die öffentliche Lesbarkeit wurde ohne Anmeldedaten geprüft.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter DE/EN-Deploy: Source 9c7ae3c, Actions https://github.com/manuelk2607/Worlds-Hub/actions/runs/42006170336, Cloudflare-Version 7f0d48ed-084f-46bc-8f3e-962eabf5abd6. 59 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden.
+- Aktueller geprüfter Deploy: Commit `0d1a55b`, Cloudflare-Version `56b0b39d-bf6d-4db7-a73b-a430610cce5d`. 61 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42047823166)
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 
@@ -51,6 +51,8 @@ Identität. Der Export enthält das zentrale Profil und die gespeicherte
 Hub-Sprache. Fremde Profile, Sitzungstokens und Projektdaten sind ausgeschlossen.
 61 Tests und Browserprüfung in Chromium und WebKit bei 320 px bestanden.
 Die Browserprüfung verwendete synthetische Provider-Antworten.
+Produktiv bestätigt sind die zweisprachige Kontoseite, private Antworten und
+die Abweisung anonymer Anfragen mit und ohne gültigen CSRF-Nachweis.
 Kontolöschung, zentrale Migrationsnachweise und projektübergreifender
 Sitzungswiderruf bleiben offen.
 
@@ -110,6 +112,7 @@ Auth-Routen und 200 für die englische Lernseite. Lokale Tests prüften die
 bestehende Heft-ID, fremden Aussteller, Sperre und Logout. Die aktive
 Verknüpfung mit realen Nutzerkonten wartet auf den nachgewiesenen
 Eigentumsnachweis beider Konten und die echte Pilotabnahme.
+Die CI des Featurebranches ist erfolgreich. [GitHub Actions](https://github.com/manuelk2607/Sprachwelten/actions/runs/42046491620)
 
 QA-Zugriff: Eine CLI-Auswertung gab das vom leeren QA-Template geerbte Passwort
 des Testbranches aus. Das Testbranch-Passwort ist rotiert. Die Rotation am
