@@ -8,7 +8,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv: https://worlds-hub.maki26.workers.dev/ ; privates Repository https://github.com/manuelk2607/Worlds-Hub . Kein Duplikat.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter DE/EN-Deploy: Source a641f19, Actions https://github.com/manuelk2607/Worlds-Hub/actions/runs/41903562084, Cloudflare-Version 642c875a-6810-4a6f-95fc-414a5b0dafe9. 58 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden.
+- Aktueller geprüfter DE/EN-Deploy: Source 9c7ae3c, Actions https://github.com/manuelk2607/Worlds-Hub/actions/runs/42006170336, Cloudflare-Version 7f0d48ed-084f-46bc-8f3e-962eabf5abd6. 59 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden.
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 
@@ -34,6 +34,21 @@ Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuell
 - Search-Console-Property/Token fehlt; keine Google-Indexierung garantiert. Bestehende Properties/Canonicals unangetastet.
 
 ## Nächster konkreter Schritt
+Sprachwelten `9fa19b6` ergänzt Mapping, Proofs, Audit und private OIDC-Sitzungen
+auf `feature/worlds-hub-sso`. Migration 027 lief im kurzlebigen, separaten Neon-QA-Zweig.
+Ein echtes synthetisches Managed-Auth-Konto behielt UUID und privates Testheft.
+Die gemeinsamen Postgres-Adapter bestanden konkurrierenden Proof-/State-Verbrauch,
+Replay-Schutz, Ausstellertrennung und atomisches Audit. Das Prüfszenario verwendete
+synthetische OIDC-Nachweise. Lern-/Heft-/Spiel-/Redaktions-/Managed-Auth-Integration
+und 193 Unit-Tests bestanden. `a5294a4` behebt den beim Branch-CI entdeckten
+`minimatch`-Auditbefund. Nächster Schritt: reproduzierbarer privater Paketbezug,
+OIDC-Routen und serverseitiger Resolver für die lokale UUID.
+
+QA-Zugriff: Eine CLI-Auswertung gab das vom leeren QA-Template geerbte Passwort
+des Testbranches aus. Das Testbranch-Passwort ist rotiert. Die Rotation am
+QA-Template steht bis zur Nutzerfreigabe aus. Das QA-Projekt ist separat von
+Sprachwelten-Produktion, IT-Worlds und Worlds Hub.
+
 Music-Worlds `3904619` übernimmt bestehende Gastprofile nach Vorschau und ausdrücklicher Bestätigung. Der einmalige Nachweis bindet die aktive Gastsitzung an eine frische zentrale Anmeldung. Die Zuordnung erhält die bestehende UUID samt Punkten und Sprache. Migration 006 lief ausschließlich auf `qa-initial`. Isolierte Neon-Abnahme mit signiertem OIDC-Fixture prüfte CSRF, Ablauf, Gastwechsel, parallele Bestätigung, Rückfall bei deaktiviertem SSO und lokalen Logout. 22 Tests, Typprüfung, Lint, Build und DE/EN-Browserdialog mit Testantworten bestanden. Die Freigabe setzt den echten Managed-Reauth-Test voraus. Die Cloudflare-CLI meldet weiter eine abgelaufene Anmeldung.
 
 Music-Worlds `00018df` auf `feature/worlds-hub-sso` integriert das gemeinsame OIDC-Paket, eigene widerrufbare Postgres-Sitzungen und explizite Erstellung eines Musikprofils mit lokaler UUID. Issuer und Subject bilden die Zuordnung. Bestehende Gastprofile behalten ihre IDs. Migration 005 nur auf `qa-initial`. Signierter Testanbieter mit echtem Postgres bestätigt PKCE, CSRF, einmalige parallele Profilerstellung, getrennte Gastidentität und Logout. 73 bestehende Integrationsprüfungen, 22 Tests, Typprüfung, Lint, Build und DE/EN-Browseransicht mit Testzustand bestanden. Gastprofilübernahme und reale Providerabnahme bleiben offen. Flag standardmäßig aus. Cloudflare-Anmeldung für die IT-Pilotbereitstellung weiterhin abgelaufen.
