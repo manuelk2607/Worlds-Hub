@@ -28,6 +28,8 @@ test('localized route pairs retain German addresses and provide exact English eq
 });
 test('formatting localizes numbers and dates without translating supplied content',()=>{
  assert.equal(t('en','account.greeting',{name:'Guten Morgen'}),'Hello, Guten Morgen.');
+ assert.equal(t('en','account.greeting',{name:{key:'common.explorer'}}),'Hello, Explorer.');
+ assert.equal(t('en','account.greeting',{name:'common.explorer'}),'Hello, common.explorer.');
  assert.equal(t('de','filter.count',{count:1000,total:2000}),'1.000 von 2.000 Welten');
  assert.equal(t('en','filter.count',{count:1000,total:2000}),'1,000 of 2,000 worlds');
  const timestamp=Date.UTC(2026,10,4,14,5);

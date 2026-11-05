@@ -10,7 +10,7 @@ if(identityRoot){
  async function api(path:string,body?:Record<string,unknown>){
   const response=await fetch('/api/identity/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json','x-worlds-identity-csrf':csrf}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
   const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;user?:{id:string;name?:string;email:string;emailVerified:boolean}};
-  if(!response.ok)throw new Error(data.error??data.code??String(response.status));return data;
+  if(!response.ok)throw new Error(data.code??data.error??String(response.status));return data;
  }
  function navigate(url:string){const target=new URL(url,location.origin);if(target.protocol!=='https:')throw new Error('UNSAFE_REDIRECT');location.assign(target.href);}
  function renderUser(){const user=root.querySelector<HTMLElement>('[data-identity-user]'),greeting=root.querySelector<HTMLElement>('[data-identity-greeting]');if(user&&currentUser)user.textContent=text(currentUser.emailVerified?'status.emailVerified':'status.emailNeeded');if(greeting&&currentUser)greeting.textContent=currentUser.name?text('account.greeting',{name:currentUser.name}):text('identity.welcome');}

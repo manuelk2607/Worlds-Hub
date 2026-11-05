@@ -1,4 +1,4 @@
-import {LOCALE_COOKIE,LOCALE_STORAGE_KEY,isMessageKey,localeTags,normalizeLocale,route,routes,t,type Locale,type MessageKey,type Values} from './core.ts';
+import {LOCALE_STORAGE_KEY,isMessageKey,languageCookie,localeTags,normalizeLocale,route,routes,t,type Locale,type MessageKey,type Values} from './core.ts';
 
 let current:Locale=normalizeLocale(document.documentElement.lang)??'de';
 const localeButtons=document.querySelectorAll<HTMLButtonElement>('button[data-locale]');
@@ -9,7 +9,7 @@ export const text=(key:MessageKey,values:Values={})=>t(current,key,values);
 
 function rememberLocale(next:Locale){
  try{localStorage.setItem(LOCALE_STORAGE_KEY,next);}catch{/* Cookie remains the durable fallback. */}
- document.cookie=`${LOCALE_COOKIE}=${next}; Path=/; Secure; SameSite=Lax; Max-Age=31536000`;
+ document.cookie=languageCookie(next);
 }
 
 function valuesFor(element:HTMLElement):Values {
@@ -32,33 +32,53 @@ export function applyLocale(next:Locale,{persist=false,announce=false,replaceUrl
  if(persist){
   manuallySelected=true;
   rememberLocale(next);
-  profileWrite=profileWrite.then(()=>saveProfileLocale(next));
+  profileWrite=profileWrite.then(async()=>{await saveProfileLocale(next);});
  }
  if(announce){const status=document.querySelector<HTMLElement>('[data-locale-status]');if(status)status.textContent=t(next,'locale.changed',{language:t(next,next==='de'?'locale.de':'locale.en')});}
  document.dispatchEvent(new CustomEvent('worlds:locale',{detail:{locale:next}}));
 }
 
-async function saveProfileLocale(next:Locale){
- try{const response=await fetch('/api/preferences/locale',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({locale:next}),signal:AbortSignal.timeout(5000)});if(!response.ok&&response.status!==401)throw new Error();}catch{/* Local preference remains active if profile storage is unavailable. */}
+async function saveProfileLocale(next:Locale,initial=false){
+ try{
+  const response=await fetch('/api/preferences/locale',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({locale:next,...(initial?{initial:true}:{})}),signal:AbortSignal.timeout(5000)});
+  if(response.ok)return normalizeLocale((await response.json() as {locale?:unknown}).locale);
+ }catch{/* Local preference remains active if profile storage is unavailable. */}
+ return null;
 }
 export function status(element:HTMLElement,key:MessageKey,values:Values={}){element.dataset.statusKey=key;element.dataset.statusValues=JSON.stringify(values);element.textContent=t(current,key,values);}
 export function clearStatus(element:HTMLElement){delete element.dataset.statusKey;delete element.dataset.statusValues;element.textContent='';}
 export function errorKey(code:unknown):MessageKey {
  const normalized=typeof code==='string'?code.toLowerCase().replace(/[^a-z0-9]+/g,'_'):'';
  if(normalized==='invalid_password')return 'error.invalidCurrentPassword';
- if(normalized==='sign_in_required'||normalized==='unauthorized')return 'error.signInRequired';
- const map:Record<string,MessageKey>={rate_limited:'error.rateLimited',too_many_requests:'error.rateLimited',invalid_credentials:'error.invalidCredentials',invalid_email:'error.invalidEmail',email_not_verified:'error.emailNotVerified',email_already_exists:'error.emailExists',user_already_exists:'error.emailExists',password_too_short:'error.passwordShort',password_too_long:'error.passwordLong',invalid_otp:'error.invalidCode',otp_expired:'error.invalidCode',invalid_token:'error.invalidLink',token_expired:'error.invalidLink',signup_disabled:'error.signupDisabled',invalid_request:'error.invalidRequest',identity_unavailable:'error.identityUnavailable',rate_limit_unavailable:'error.identityUnavailable'};
+ const map:Record<string,MessageKey>={
+  sign_in_required:'error.signInRequired',unauthorized:'error.signInRequired',session_expired:'error.signInRequired',
+  rate_limited:'error.rateLimited',too_many_requests:'error.rateLimited',too_many_attempts:'error.rateLimited',
+  invalid_credentials:'error.invalidCredentials',invalid_email_or_password:'error.invalidCredentials',invalid_email:'error.invalidEmail',
+  email_not_verified:'error.emailNotVerified',email_already_exists:'error.emailExists',user_already_exists:'error.emailExists',
+  user_already_exists_use_another_email:'error.emailExists',password_too_short:'error.passwordShort',password_too_long:'error.passwordLong',
+  invalid_otp:'error.invalidCode',otp_expired:'error.invalidCode',invalid_token:'error.invalidLink',token_expired:'error.invalidLink',
+  signup_disabled:'error.signupDisabled',invalid_request:'error.invalidRequest',invalid_fields:'error.invalidRequest',
+  identity_unavailable:'error.identityUnavailable',rate_limit_unavailable:'error.identityUnavailable',
+ };
  return map[normalized]??'error.tryAgain';
 }
 export const errorText=(code:unknown)=>t(current,errorKey(code));
 
 for(const button of localeButtons)button.addEventListener('click',()=>{const next=normalizeLocale(button.dataset.locale);if(next)applyLocale(next,{persist:true,announce:true});});
 document.addEventListener('worlds:locale',()=>{document.querySelectorAll<HTMLElement>('[data-status-key]').forEach(element=>{const key=element.dataset.statusKey;if(key&&isMessageKey(key)){let values:Values={};try{values=JSON.parse(element.dataset.statusValues??'{}') as Values;}catch{/* Ignore malformed local state. */}element.textContent=t(current,key,values);}});});
-let localPreference:Locale|null=null;try{localPreference=normalizeLocale(localStorage.getItem(LOCALE_STORAGE_KEY));if(localPreference){document.cookie=`${LOCALE_COOKIE}=${localPreference}; Path=/; Secure; SameSite=Lax; Max-Age=31536000`;if(localPreference!==current)applyLocale(localPreference,{replaceUrl:true});}}catch{/* Server locale remains active. */}
-if(!localPreference)void fetch('/api/preferences/locale',{headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)}).then(async response=>{
+const localPreference=(()=>{try{return normalizeLocale(localStorage.getItem(LOCALE_STORAGE_KEY));}catch{return null;}})();
+if(localPreference){
+ document.cookie=languageCookie(localPreference);
+ if(localPreference!==current)applyLocale(localPreference);
+}
+void fetch('/api/preferences/locale',{headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)}).then(async response=>{
  if(!response.ok)return;
- const data=await response.json() as {locale?:unknown};
- const preferred=normalizeLocale(data.locale);
+ let preferred=normalizeLocale((await response.json() as {locale?:unknown}).locale);
+ if(!preferred&&localPreference&&!manuallySelected){
+  const initialized=profileWrite.then(()=>saveProfileLocale(localPreference,true));
+  profileWrite=initialized.then(()=>{});
+  preferred=await initialized;
+ }
  if(!preferred||manuallySelected)return;
  rememberLocale(preferred);
  if(preferred!==current)applyLocale(preferred);

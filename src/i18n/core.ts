@@ -4,7 +4,7 @@ import en from './en.json' with {type:'json'};
 export const locales=['de','en'] as const;
 export type Locale=typeof locales[number];
 export type MessageKey=keyof typeof de;
-export type Values=Record<string,string|number>;
+export type Values=Record<string,string|number|{key:MessageKey}>;
 export const messages:Record<Locale,Record<MessageKey,string>>={de,en};
 export const LOCALE_COOKIE='__Host-worlds-locale';
 export const LOCALE_STORAGE_KEY='worlds.locale';
@@ -43,7 +43,10 @@ export function routeLocale(request:Request):Locale {
 export function languageCookie(locale:Locale){return `${LOCALE_COOKIE}=${locale}; Path=/; Secure; SameSite=Lax; Max-Age=31536000`;}
 export function t(locale:Locale,key:MessageKey,values:Values={}):string {
  return messages[locale][key].replace(/\{([A-Za-z0-9_]+)\}/g,(placeholder,name:string)=>{
-  const value=values[name];return value===undefined?placeholder:typeof value==='number'?new Intl.NumberFormat(localeTags[locale]).format(value):value;
+  const value=values[name];
+  if(typeof value==='string')return value;
+  if(typeof value==='number')return new Intl.NumberFormat(localeTags[locale]).format(value);
+  return value&&isMessageKey(value.key)?t(locale,value.key):placeholder;
  });
 }
 export function dateTime(value:string|number,locale:Locale,timeZone?:string){

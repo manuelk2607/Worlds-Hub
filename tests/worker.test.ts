@@ -18,4 +18,24 @@ test('missing routes return 404; no catch-all redirects or unexpected mutations'
 
 test('first visit negotiates English, explicit cookie wins, and language preference is identity-bound',async()=>{const first=await request('/',{},{headers:{'accept-language':'sv,en;q=0.9,de;q=0.5'},redirect:'manual'});assert.equal(first.status,302);assert.equal(first.headers.get('location'),'/en/');assert.match(first.headers.get('set-cookie')!,/__Host-worlds-locale=en/);const explicit=await request('/',{},{headers:{cookie:'__Host-worlds-locale=de','accept-language':'en'}});assert.equal(explicit.status,200);assert.match(await explicit.text(),/<html lang="de"/);const {db,binding}=await sqliteD1();try{db.exec(await readFile('migrations/0001_auth.sql','utf8'));db.exec(await readFile('migrations/0003_user_preferences.sql','utf8'));const raw='A'.repeat(40),issuer='https://identity.test',payload={issuer,sub:'user-a',csrf:'csrf',expires:Date.now()+60_000};db.prepare('INSERT INTO auth_sessions (id,issuer,subject,payload,expires) VALUES (?,?,?,?,?)').run(await hash(raw),issuer,'user-a',JSON.stringify(payload),payload.expires);const env={AUTH_ENABLED:'true',SITE_ORIGIN:origin,OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',OIDC_ID_TOKEN_ALG:'RS256',AUTH_DB:binding};const unauth=await request('/api/preferences/locale',env,{headers:{accept:'application/json'}});assert.equal(unauth.status,401);const saved=await request('/api/preferences/locale',env,{method:'POST',headers:{origin,'content-type':'application/json',cookie:'__Host-worlds-session='+raw},body:'{"locale":"en"}'});assert.equal(saved.status,200);assert.deepEqual(await saved.json(),{locale:'en'});assert.deepEqual(await (await request('/api/preferences/locale',env,{headers:{cookie:'__Host-worlds-session='+raw}})).json(),{locale:'en'});assert.equal(db.prepare('SELECT subject,locale FROM user_preferences').get()?.subject,'user-a');const hostile=await request('/api/preferences/locale',env,{method:'POST',headers:{origin:'https://evil.test','content-type':'application/json',cookie:'__Host-worlds-session='+raw},body:'{"locale":"de"}'});assert.equal(hostile.status,403);}finally{db.close();}});
 
+test('device locale initializes a missing profile preference without overwriting an existing one',async()=>{
+ const {db,binding}=await sqliteD1();
+ try{
+  db.exec(await readFile('migrations/0003_user_preferences.sql','utf8'));
+  const raw='A'.repeat(40),issuer='https://identity.test';
+  const payload={issuer,sub:'user-a',csrf:'csrf',expires:Date.now()+60_000};
+  db.prepare('INSERT INTO auth_sessions (id,issuer,subject,payload,expires) VALUES (?,?,?,?,?)')
+   .run(await hash(raw),issuer,payload.sub,JSON.stringify(payload),payload.expires);
+  const env={AUTH_ENABLED:'true',SITE_ORIGIN:origin,OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',OIDC_ID_TOKEN_ALG:'RS256',AUTH_DB:binding};
+  const headers={origin,'content-type':'application/json',cookie:'__Host-worlds-session='+raw};
+  const save=(body:unknown)=>request('/api/preferences/locale',env,{method:'POST',headers,body:JSON.stringify(body)});
+  assert.equal((await save(null)).status,400);
+  assert.equal((await save({locale:'en',initial:'yes'})).status,400);
+  assert.deepEqual(await (await save({locale:'en',initial:true})).json(),{locale:'en'});
+  assert.deepEqual(await (await save({locale:'de',initial:true})).json(),{locale:'en'});
+  assert.deepEqual(await (await save({locale:'de'})).json(),{locale:'de'});
+  assert.deepEqual(await (await save({locale:'en',initial:true})).json(),{locale:'de'});
+ }finally{db.close();}
+});
+
 test('scheduled auth cleanup bounds D1 writes and preserves valid sessions',async()=>{const {db,binding}=await sqliteD1();try{db.exec(await readFile('migrations/0002_identity_rate_limits.sql','utf8'));const now=Date.now();const insert=db.prepare('INSERT INTO auth_transactions (id,payload,expires) VALUES (?,?,?)');for(let i=0;i<501;i++)insert.run('old-'+i,'{}',now-1000);insert.run('valid','{}',now+60000);await worker.scheduled({}, {AUTH_DB:binding});assert.equal(db.prepare('SELECT count(*) AS count FROM auth_transactions WHERE expires < ?').get(now)?.count,1);assert.ok(db.prepare('SELECT id FROM auth_transactions WHERE id = ?').get('valid'));}finally{db.close();}});

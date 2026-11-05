@@ -1,6 +1,7 @@
 import './i18n/browser.ts';
 import './identity-client.ts';
 import {locale,status,text} from './i18n/browser.ts';
+import {route} from './i18n/core.ts';
 const root=document.documentElement;
 const themeButton=document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
 function updateThemeButton(){if(themeButton){const dark=root.dataset.theme==='dark';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',text(dark?'nav.themeLight':'nav.themeDark'));}}
@@ -16,11 +17,21 @@ function applyFilter(){for(const card of cards)card.hidden=activeFilter!=='all'&
 for(const button of filters)button.addEventListener('click',()=>{activeFilter=button.dataset.filter??'all';filters.forEach(candidate=>candidate.setAttribute('aria-pressed',String(candidate===button)));applyFilter();});
 document.addEventListener('worlds:locale',()=>{if(activeFilter!=='all')applyFilter();});
 
+const loginForms=document.querySelectorAll<HTMLFormElement>('[data-auth-login]');
+const logoutForms=document.querySelectorAll<HTMLFormElement>('[data-auth-logout]');
+function localizeAuthActions(){
+ const language=locale();
+ for(const form of loginForms)form.action='/auth/login?'+new URLSearchParams({next:route('account',language),ui_locales:language});
+ for(const form of logoutForms)form.action='/auth/logout?'+new URLSearchParams({locale:language});
+}
+localizeAuthActions();
+document.addEventListener('worlds:locale',localizeAuthActions);
+
 // Fetch the same-origin POST first, then perform a normal top-level OIDC navigation.
 // This avoids a form redirect across hosts; credentials remain server-side.
-for(const form of document.querySelectorAll<HTMLFormElement>('[data-auth-login]'))form.addEventListener('submit',async event=>{
+for(const form of loginForms)form.addEventListener('submit',async event=>{
  event.preventDefault();const button=form.querySelector<HTMLButtonElement>('button')!,message=form.querySelector<HTMLElement>('[data-auth-message]')!;
  if(button.disabled)return;button.disabled=true;status(message,'status.opening');
- try{const action=new URL(form.action);action.searchParams.set('ui_locales',locale());const response=await fetch(action,{method:'POST',headers:{accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!response.ok)throw new Error();const result=await response.json() as {url:string};const url=new URL(result.url);if(url.protocol!=='https:')throw new Error();location.assign(url.href);}
+ try{const response=await fetch(form.action,{method:'POST',headers:{accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!response.ok)throw new Error();const result=await response.json() as {url:string};const url=new URL(result.url);if(url.protocol!=='https:')throw new Error();location.assign(url.href);}
  catch{status(message,'error.authUnavailable');button.disabled=false;}
 });

@@ -6,7 +6,7 @@ import {projects} from './projects.ts';
 import {escapeHtml} from './html.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
 import {backchannelLogout,boundedBody,callback,logout,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
-import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type RouteId} from './i18n/core.ts';
+import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type RouteId,type Values} from './i18n/core.ts';
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
 
@@ -37,15 +37,23 @@ async function localePreference(request:Request,config:AuthConfig|null,db:D1Data
  if(!config||!db)return json({error:'SSO_NOT_CONFIGURED'},503);
  let current;try{current=await session(request,config);}catch{return json({error:'SESSION_UNAVAILABLE'},503);}
  if(!current)return json({locale:null},401);
- if(request.method==='GET'){
-  try{const row=await db.prepare('SELECT locale FROM user_preferences WHERE issuer = ? AND subject = ?').bind(current.issuer,current.sub).first<{locale:string}>();return json({locale:row?.locale==='en'?'en':row?.locale==='de'?'de':null});}catch{return json({error:'PREFERENCE_UNAVAILABLE'},503);}
- }
- if(request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
- if(!sameOrigin(request,config.origin))return json({error:'INVALID_ORIGIN'},403);
- if(request.headers.get('content-type')?.split(';')[0]!=='application/json')return json({error:'JSON_REQUIRED'},415);
- let body:{locale?:unknown};try{body=JSON.parse(await boundedBody(request,1024)) as {locale?:unknown};}catch{return json({error:'INVALID_BODY'},400);}
- if(body.locale!=='de'&&body.locale!=='en')return json({error:'INVALID_LOCALE'},400);
- try{await db.prepare('INSERT INTO user_preferences (issuer, subject, locale, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(issuer, subject) DO UPDATE SET locale = excluded.locale, updated_at = excluded.updated_at').bind(current.issuer,current.sub,body.locale,Date.now()).run();return json({locale:body.locale});}catch{return json({error:'PREFERENCE_UNAVAILABLE'},503);}
+ if(request.method!=='GET'&&request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
+ try{
+  if(request.method==='POST'){
+   if(!sameOrigin(request,config.origin))return json({error:'INVALID_ORIGIN'},403);
+   if(request.headers.get('content-type')?.split(';')[0]!=='application/json')return json({error:'JSON_REQUIRED'},415);
+   let body:{locale?:unknown;initial?:unknown}|null;
+   try{body=JSON.parse(await boundedBody(request,1024)) as typeof body;}catch{return json({error:'INVALID_BODY'},400);}
+   if(body?.locale!=='de'&&body?.locale!=='en')return json({error:'INVALID_LOCALE'},400);
+   if(body.initial!==undefined&&typeof body.initial!=='boolean')return json({error:'INVALID_BODY'},400);
+   const conflict=body.initial?'DO NOTHING':'DO UPDATE SET locale = excluded.locale, updated_at = excluded.updated_at';
+   await db.prepare('INSERT INTO user_preferences (issuer, subject, locale, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(issuer, subject) '+conflict)
+    .bind(current.issuer,current.sub,body.locale,Date.now()).run();
+   if(!body.initial)return json({locale:body.locale});
+  }
+  const row=await db.prepare('SELECT locale FROM user_preferences WHERE issuer = ? AND subject = ?').bind(current.issuer,current.sub).first<{locale:Locale}>();
+  return json({locale:row?.locale??null});
+ }catch{return json({error:'PREFERENCE_UNAVAILABLE'},503);}
 }
 
 export default {
@@ -87,14 +95,17 @@ export default {
   if(path.startsWith('/auth/')){
    if(!config)return finish(Response.json({error:'SSO_NOT_CONFIGURED',message:t(locale,'error.notConfigured')},{status:503}));
    try{
-    if(path==='/auth/login')return finish(await startLogin(request,config));
+    if(path==='/auth/login'){
+     const response=await startLogin(request,config);
+     return finish(response.status===503?text(t(locale,'error.reauth'),'text/plain',503):response);
+    }
     if(path==='/auth/callback')return finish(await callback(request,config));
     if(path==='/auth/logout')return finish(await logout(request,config));
     if(path==='/auth/backchannel-logout')return finish(await backchannelLogout(request,config));
    }catch{return finish(text(t(locale,'error.callback'),'text/plain',400));}
   }
   if(request.method!=='GET'&&request.method!=='HEAD')return finish(text(t(locale,'error.method'),'text/plain',405));
-  let body:string,title=t(locale,'meta.title'),titleKey:MessageKey='meta.title',description=t(locale,'meta.description'),descriptionKey:MessageKey='meta.description',statusCode=200,schema:unknown,routeId=matched?.id;
+  let body:string,title=t(locale,'meta.title'),titleKey:MessageKey='meta.title',titleValues:Values|undefined,description=t(locale,'meta.description'),descriptionKey:MessageKey='meta.description',statusCode=200,schema:unknown,routeId=matched?.id;
   if(matched?.id==='home'){
    body=home(locale);schema={'@context':'https://schema.org','@type':'WebSite',name:'Worlds Hub',url:origin+route('home',locale),inLanguage:locale,description,hasPart:projects.filter(project=>project.url).map(project=>({'@type':'WebSite',name:project.name,url:project.url}))};
   }else if(matched&&['account','signIn','signUp'].includes(matched.id)){
@@ -104,11 +115,12 @@ export default {
   }else if(matched?.id==='signedOut'){body=loggedOut(locale);title=t(locale,'logout.metaTitle');titleKey='logout.metaTitle';}
   else if(matched?.id==='privacy'){body=privacy(locale);title=t(locale,'privacy.metaTitle');titleKey='privacy.metaTitle';}
   else if(matched?.id.startsWith('world:')){
-   const project=projects.find(candidate=>matched.id===`world:${candidate.id}`)!;const eyebrow=t(locale,`projects.${project.id}.eyebrow` as MessageKey);
-   body=detail(project,locale);title=t(locale,'detail.metaTitle',{name:project.name,eyebrow});titleKey='detail.metaTitle';description=t(locale,`projects.${project.id}.description` as MessageKey);descriptionKey=`projects.${project.id}.description` as MessageKey;
+   const project=projects.find(candidate=>matched.id===`world:${candidate.id}`)!;
+   titleKey='detail.metaTitle';titleValues={name:project.name,eyebrow:{key:`projects.${project.id}.eyebrow`}};
+   body=detail(project,locale);title=t(locale,titleKey,titleValues);descriptionKey=`projects.${project.id}.description`;description=t(locale,descriptionKey);
   }else{statusCode=404;title=t(locale,'notFound.title');titleKey='notFound.title';body=notFound(locale);routeId=undefined;}
   const canonicalPath=matched?.canonical??path;
-  const html=layout(body,{origin,path:canonicalPath,routeId,locale,title,titleKey,description,descriptionKey,indexing:env.PUBLIC_INDEXING==='true'&&!isPrivate&&statusCode===200,verification:env.GOOGLE_SITE_VERIFICATION,schema,nonce});
+  const html=layout(body,{origin,path:canonicalPath,routeId,locale,title,titleKey,titleValues,description,descriptionKey,indexing:env.PUBLIC_INDEXING==='true'&&!isPrivate&&statusCode===200,verification:env.GOOGLE_SITE_VERIFICATION,schema,nonce});
   const response=finish(text(request.method==='HEAD'?'':html,'text/html',statusCode));
   if(env.PUBLIC_INDEXING!=='true')response.headers.set('X-Robots-Tag','noindex, nofollow');return response;
  },
