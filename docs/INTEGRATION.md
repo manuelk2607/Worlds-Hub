@@ -20,7 +20,12 @@ Kleinster Umfang: nur persönliche Lernfortschritte; daher zuerst isolierte IT-W
 - `feature/worlds-hub-sso` enthält die additive Migration 027. Sie ist im separaten, leeren Neon-QA-Projekt mit einem echten Managed-Auth-Konto und den gemeinsamen Postgres-Adaptern geprüft. Die Fremdschlüssel zeigen auf `neon_auth."user".id`. `app_admins`, Beiträge und Lern-/Heftbesitz verwenden weiter die lokale UUID.
 - Einen serverseitigen Resolver für die bestehenden Session-Lesewege in `lib/http.ts`, `lib/contributor.ts`, `lib/player-name.ts`, `app/api/learning/{route.ts,vocabulary/route.ts}` und `app/api/entries/[id]/route.ts` anbinden. Das Ergebnis ist die lokale UUID. Bei gleichzeitig aktiven, verschiedenen Konten ist ein ausdrücklicher Kontowechsel erforderlich. Die bestehenden Admin-Gates in `lib/admin.ts` und `app/api/admin/access/route.ts` bleiben im Pilot an die Managed-Sitzung plus `app_admins` gebunden.
 - `lib/auth/client.ts`/`provider.tsx`, `components/auth-dialog.tsx`, `app/api/auth/[...path]`: bisherigen Managed-Login erhalten, Worlds optional hinzufügen. Keine ungetestete Änderung des Neon-SDK-Proxys.
-- Das gemeinsame Auth-Modul als versionierte Abhängigkeit einbinden. Der private Paketbezug muss sowohl für CI als auch für lokale Builds funktionieren. Gäste bleiben `guest:` und werden weder nach Name noch E-Mail beansprucht.
+- Sprachwelten verwendet das gemeinsame Auth-Modul als Abhängigkeit mit
+  festem Paket-Commit und Prüfsumme. `auth-v0.1.0` ist aus `packages/auth`
+  mit `git subtree split --prefix=packages/auth` erzeugt. Die Pilot-Routen
+  und der Resolver für Lernaktivität und Vokabelhefte sind im Featurebranch
+  integriert. Gäste bleiben `guest:` und werden weder nach Name noch E-Mail
+  beansprucht.
 - Beiträge, Moderationsaudit, Revisionen, private Audio-Dateien, Notebooks und richtungsbezogene Fortschritte weiter an historische IDs binden. Tabellen nicht umschreiben.
 - Nach Integration: typecheck, lint, Übersetzungsabdeckung, audit, Unit- und isolierte Auth-/Persistence-/Room-/Notebook-Tests nach dortigem `AGENTS.md`. Existierende Datenbank und Worker-Secrets behalten. Deployment nur in den vorhandenen Worker `sprachwelten`, nicht dessen altes Sites-Projekt.
 

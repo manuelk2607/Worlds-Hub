@@ -2,11 +2,19 @@
 
 Stand: 2026-11-05 (Europe/Stockholm)
 
+Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
+sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
+Offen sind insbesondere Kontolöschung und Datenschutzfunktionen am
+zentralen Konto, zentrale Nachweise über den Migrationsstand und die reale
+Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
+Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
+lokale IDs und Berechtigungen beim Übergang zu erhalten.
+
 ## Ziel und Grenzen
 Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC-SSO. Anwendungen, Repositories, Datenbanken und Berechtigungen bleiben getrennt. Adventskalender ist vollständig ausgeschlossen. Keine E-Mail-basierte Kontozusammenführung, keine Passwortübernahme; Slops persönliche HF-Anbindung, Kontingente, Jobs und Moderation bleiben verpflichtend und unverändert.
 
 ## Produktion, Repository und Kosten
-- Produktiv: https://worlds-hub.maki26.workers.dev/ ; privates Repository https://github.com/manuelk2607/Worlds-Hub . Kein Duplikat.
+- Produktiv unter https://worlds-hub.maki26.workers.dev/. Das Repository https://github.com/manuelk2607/Worlds-Hub ist am 05.11.2026 öffentlich lesbar. Die öffentliche Lesbarkeit wurde ohne Anmeldedaten geprüft.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
 - Aktueller geprüfter DE/EN-Deploy: Source 9c7ae3c, Actions https://github.com/manuelk2607/Worlds-Hub/actions/runs/42006170336, Cloudflare-Version 7f0d48ed-084f-46bc-8f3e-962eabf5abd6. 59 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden.
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
@@ -74,8 +82,22 @@ Replay-Schutz, Ausstellertrennung und atomisches Audit. Das Prüfszenario verwen
 synthetische OIDC-Nachweise. Lern-/Heft-/Spiel-/Redaktions-/Managed-Auth-Integration
 und 193 Unit-Tests bestanden. `a5294a4` behebt den beim Branch-CI entdeckten
 `minimatch`-Auditbefund. Die erneute CI ist grün, inklusive 154 Browserfällen
-auf Desktop und Mobil (Lauf `42007280919`). Nächster Schritt: reproduzierbarer privater Paketbezug,
-OIDC-Routen und serverseitiger Resolver für die lokale UUID.
+auf Desktop und Mobil (Lauf `42007280919`).
+
+Sprachwelten `2ef8b15` lädt das gemeinsame Auth-Modul über das separat
+versionierte Paket `auth-v0.1.0`. Die Quellrevision ist
+`5274e2524883fd215f248643c41b9f1c18058871`, mit Integritätsprüfung in der
+Lockdatei. OIDC-Routen und Lernzugriff sind als Pilot implementiert.
+Gültige Zuordnungen verwenden die lokale UUID für private Vokabelhefte und
+Lernfortschritt. Eine vorhandene Managed-Anmeldung hat Vorrang.
+Profilverwaltung, eigene Beiträge, KI und Administration erfordern im
+Pilot weiterhin die Managed-Anmeldung. 195 Tests, sauberer npm-Install,
+Typprüfung, Lint, Übersetzungsabdeckung, Build und Audit bestanden.
+Die lokale Laufzeit lieferte 404/noindex/no-store für deaktivierte
+Auth-Routen und 200 für die englische Lernseite. Lokale Tests prüften die
+bestehende Heft-ID, fremden Aussteller, Sperre und Logout. Die aktive
+Verknüpfung mit realen Nutzerkonten wartet auf den nachgewiesenen
+Eigentumsnachweis beider Konten und die echte Pilotabnahme.
 
 QA-Zugriff: Eine CLI-Auswertung gab das vom leeren QA-Template geerbte Passwort
 des Testbranches aus. Das Testbranch-Passwort ist rotiert. Die Rotation am
