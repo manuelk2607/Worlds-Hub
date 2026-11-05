@@ -19,7 +19,15 @@ if(identityRoot){
  async function continueOAuth(){const next=await api('oauth2/continue',{selected:true,oauth_query:rawQuery});if(!next.url)throw new Error('CONTINUE_FAILED');navigate(next.url);}
  function showError(error:unknown){const code=error instanceof Error?error.message:error;status(message,code==='UNSAFE_REDIRECT'?'error.unsafeRedirect':code==='CONTINUE_FAILED'?'error.continueFailed':errorKey(code));}
  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-identity-action]'))button.addEventListener('click',()=>show(button.dataset.identityAction!));
- for(const input of root.querySelectorAll<HTMLInputElement>('input')){input.addEventListener('input',()=>input.setCustomValidity(''));input.addEventListener('invalid',()=>{const key=input.validity.typeMismatch?'error.invalidEmail':input.name==='otp'&&input.validity.patternMismatch?'error.invalidCode':input.type==='password'&&input.validity.tooShort?'error.passwordShort':'error.invalidRequest';input.setCustomValidity(text(key));});}
+ const inputs=root.querySelectorAll<HTMLInputElement>('input');
+ function localizeValidation(input:HTMLInputElement){
+  const key=input.validity.typeMismatch?'error.invalidEmail':input.name==='otp'&&input.validity.patternMismatch?'error.invalidCode':input.type==='password'&&input.validity.tooShort?'error.passwordShort':'error.invalidRequest';
+  input.setCustomValidity(text(key));
+ }
+ for(const input of inputs){
+  input.addEventListener('input',()=>input.setCustomValidity(''));
+  input.addEventListener('invalid',()=>localizeValidation(input));
+ }
  for(const form of forms)form.addEventListener('submit',async event=>{
   event.preventDefault();if(busy)return;pending(true);status(message,'status.waiting');const fields=Object.fromEntries(new FormData(form)) as Record<string,string>;
   try{
@@ -37,7 +45,10 @@ if(identityRoot){
  root.querySelector('[data-identity-continue]')?.addEventListener('click',async()=>{if(busy)return;pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}});
  root.querySelector('[data-identity-logout]')?.addEventListener('click',async()=>{if(busy)return;pending(true);try{await api('sign-out',{});location.assign('/identity/login');}catch(error){showError(error);}finally{pending(false);}});
  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-consent]'))button.addEventListener('click',async()=>{if(busy)return;pending(true);try{const data=await api('oauth2/consent',{accept:button.dataset.consent==='true',oauth_query:rawQuery});if(data.url)navigate(data.url);}catch(error){showError(error);}finally{pending(false);}});
- document.addEventListener('worlds:locale',renderUser);
+ document.addEventListener('worlds:locale',()=>{
+  renderUser();
+  for(const input of inputs)if(input.validity.customError)localizeValidation(input);
+ });
  show(root.dataset.mode==='reset'?'reset':'login');
  refresh().then(async data=>{if(data.user?.emailVerified&&root.dataset.mode==='login'){forms.forEach(form=>form.hidden=true);if(oauth){pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}}}else if(data.user&&!data.user.emailVerified&&root.dataset.mode==='login'){show('verify');const email=root.querySelector<HTMLInputElement>('[data-identity-form=verify] input[name=email]');if(email)email.value=data.user.email;}}).catch(()=>{const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');if(anonymous)anonymous.hidden=false;status(message,'error.sessionUnavailable');});
 }

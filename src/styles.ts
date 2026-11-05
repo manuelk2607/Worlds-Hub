@@ -26,4 +26,5 @@ export const identityCss=String.raw`
 .actions{gap:12px}.locale-switch{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:20px;padding:3px 5px;color:var(--muted);font-size:10px}.locale-switch button{border:0;background:transparent;color:inherit;border-radius:14px;padding:5px 6px;font-size:10px;font-weight:700;line-height:1}.locale-switch button[aria-pressed=true]{background:var(--text);color:var(--bg)}.account-short{display:none}
 @media(max-width:700px){.wrap{padding-left:18px;padding-right:18px}.nav{gap:10px}.brand{font-size:19px}.actions{gap:7px}.actions .button{padding:10px 11px;gap:6px}.actions .button svg{display:none}.theme{width:34px;height:34px}.locale-switch{gap:2px;padding:2px 3px}.locale-switch button{padding:5px}.account-full{display:none}.account-short{display:inline}}
 @media(max-width:360px){.wrap{padding-left:12px;padding-right:12px}.nav{gap:6px}.brand{font-size:0}.brand-icon{scale:1.05}.actions{gap:5px}.actions .button{padding:9px}.locale-switch button{padding:5px 4px}}
+.locale-switch button{min-width:26px;min-height:26px}
 `;
