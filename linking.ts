@@ -12,10 +12,14 @@ export interface LinkStore {
 }
 import { token, session, readCookie, SESSION_COOKIE, type AuthConfig } from './oidc.ts';
 import { hash } from './store.ts';
-const recent=(at:number,now:number)=>Number.isFinite(at)&&at<=now&&now-at<=300_000;
+const PROOF_LIFETIME=300_000;
+const recent=(at:number,now:number)=>Number.isFinite(at)&&at<=now&&now-at<PROOF_LIFETIME;
 export async function prepareLink(central:CentralProof,legacy:LegacyProof,store:LinkStore,now=Date.now()) {
   if(!central.issuer.startsWith('https://')||!central.subject||!central.sessionId||!legacy.accountId||!recent(central.authenticatedAt,now)||!recent(legacy.authenticatedAt,now))throw new Error('Fresh proof of both accounts required');
-  const proof=token();await store.stage(await hash(proof),{issuer:central.issuer,subject:central.subject,localId:legacy.accountId,sessionId:central.sessionId,expires:now+300_000});return proof;
+  const expires=Math.min(central.authenticatedAt,legacy.authenticatedAt)+PROOF_LIFETIME;
+  const proof=token();
+  await store.stage(await hash(proof),{issuer:central.issuer,subject:central.subject,localId:legacy.accountId,sessionId:central.sessionId,expires});
+  return proof;
 }
 export async function confirmLink(proof:string,validatedSessionId:string,store:LinkStore,now=Date.now()) {
   if(!/^[A-Za-z0-9_-]{32,128}$/.test(proof)||!validatedSessionId)throw new Error('Invalid proof');
