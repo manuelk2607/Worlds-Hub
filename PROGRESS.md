@@ -16,7 +16,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv unter https://worlds-hub.maki26.workers.dev/. Das Repository https://github.com/manuelk2607/Worlds-Hub ist am 05.11.2026 öffentlich lesbar. Die öffentliche Lesbarkeit wurde ohne Anmeldedaten geprüft.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter Deploy: Commit `41400d8`, Cloudflare-Version `4d820ea9-4bbb-4678-bfec-c99e427ae747`. 62 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42050386345)
+- Aktueller geprüfter Deploy: Commit `6048ee9`, Cloudflare-Version `e9011f4d-fa4e-4ac1-803b-d095a61dc389`. 64 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42409579833)
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 
@@ -118,6 +118,24 @@ Ein echter Reset samt Widerruf muss vor der Übernahme geprüft werden.
 Der QA-Zweig und die Testkonten bleiben für diese Folgeprüfung erhalten.
 Die erneute Prüfung der ursprünglichen Pilotkonfiguration erfolgt vor ihrer
 nächsten Änderung. [Anbietergrenzen](https://neon.com/docs/auth/guides/plugins/oauth-provider)
+
+`auth-v0.1.1` ist unter der Paketrevision
+`386bd19de441b8ecf9453ba5d592a3b5b40843dc` veröffentlicht.
+Alle vier Featurebranches übernehmen diesen OIDC-Client. IT `3032865`
+bestand 127 Tests bei zehn umgebungsbedingten Auslassungen, Typprüfung
+und den Build mit 534 Seiten. Music `42e192a` bestand 22 Tests,
+Typprüfung, Lint und Worker-Trockenlauf. Slop `56ff0dd` bestand
+149 Tests, Build und die workerd-HF-/Logout-Prüfung.
+Sprachwelten `7325f44` bestand 195 Tests, Typprüfung, Lint,
+Übersetzungsabdeckung, Build und vollständigen Dependency-Audit.
+Die Featurebranches sind gepusht. Ihre vollständige reale
+Projektabnahme und Aktivierung stehen aus.
+
+Nächster Schritt ist der separate Slop-Worker mit isolierter Datenbank,
+exaktem Pilot-Client und vollständigem Browserdurchlauf einschließlich
+Migration und Rücknahme. Für dessen Deployment ist eine gesonderte
+Cloudflare-Freigabe angefragt. Die vorhandene Deploymentfreigabe und
+der gespeicherte Token gelten ausschließlich für den Hub.
 
 Slop Urself `6a1ebc3` auf `feature/worlds-hub-sso` enthält private, standardmäßig
 deaktivierte OIDC-Pilotrouten für Cloudflare und Node sowie die transaktionale
