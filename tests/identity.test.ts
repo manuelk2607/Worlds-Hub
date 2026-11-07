@@ -58,12 +58,17 @@ test('password change rechecks the central session, forces provider revocation a
  }finally{f.db.close();}
 });
 
-test('identity export contains only the authenticated profile and its Hub preference',async t=>{
+test('identity export contains only the authenticated profile, preference and migration states',async t=>{
  const f=await fixture();
  f.db.exec(await readFile('migrations/0003_user_preferences.sql','utf8'));
+ f.db.exec(await readFile('migrations/0004_migration_receipts.sql','utf8'));
  const insert=f.db.prepare('INSERT INTO user_preferences VALUES (?,?,?,?)');
  insert.run(baseUrl,fixtureUser.id,'en',1);
  insert.run(baseUrl,'other-user','de',1);
+ const receipt=f.db.prepare('INSERT INTO migration_receipts VALUES (?,?,?,?,?,?,?)');
+ receipt.run('slop-urself',baseUrl,fixtureUser.id,'a'.repeat(64),1,'confirmed',1);
+ receipt.run('it-worlds',baseUrl,'other-user','b'.repeat(64),1,'revoked',1);
+ const migration={origin,identityIssuer:baseUrl,db:f.binding,keys:{}};
  let signedIn=false;
  t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL)=>{
   assert.ok(new URL(String(input)).pathname.endsWith('/get-session'));
@@ -73,13 +78,14 @@ test('identity export contains only the authenticated profile and its Hub prefer
   assert.equal((await identityProxy(f.request('export',{}, {'x-worlds-identity-csrf':'wrong'}),f.config)).status,403);
   assert.equal((await identityProxy(f.request('export'),f.config)).status,401);
   signedIn=true;
-  const response=await identityProxy(f.request('export',{userId:'other-user'}),f.config);
+  const response=await identityProxy(f.request('export',{userId:'other-user'}),f.config,migration);
   assert.equal(response.status,200);
   assert.match(response.headers.get('content-disposition')!,/attachment/);
-  const data=await response.json() as {identity:unknown;preferences:unknown;exportedAt:string};
+  const data=await response.json() as {identity:unknown;preferences:unknown;migrations:unknown;exportedAt:string};
   assert.deepEqual(data.identity,{issuer:baseUrl,...fixtureUser});
   assert.deepEqual(data.preferences,{locale:'en'});
+  assert.deepEqual(data.migrations,{'slop-urself':'confirmed'});
   assert.ok(Number.isFinite(Date.parse(data.exportedAt)));
-  assert.doesNotMatch(JSON.stringify(data),/provider-session-secret|other-user/);
+  assert.doesNotMatch(JSON.stringify(data),/provider-session-secret|other-user|a{64}|account_ref|revision/);
  }finally{f.db.close();}
 });

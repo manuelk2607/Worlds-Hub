@@ -2,6 +2,7 @@ import { handleAuthProxyRequest, resolveNeonAuthLogging } from '@neon/auth/serve
 import { boundedBody, cookie, readCookie, sameOrigin, token } from '../packages/auth/oidc.ts';
 import { D1AuthStore, hash } from '../packages/auth/store.ts';
 import {requestLocale,t} from './i18n/core.ts';
+import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database }
 export interface IdentityEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database }
@@ -71,7 +72,7 @@ async function verifiedAccount(request:Request,config:IdentityConfig) {
   return {id:user.id,email:user.email,name:typeof user.name==='string'?user.name:null,emailVerified:true};
 }
 
-export async function identityProxy(request:Request,config:IdentityConfig) {
+export async function identityProxy(request:Request,config:IdentityConfig,migration?:MigrationConfig|null) {
   const url=new URL(request.url),path=url.pathname.slice('/api/identity/'.length);
   const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
   if(url.origin!==config.origin)return json({error:'INVALID_HOST'},421);
@@ -119,8 +120,9 @@ export async function identityProxy(request:Request,config:IdentityConfig) {
     try{
       const preference=await config.db.prepare('SELECT locale FROM user_preferences WHERE issuer = ? AND subject = ?')
         .bind(config.baseUrl,account.id).first<{locale:string}>();
+      const migrations=migration?.identityIssuer===config.baseUrl?await readMigrationStatus(migration,account.id):undefined;
       const response=json({exportedAt:new Date().toISOString(),identity:{issuer:config.baseUrl,...account},
-        preferences:{locale:preference?.locale??null}});
+        preferences:{locale:preference?.locale??null},...(migrations?{migrations}:{})});
       response.headers.set('Content-Disposition','attachment; filename="worlds-identity.json"');
       return response;
     }catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}

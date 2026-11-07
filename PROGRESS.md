@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-05 (Europe/Stockholm)
+Stand: 2026-11-07 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -53,8 +53,40 @@ Hub-Sprache. Fremde Profile, Sitzungstokens und Projektdaten sind ausgeschlossen
 Die Browserprüfung verwendete synthetische Provider-Antworten.
 Produktiv bestätigt sind die zweisprachige Kontoseite, private Antworten und
 die Abweisung anonymer Anfragen mit und ohne gültigen CSRF-Nachweis.
-Kontolöschung, zentrale Migrationsnachweise und projektübergreifender
+Kontolöschung, produktive Migrationsnachweise und projektübergreifender
 Sitzungswiderruf bleiben offen.
+
+## Migrationsnachweise im isolierten Pilot
+
+Der Hub prüft kurzlebige, mit dem fest hinterlegten Projektschlüssel signierte
+Nachweise. Er speichert den letzten bestätigten Stand pro Projekt und
+zentraler Identität. Wiederholungen sind idempotent. Verspätete Meldungen
+können einen neueren Widerruf nicht überschreiben. Eine andere lokale
+Referenz erfordert eine manuelle Konfliktprüfung. Kontoseite und Export
+zeigen ausschließlich die Zustände der angemeldeten Identität.
+
+Slop verwendet das vorhandene transaktionale Audit als Versandwarteschlange.
+Eine Rücknahme protokolliert den Widerruf und entfernt die betroffenen
+Worlds-Sitzungen in derselben Transaktion. Bis zu zehn Nachweise werden pro
+stündlichem Lauf gesendet. Temporäre Fehler bleiben zur Wiederholung offen,
+Zuordnungskonflikte werden zur Prüfung markiert.
+
+63 Hub-Tests sowie 149 Slop-Tests, Typprüfungen und Builds bestanden.
+Der lokale Test vom 07.11.2026 verband die echte Slop-Verknüpfungsroute
+in PostgreSQL 17 mit dem Hub in workerd und einer lokalen D1.
+Geprüft wurden parallele Verknüpfung, verlorene Empfangsbestätigung,
+erneute Zustellung, private Hub-Anzeige, Rücknahme, Sitzungswiderruf
+und der Erhalt derselben lokalen Profil-ID. Die Authentifizierung
+verwendete Testkonten. Die bestehenden Node-/Socket.IO-/HF- und
+workerd-Integrationen bestanden ebenfalls.
+
+Das Paket ist standardmäßig deaktiviert. Die additive D1-Migration 0004,
+Projektschlüssel und das separate Pilotziel sind vor der Aktivierung
+einzurichten. Slop sperrt die produktive Hub-Origin für seine
+Pilotnachweise. Am 07.11.2026 ist die Cloudflare-CLI weiterhin abgemeldet.
+Der reale zentrale Eigentumsnachweis und die produktive Migration bleiben
+offen. Vertrag und Einrichtung stehen in `docs/MIGRATION-RECEIPTS.md`
+und im Slop-Dokument `docs/WORLDS-PILOT.md`.
 
 Slop Urself `6a1ebc3` auf `feature/worlds-hub-sso` enthält private, standardmäßig
 deaktivierte OIDC-Pilotrouten für Cloudflare und Node sowie die transaktionale

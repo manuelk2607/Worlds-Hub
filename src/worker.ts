@@ -4,13 +4,14 @@ import {css,identityCss} from './styles.ts';
 import {layout,home,detail,account,loggedOut,privacy,notFound} from './pages.ts';
 import {projects} from './projects.ts';
 import {escapeHtml} from './html.ts';
+import {migrationConfig, readMigrationStatus, receiveMigrationReceipt, type MigrationEnv} from './migration-receipts.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
 import {backchannelLogout,boundedBody,callback,logout,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
 import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type RouteId,type Values} from './i18n/core.ts';
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
 
-export interface Env extends IdentityEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database}
+export interface Env extends IdentityEnv,MigrationEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database}
 export const DEFAULT_ORIGIN='https://worlds-hub.maki26.workers.dev';
 export function authConfig(env:Env):AuthConfig|null {
  if(env.AUTH_ENABLED!=='true'||!env.SITE_ORIGIN||!env.OIDC_ISSUER||!env.OIDC_CLIENT_ID||!env.AUTH_DB||!env.OIDC_ID_TOKEN_ALG)return null;
@@ -79,8 +80,10 @@ export default {
    return finish(text(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`,'application/xml'));
   }
   const central=identityConfig(env);
-  if(path.startsWith('/api/identity/'))return finish(central?await identityProxy(request,central):Response.json({error:'IDENTITY_NOT_CONFIGURED'},{status:503}));
   const config=authConfig(env);
+  const migration=migrationConfig(env,origin,config?.issuer,env.AUTH_DB);
+  if(path.startsWith('/api/identity/'))return finish(central?await identityProxy(request,central,migration):Response.json({error:'IDENTITY_NOT_CONFIGURED'},{status:503}));
+  if(path.startsWith('/api/migrations/receipts/'))return finish(migration?await receiveMigrationReceipt(request,migration):Response.json({error:'NOT_FOUND'},{status:404}));
   if(path==='/api/preferences/locale')return finish(await localePreference(request,config,env.AUTH_DB));
   if(path.startsWith('/identity/')){
    if(!central)return finish(text(t(locale,'error.notConfigured'),'text/plain',503));
@@ -111,7 +114,8 @@ export default {
   }else if(matched&&['account','signIn','signUp'].includes(matched.id)){
    let current:Awaited<ReturnType<typeof session>>;try{current=config?await session(request,config):null;}catch{return finish(text(t(locale,'error.accountUnavailable'),'text/plain',503));}
    let accountUrl:string|undefined;if(env.OIDC_ACCOUNT_URL){const candidate=new URL(env.OIDC_ACCOUNT_URL);if(candidate.protocol==='https:'&&!candidate.username&&!candidate.password)accountUrl=candidate.href;}
-   body=account(current,!!config,locale,accountUrl,!!central);title=t(locale,'account.title');titleKey='account.title';description=t(locale,'account.description');descriptionKey='account.description';
+   const migrationStatus=current&&migration?await readMigrationStatus(migration,current.sub).catch(()=>undefined):undefined;
+   body=account(current,!!config,locale,accountUrl,!!central,migrationStatus);title=t(locale,'account.title');titleKey='account.title';description=t(locale,'account.description');descriptionKey='account.description';
   }else if(matched?.id==='signedOut'){body=loggedOut(locale);title=t(locale,'logout.metaTitle');titleKey='logout.metaTitle';}
   else if(matched?.id==='privacy'){body=privacy(locale);title=t(locale,'privacy.metaTitle');titleKey='privacy.metaTitle';}
   else if(matched?.id.startsWith('world:')){

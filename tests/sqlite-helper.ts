@@ -11,6 +11,7 @@ export async function sqliteD1(){
         bind(...values:(string|number|null)[]){
           return {
             async first(){return statement.get(...values)??null;},
+            async all(){return {results:statement.all(...values)};},
             async run(){const result=statement.run(...values);return {meta:{changes:Number(result.changes)}};}
           };
         }
