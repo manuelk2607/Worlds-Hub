@@ -5,16 +5,29 @@ if(identityRoot){
  const root=identityRoot,message=root.querySelector<HTMLElement>('[data-identity-message]')!,csrf=root.querySelector<HTMLMetaElement>('meta[name="worlds-identity-csrf"]')!.content;
  const rawQuery=location.search.slice(1),params=new URLSearchParams(rawQuery),oauth=params.has('client_id');
  const forms=[...root.querySelectorAll<HTMLFormElement>('[data-identity-form]')];
- let busy=false,currentUser:{id:string;name?:string;email:string;emailVerified:boolean}|undefined;
+ let busy=false,freshSignInRequired=false,currentUser:{id:string;name?:string;email:string;emailVerified:boolean}|undefined;
  function show(mode:string){forms.forEach(form=>{form.hidden=form.dataset.identityForm!==mode;});root.querySelectorAll<HTMLButtonElement>('.identity-tabs button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.identityAction===mode)));clearStatus(message);}
  async function api(path:string,body?:Record<string,unknown>){
   const response=await fetch('/api/identity/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json','x-worlds-identity-csrf':csrf}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
-  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;user?:{id:string;name?:string;email:string;emailVerified:boolean}};
+  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
   if(!response.ok)throw new Error(data.code??data.error??String(response.status));return data;
  }
  function navigate(url:string){const target=new URL(url,location.origin);if(target.protocol!=='https:')throw new Error('UNSAFE_REDIRECT');location.assign(target.href);}
  function renderUser(){const user=root.querySelector<HTMLElement>('[data-identity-user]'),greeting=root.querySelector<HTMLElement>('[data-identity-greeting]');if(user&&currentUser)user.textContent=text(currentUser.emailVerified?'status.emailVerified':'status.emailNeeded');if(greeting&&currentUser)greeting.textContent=currentUser.name?text('account.greeting',{name:currentUser.name}):text('identity.welcome');}
- async function refresh(){const data=await api('get-session');currentUser=data.user;const reset=root.dataset.mode==='reset',active=!!currentUser?.emailVerified;root.dataset.verified=String(active);const panel=root.querySelector<HTMLElement>('[data-identity-session]');if(panel)panel.hidden=!currentUser||reset;const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');if(anonymous)anonymous.hidden=active&&!reset;renderUser();pending(busy);return data;}
+ async function refresh(){
+  const data=await api('get-session');currentUser=data.user;
+  const reset=root.dataset.mode==='reset';
+  const maxAge=params.get('max_age'),createdAt=Date.parse(data.session?.createdAt??'');
+  freshSignInRequired=oauth&&maxAge!==null&&(!/^\d+$/.test(maxAge)||!Number.isSafeInteger(Number(maxAge))||!Number.isFinite(createdAt)||
+   createdAt>Date.now()+5000||Date.now()-createdAt>=Number(maxAge)*1000);
+  const active=!!currentUser?.emailVerified&&!freshSignInRequired;
+  root.dataset.verified=String(active);
+  const panel=root.querySelector<HTMLElement>('[data-identity-session]');
+  if(panel)panel.hidden=!currentUser||reset||freshSignInRequired;
+  const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
+  if(anonymous)anonymous.hidden=active&&!reset;
+  renderUser();pending(busy);return data;
+ }
  function pending(value:boolean){busy=value;root.setAttribute('aria-busy',String(value));root.querySelectorAll<HTMLButtonElement>('button').forEach(button=>button.disabled=value||(button.matches('[data-identity-continue],[data-identity-verified-action]')&&root.dataset.verified!=='true'));}
  async function continueOAuth(){const next=await api('oauth2/continue',{selected:true,oauth_query:rawQuery});if(!next.url)throw new Error('CONTINUE_FAILED');navigate(next.url);}
  function showError(error:unknown){const code=error instanceof Error?error.message:error;status(message,code==='UNSAFE_REDIRECT'?'error.unsafeRedirect':code==='CONTINUE_FAILED'?'error.continueFailed':errorKey(code));}
@@ -44,7 +57,7 @@ if(identityRoot){
    else if(action==='reset'){history.replaceState(null,'','/identity/login');show('login');status(message,'status.passwordSaved');}
    else if(action==='change-password'){form.hidden=true;status(message,data.hubSessionsRevoked?'status.passwordChanged':'status.passwordChangedPartial');}
    else if(action==='verify'){show('login');status(message,'status.verifiedDone');}
-   else{const session=await refresh();status(message,action==='update'?'status.nameSaved':'status.signedIn');if(oauth&&session.user?.emailVerified)await continueOAuth();}
+   else{const session=await refresh();status(message,action==='update'?'status.nameSaved':'status.signedIn');if(oauth&&session.user?.emailVerified&&!freshSignInRequired)await continueOAuth();}
   }catch(error){if(error instanceof Error&&error.message==='RESET_INCOMPLETE')status(message,'error.resetIncomplete');else showError(error);}finally{if(action==='change-password')form.reset();pending(false);}
  });
  root.querySelector('[data-identity-export]')?.addEventListener('click',async()=>{
@@ -65,5 +78,20 @@ if(identityRoot){
   for(const input of inputs)if(input.validity.customError)localizeValidation(input);
  });
  show(root.dataset.mode==='reset'?'reset':'login');
- refresh().then(async data=>{if(data.user?.emailVerified&&root.dataset.mode==='login'){forms.forEach(form=>form.hidden=true);if(oauth){pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}}}else if(data.user&&!data.user.emailVerified&&root.dataset.mode==='login'){show('verify');const email=root.querySelector<HTMLInputElement>('[data-identity-form=verify] input[name=email]');if(email)email.value=data.user.email;}}).catch(()=>{const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');if(anonymous)anonymous.hidden=false;status(message,'error.sessionUnavailable');});
+ refresh().then(async data=>{
+  if(root.dataset.mode!=='login')return;
+  if(data.user?.emailVerified&&freshSignInRequired){
+   show('login');
+   const email=root.querySelector<HTMLInputElement>('[data-identity-form=login] input[name=email]');
+   if(email)email.value=data.user.email;
+   status(message,'status.confirmSignIn');
+  }else if(data.user?.emailVerified){
+   forms.forEach(form=>form.hidden=true);
+   if(oauth){pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}}
+  }else if(data.user){
+   show('verify');
+   const email=root.querySelector<HTMLInputElement>('[data-identity-form=verify] input[name=email]');
+   if(email)email.value=data.user.email;
+  }
+ }).catch(()=>{const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');if(anonymous)anonymous.hidden=false;status(message,'error.sessionUnavailable');});
 }

@@ -235,6 +235,7 @@
   "identity.privacy": "Privacy at Worlds Hub",
   "status.waiting": "One moment …",
   "status.opening": "Opening sign-in …",
+  "status.confirmSignIn": "Please confirm your sign-in to continue.",
   "status.continuing": "Continuing your sign-in …",
   "status.emailVerified": "Your email address is verified.",
   "status.emailNeeded": "Please verify your email address first.",

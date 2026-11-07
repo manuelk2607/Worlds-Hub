@@ -235,6 +235,7 @@
   "identity.privacy": "Datenschutz bei Worlds Hub",
   "status.waiting": "Einen Moment …",
   "status.opening": "Anmeldung wird geöffnet …",
+  "status.confirmSignIn": "Bitte bestätige deine Anmeldung, um fortzufahren.",
   "status.continuing": "Deine Anmeldung wird fortgesetzt …",
   "status.emailVerified": "Deine E-Mail-Adresse ist bestätigt.",
   "status.emailNeeded": "Bitte bestätige zuerst deine E-Mail-Adresse.",

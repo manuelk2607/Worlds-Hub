@@ -36,7 +36,7 @@ Der Nutzer-Screenshot zeigte die aktive zentrale Sitzung vor dem bislang manuell
 
 ## Offen / Abnahmegrenzen
 - Kein bestehendes Welt-Projekt produktiv per SSO angebunden. IT-Worlds-Datenwiederherstellung und additive Mapping-/RLS-Transaktionsprüfung im isolierten Development-Zweig bestanden; echter OIDC-Browserpilot, parallele Bestätigung und vollständiger Deployment-Rollback bleiben erforderlich.
-- Reauth prompt=login/max_age=0 laut Neon-Dokumentation problematisch; aktueller Upstream enthält frische Sessionbehandlung, Managed-Verhalten noch nicht geprüft. Erzwungene Reauth bleibt aus. Kein unsicherer Ersatz durch E-Mail oder ID-Token-iat.
+- Neon bestätigt die Schleife bei `prompt=login` und `max_age=0`. Der separate reale QA-Zweig hat inzwischen `max_age=300` mit signiertem `auth_time` bestätigt. Für einen älteren Login wurde mit einem kürzeren positiven Zeitfenster die erneute Anmeldung bis zum verifizierten Token geprüft. Der Shared-Client verwendet dafür 300 Sekunden. Die Freigabe für reale Projektverknüpfungen wartet auf den vollständigen Browserpilot.
 - Recovery, Projekt-übergreifender Logout, zweite echte Relying Party, Rollen/Mapping und HF-Gates in integrierten Apps noch produktiv zu prüfen. Hub-Logout und zentrale SDK-Abmeldung sind getrennt und werden so erklärt.
 - Eigene produktionsgeeignete SMTP-Konfiguration nicht vorhanden. Pilot nutzt den kostenlosen Neon-Maildienst; OTP real bestätigt. Keine bezahlte SMTP-/Domainbestellung.
 - Search-Console-Property/Token fehlt; keine Google-Indexierung garantiert. Bestehende Properties/Canonicals unangetastet.
@@ -87,6 +87,37 @@ Pilotnachweise. Am 07.11.2026 ist die Cloudflare-CLI weiterhin abgemeldet.
 Der reale zentrale Eigentumsnachweis und die produktive Migration bleiben
 offen. Vertrag und Einrichtung stehen in `docs/MIGRATION-RECEIPTS.md`
 und im Slop-Dokument `docs/WORLDS-PILOT.md`.
+
+## Reale Prüfung des zentralen Anmeldenachweises am 07.11.2026
+
+Der neue Neon-QA-Zweig `br-jolly-leaf-ba8vt1pe` im bestehenden Free-Projekt
+Worlds Hub Identity enthält einen eigenen öffentlichen QA-Client. Zwei neue
+synthetische Konten wurden ausschließlich in diesem Zweig erstellt. Nur dort
+wurden der E-Mail-Versand und die Verifikationspflicht für die API-Prüfung
+abgeschaltet. Die zentrale Pilotkonfiguration behält ihre Verifikationspflicht.
+Der Zweig übernimmt die vom Free-Konto vorgegebenen Compute-Einstellungen.
+
+Der echte Anbieter bestätigte PKCE, Consent, Codeaustausch und die
+Ed25519-Signatur einschließlich Aussteller, Client, Nonce und frischem
+`auth_time` für `max_age=300`. Ein zweiter Durchlauf mit `max_age=10`
+und gealterter Sitzung verlangte erneut die Zugangsdaten und lieferte
+anschließend den erwarteten frischen Nachweis.
+
+Der gemeinsame Client fordert nun einen maximal fünf Minuten alten Login.
+Die Hub-Identitätsseite zeigt bei älteren oder ungültigen Zeitstempeln das
+Anmeldeformular. Aktuelle Sitzungen werden automatisch fortgesetzt.
+Chromium und WebKit bestätigten beide Fälle, DE/EN, Formularzustand und
+den unveränderten signierten Query bei 320 px. Die Browserantworten waren
+synthetisch. Der echte Anbieter wurde separat über seine nativen APIs geprüft.
+
+Der native `delete-user`-Endpunkt lieferte mit beiden angemeldeten QA-Konten
+HTTP 404. Eine funktionierende Selbstlöschung ist damit weiterhin offen.
+Im QA-Zweig ist `revoke_sessions_on_password_reset=true` gesetzt.
+Die vorherige zentrale Pilotkonfiguration meldet dafür noch `false`.
+Ein echter Reset samt Widerruf muss vor der Übernahme geprüft werden.
+Der QA-Zweig und die Testkonten bleiben für diese Folgeprüfung erhalten.
+Die erneute Prüfung der ursprünglichen Pilotkonfiguration erfolgt vor ihrer
+nächsten Änderung. [Anbietergrenzen](https://neon.com/docs/auth/guides/plugins/oauth-provider)
 
 Slop Urself `6a1ebc3` auf `feature/worlds-hub-sso` enthält private, standardmäßig
 deaktivierte OIDC-Pilotrouten für Cloudflare und Node sowie die transaktionale

@@ -145,9 +145,9 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   }
   // Do not expose raw session tokens or set-auth-token/set-auth-jwt headers from the managed API.
   const result:Record<string,unknown>={};
-  const session=body.session as {expiresAt?:unknown}|undefined,user=body.user as {id?:unknown;name?:unknown;email?:unknown;emailVerified?:unknown}|undefined;
+  const session=body.session as {expiresAt?:unknown;createdAt?:unknown}|undefined,user=body.user as {id?:unknown;name?:unknown;email?:unknown;emailVerified?:unknown}|undefined;
   if(user)result.user={id:user.id,name:user.name,email:user.email,emailVerified:user.emailVerified};
-  if(session)result.session={expiresAt:session.expiresAt};
+  if(session)result.session={expiresAt:session.expiresAt,createdAt:session.createdAt};
   for(const k of ['status','success','redirect','code','message','error'])if(['boolean','string'].includes(typeof body[k]))result[k]=body[k];
   if(body.url!==undefined){const target=allowedResultUrl(body.url,oauthQuery,config);if(!target)return json({error:'UNTRUSTED_IDENTITY_REDIRECT'},502);result.url=target;}
   if(path==='get-session'&&!user){result.user=null;result.session=null;}
