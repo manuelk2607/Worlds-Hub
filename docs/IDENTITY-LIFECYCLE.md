@@ -8,7 +8,7 @@ project IDs. The items below do not authorize a production cutover.
 | Registration, email verification, Hub login | User-confirmed OTP and real Safari callback | Complete project pilot and second relying party |
 | Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
-| Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation and production configuration remain open. QA has `revoke_sessions_on_password_reset=true`; primary pilot still has `false` and remains unchanged |
+| Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation remains open. After QA restoration, the same reset-revocation option was enabled in the primary pilot; all other settings are unchanged |
 | Self-deletion | Authenticated `delete-user` returned 404 for two QA fixtures | Supported deletion route, fresh ownership proof and revocation of all project sessions |
 | Cross-project logout | Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Actual provider delivery to registered clients and complete browser acceptance |
 
@@ -74,8 +74,22 @@ No production identity issuer was replaced or relaxed.
 
 Afterward, original configuration fields were identical for QA and the primary
 pilot, delivery was disabled, and the receiver and tunnel were closed. All fixture
-sessions were revoked. Production reset revocation remains disabled; cross-project
-session revocation is a separate unresolved acceptance item.
+sessions were revoked. These unchanged-setting statements describe cleanup of the
+authorized QA test; the subsequent controlled policy rollout is recorded below.
+
+## Central pilot policy rollout
+
+After QA recovery passed and its temporary delivery was restored, the single
+setting `revoke_sessions_on_password_reset` was changed from `false` to `true`
+on the central `sso-pilot` branch. A fresh management read and complete settings
+comparison confirmed exactly that one change. Email verification, OTP delivery,
+trusted origins, plugins, OAuth providers and the disabled webhook are unchanged.
+This affects future resets; no personal password was reset as part of rollout.
+The deployed Hub smoke checks passed afterward. Actual account-reset behaviour
+was verified in QA, not by resetting the personal central account.
+
+This native setting does not establish revocation of Hub or project sessions.
+Cross-project session revocation remains a separate unresolved acceptance item.
 
 ## Sources checked on 2026-11-08
 

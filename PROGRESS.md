@@ -48,8 +48,30 @@ Eine zusätzliche echte Live-Netzwerkprüfung mit einer nicht vorhandenen
 synthetischen Adresse bestand das englische WebKit-Formular samt Cookie/CSRF.
 Keine weiteren Konten angelegt. Zustellung erneut vollständig wiederhergestellt,
 beide Konfigurationen mit dem Ausgangsstand identisch; Empfänger und Tunnel beendet.
-Produktive Reset-Konfiguration und projektübergreifender Widerruf bleiben offen.
+Nach abgeschlossener QA-Rückstellung wurde die geprüfte Einzeloption
+`revoke_sessions_on_password_reset=true` gezielt im zentralen SSO-Piloten
+aktiviert. Der erneute Konfigurationsvergleich bestätigt ausschließlich diese
+Änderung: OTP-/Verifikationspflicht, Origins, Mailzustellung und alle weiteren
+Einstellungen sind identisch. Dadurch beendet ein künftiger Reset die nativen
+Anbietersitzungen des betroffenen Kontos. Es wurde kein persönlicher Reset
+ausgelöst. Projektübergreifender Widerruf bleibt separat offen.
 Konkrete Anbietergrenzen und Abnahmen stehen in `docs/IDENTITY-LIFECYCLE.md`.
+
+## Kontrollierte Deployment-Rücknahme – laufend
+
+Slop `a4a3f7a` ergänzt einen festen Pilot-Versionsprüfer und einen manuellen
+Workflow für die kontrollierte Rücknahme mit anschließender Wiederherstellung.
+Acht neue Regressionstests bestehen: identische Ressourcen, sichere
+Fehlerbehandlung, Wiederherstellung, unklare Schreibantwort und konkurrierende
+Deployments. Kein `force`, keine produktiven Worker oder Datenbankänderungen.
+Build mit beiden Typprüfungen und alle 156 Unit-Tests bestanden; der neue
+Prüfer wurde zusätzlich separat typgeprüft. Die vollständige CI
+`42489252839` bestand Chromium, WebKit und PostgreSQL. Die lesende
+Cloudflare-Metadatenprüfung `42489823444` scheiterte ohne Schreibaufruf.
+Der nachfolgende Prüfer korrigiert die einmalige Verarbeitung des robots-Inhalts
+und meldet nur sichere Fehlerursachen. Erneute vollständige CI und lesende
+Metadatenprüfung sind als nächster Schritt nötig. Die tatsächliche Versionsübung bleibt
+bis zum Nachweis kompatibler Assets und Bindungen ausdrücklich offen.
 
 ## Aktueller Meilenstein – isolierter Slop-Pilot
 
@@ -208,9 +230,11 @@ synthetisch. Der echte Anbieter wurde separat über seine nativen APIs geprüft.
 Der native `delete-user`-Endpunkt lieferte mit beiden angemeldeten QA-Konten
 HTTP 404. Eine funktionierende Selbstlöschung ist damit weiterhin offen.
 Im QA-Zweig ist `revoke_sessions_on_password_reset=true` gesetzt.
-Die vorherige zentrale Pilotkonfiguration meldet dafür noch `false`.
+Die ursprüngliche zentrale Pilotkonfiguration hatte dafür noch `false`;
+nach bestandener QA-Abnahme wurde ausschließlich diese Option auf `true` gesetzt.
 Echter Reset und Widerruf sind inzwischen im QA-Zweig einschließlich Browser/BFF
-geprüft (Abnahme oben). Die produktive Übernahme ist noch nicht erfolgt.
+geprüft (Abnahme oben). Die Sicherheitsoption ist im zentralen Pilot übernommen;
+projektübergreifender Widerruf ist dadurch noch nicht nachgewiesen.
 Der QA-Zweig und die Testkonten bleiben für diese Folgeprüfung erhalten.
 Die erneute Prüfung der ursprünglichen Pilotkonfiguration erfolgt vor ihrer
 nächsten Änderung. [Anbietergrenzen](https://neon.com/docs/auth/guides/plugins/oauth-provider)
