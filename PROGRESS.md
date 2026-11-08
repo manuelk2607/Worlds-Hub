@@ -32,11 +32,21 @@ Die HF-Pflichtinformation bleibt auch für diesen Client sichtbar.
 64 Hub-Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 
 Slop-Commit `290f36a` konfiguriert ausschließlich den wiederhergestellten
-Host und simulierte Videos. Sein Deployment verlangt eine erfolgreiche
-vollständige CI desselben Commits. Der vorherige Lauf `42464051272` bestand
-Chromium und WebKit; der aktuelle Lauf `42464544452` läuft noch.
-Nächste Schritte sind Hub-Registry deployen, nach erfolgreicher Slop-CI
-den getrennten Worker bereitstellen und den echten Browserablauf prüfen.
+Host und simulierte Videos. Die vollständige CI `42464544452` bestand
+Chromium, WebKit und PostgreSQL. Deploy `42465065850` legte den Worker und
+seine Secrets an. Der sofortige Smoke traf noch die Verteilung der Secrets
+und erhielt 503; nachfolgend antwortete die Seite korrekt mit 200.
+`5a1b945` ergänzt dafür eine begrenzte Warteprüfung.
+
+Der echte native Formularstart offenbarte `Origin: null` durch die bisherige
+`no-referrer`-Policy. Slop `ae37253` verwendet auf der Pilot-Kontoseite
+`same-origin`; die strenge Origin-Prüfung bleibt erhalten. Ein neuer
+Browser-Regressionstest reproduzierte den Fehler und besteht nach der
+Korrektur in Chromium und WebKit bei 320 px. 149 Tests und Build bestanden.
+CI `42465438360` prüft den endgültigen Commit vor dessen Deployment.
+Die Hub-Registry ist bereits deployt und der zweisprachige Live-Smoke
+erfolgreich. Nächster Schritt ist der geprüfte Slop-Deploy samt echtem
+Browserablauf und anschließend persönlichem Eigentumsnachweis.
 Migrationsnachweise bleiben bis zur separaten Pilotaktivierung deaktiviert.
 
 ## Ziel und Grenzen
@@ -45,7 +55,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv unter https://worlds-hub.maki26.workers.dev/. Das Repository https://github.com/manuelk2607/Worlds-Hub ist am 05.11.2026 öffentlich lesbar. Die öffentliche Lesbarkeit wurde ohne Anmeldedaten geprüft.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter Deploy: Commit `6048ee9`, Cloudflare-Version `e9011f4d-fa4e-4ac1-803b-d095a61dc389`. 64 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42409579833)
+- Aktueller geprüfter Deploy: Commit `237a476`, Cloudflare-Version `c3073d69-251f-474f-9619-e641e1f82add`. 64 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42464764430)
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 
@@ -147,6 +157,15 @@ Ein echter Reset samt Widerruf muss vor der Übernahme geprüft werden.
 Der QA-Zweig und die Testkonten bleiben für diese Folgeprüfung erhalten.
 Die erneute Prüfung der ursprünglichen Pilotkonfiguration erfolgt vor ihrer
 nächsten Änderung. [Anbietergrenzen](https://neon.com/docs/auth/guides/plugins/oauth-provider)
+
+Ergänzende echte QA-Prüfung am 08.11.: Ein weiteres neues synthetisches
+Konto bestätigte den nativen Passwortwechsel. Falsches aktuelles Passwort
+wird abgewiesen; der erfolgreiche Wechsel erhält dieselbe Identität,
+widerruft die zweite Sitzung und lässt nur das neue Passwort zu.
+Anschließend wurden alle Sitzungen dieses Testkontos über den nativen
+Anbieter-Endpunkt widerrufen und ohne Cookie-Cache als ungültig geprüft.
+Keine persönlichen Zugangsdaten oder bestehenden Konten wurden geändert.
+Dies ersetzt nicht die noch offene E-Mail-Recovery-Abnahme.
 
 `auth-v0.1.1` ist unter der Paketrevision
 `386bd19de441b8ecf9453ba5d592a3b5b40843dc` veröffentlicht.
