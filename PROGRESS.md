@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-07 (Europe/Stockholm)
+Stand: 2026-11-08 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -9,6 +9,35 @@ zentralen Konto, zentrale Nachweise über den Migrationsstand und die reale
 Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
+
+## Aktueller Meilenstein – isolierter Slop-Pilot
+
+Die persönliche Cloudflare-Anmeldung und die gesonderte Tokenfreigabe sind
+erledigt. Der Token `slop-worlds-pilot deploy` hat ausschließlich Workers
+Scripts Write, endet am 08.12.2026 und liegt nur in der GitHub-Umgebung
+`worlds-pilot` von Slop Urself. Die Umgebung erlaubt ausschließlich
+`feature/worlds-hub-sso`. Datenbankverbindung und neuer Cookie-Schlüssel
+sind dort ebenfalls als Secrets abgelegt. Der Hub-Token wird nicht verwendet.
+
+Slop-Sicherung `br-empty-mouse-b1uodoxw` bei LSN `0/3A99470` und
+Wiederherstellung `br-sparkling-firefly-b1pssf1o` sind geprüft. Alle sechs
+Bestandstabellen stimmen nach Zahl und Prüfsumme mit der Quelle überein.
+Die 13 Profile blieben auch nach Schemaeinrichtung und zurückgerolltem
+Verknüpfungs-/Widerrufstest erhalten. Keine produktiven Konten migriert.
+
+Der öffentliche Pilot-Client ist beim bestehenden zentralen Anbieter mit
+genau einem Callback und einer Ressource registriert. Der Hub ergänzt
+dieselbe Konfiguration für `slopurself-worlds-pilot.maki26.workers.dev`.
+Die HF-Pflichtinformation bleibt auch für diesen Client sichtbar.
+64 Hub-Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+
+Slop-Commit `290f36a` konfiguriert ausschließlich den wiederhergestellten
+Host und simulierte Videos. Sein Deployment verlangt eine erfolgreiche
+vollständige CI desselben Commits. Der vorherige Lauf `42464051272` bestand
+Chromium und WebKit; der aktuelle Lauf `42464544452` läuft noch.
+Nächste Schritte sind Hub-Registry deployen, nach erfolgreicher Slop-CI
+den getrennten Worker bereitstellen und den echten Browserablauf prüfen.
+Migrationsnachweise bleiben bis zur separaten Pilotaktivierung deaktiviert.
 
 ## Ziel und Grenzen
 Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC-SSO. Anwendungen, Repositories, Datenbanken und Berechtigungen bleiben getrennt. Adventskalender ist vollständig ausgeschlossen. Keine E-Mail-basierte Kontozusammenführung, keine Passwortübernahme; Slops persönliche HF-Anbindung, Kontingente, Jobs und Moderation bleiben verpflichtend und unverändert.

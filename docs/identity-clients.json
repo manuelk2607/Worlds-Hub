@@ -38,5 +38,13 @@
       "https://slopurself.maki26.workers.dev/auth/callback"
     ],
     "resource": "https://slopurself.maki26.workers.dev/api"
+  },
+  {
+    "clientId": "xHmQeQbWdDlBfOasyyBysjtNwInTdpuG",
+    "name": "Slop Urself Pilot",
+    "redirects": [
+      "https://slopurself-worlds-pilot.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://slopurself-worlds-pilot.maki26.workers.dev/api"
   }
 ]
