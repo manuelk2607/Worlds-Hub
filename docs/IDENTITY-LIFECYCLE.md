@@ -8,7 +8,7 @@ project IDs. The items below do not authorize a production cutover.
 | Registration, email verification, Hub login | User-confirmed OTP and real Safari callback | Complete project pilot and second relying party |
 | Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
-| Password reset | QA branch has `revoke_sessions_on_password_reset=true`; primary pilot still has `false` | Real delivered reset link, one-use consumption, two old sessions revoked, unrelated account preserved |
+| Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Full browser/BFF acceptance. QA has `revoke_sessions_on_password_reset=true`; primary pilot still has `false` and remains unchanged |
 | Self-deletion | Authenticated `delete-user` returned 404 for two QA fixtures | Supported deletion route, fresh ownership proof and revocation of all project sessions |
 | Cross-project logout | Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Actual provider delivery to registered clients and complete browser acceptance |
 
@@ -30,20 +30,28 @@ Do not claim functioning cross-project logout from discovery metadata alone.
 
 ## Controlled recovery test
 
-A temporary receiver was prepared for the existing QA branch
-`br-jolly-leaf-ba8vt1pe`. It verifies the native detached EdDSA signature,
-timestamp, event ID, exact QA endpoint and synthetic user before retaining a
-reset link solely in memory. Unsigned requests were rejected. The intended
-test uses two new synthetic accounts and checks native reset, token replay,
-both previous sessions and the unrelated account.
+After the user's explicit approval, a temporary receiver accepted signed
+recovery deliveries for the existing QA branch `br-jolly-leaf-ba8vt1pe`.
+It verified the detached EdDSA signature, timestamp, event ID, exact synthetic
+user and the QA issuer in the signed native reset URL. Unsigned requests were
+rejected. Reset links and passwords stayed in process memory and were not logged.
 
-Automatic approval review rejected enabling delivery to a public Cloudflare
-test tunnel because transmission of sensitive recovery links was not yet
-explicitly authorized. The requested configuration was not applied; a
-subsequent provider read confirmed webhooks remain disabled. A specific user
-approval is pending. The unused receiver and tunnel were stopped; no recovery
-accounts or links were created by this prepared test. No parent settings or
-personal credentials were changed.
+The cloned provider reports the original parent endpoint in
+`context.endpoint_id`, even though the signed reset URL and account belong
+to QA. That diagnostic context is not a reliable branch discriminator. All
+branches share signing keys, so signature verification alone is also
+insufficient. Pin the actual issuer in the signed native URL and the unique
+fixture identity before using a reset token.
+
+Native acceptance passed: invalid token denied, configured return URL retained,
+valid token consumed once, stable subject, old password rejected, two previous
+sessions revoked, and the unrelated account still active. Fixture sessions were
+then revoked. Both branches' original settings were compared after restoration;
+webhooks are disabled and the parent configuration is unchanged. Receiver and
+tunnel were stopped. Aggregate-only SQL confirmed eight recovery fixtures and
+zero active recovery sessions in QA, with zero such fixtures in the parent
+(one account). No personal account or project mapping was changed. Initial
+diagnostic attempts account for the additional inactive QA fixtures.
 
 ## Sources checked on 2026-11-08
 

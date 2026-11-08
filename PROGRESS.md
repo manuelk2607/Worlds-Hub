@@ -25,11 +25,18 @@ Fehlercode für die lokalisierte Meldung bei überlangen Eingaben für Login, Re
 Reset und Passwortwechsel. Dabei wurde kein Konto angelegt oder geändert.
 Vollständiger CI-/Deploy-/Live-Smoke-Lauf `42467739726` erfolgreich.
 
-Die echte Recovery-Abnahme ist vorbereitet. Die automatische Freigabeprüfung
-lehnte die vorübergehende QA-Zustellung von Rücksetzlinks über einen
-öffentlichen Testzugang ab; dafür ist ausdrücklich eine Freigabe angefragt.
-Die Einstellung blieb nachweislich unverändert, der ungenutzte Testempfänger
-und Tunnel sind beendet. Produktive OTP-/Auth-Einstellungen blieben erhalten.
+Nach ausdrücklicher Nutzerfreigabe bestand die echte native Recovery-Abnahme
+im isolierten QA-Zweig: signierter zugestellter Nachweis, exaktes Rücksprungziel,
+einmaliger Reset, gleiche Identität, altes Passwort ungültig, zwei bisherige
+Sitzungen widerrufen und zweites Konto unbeeinträchtigt. Der erste strenge
+Empfänger prüfte eine vom geklonten Anbieter geerbte Kontextkennung; die
+Abnahme bindet den QA-Zweig stattdessen an die signierte native Reset-URL
+und die exakt neu erzeugte Testidentität. Keine Links oder Passwörter protokolliert.
+QA-Zustellung vollständig wiederhergestellt, Testempfänger und Tunnel beendet.
+Alle ursprünglichen Einstellungen des zentralen Piloten sind unverändert.
+Reine SQL-Zählung bestätigt acht Recovery-Fixtures ohne aktive Sitzungen
+ausschließlich im QA-Zweig; zentraler Pilot weiter ein Konto und null Fixtures.
+Die vollständige Browser-/BFF-Recovery-Abnahme bleibt als nächster Schritt offen.
 Konkrete Anbietergrenzen und Abnahmen stehen in `docs/IDENTITY-LIFECYCLE.md`.
 
 ## Aktueller Meilenstein – isolierter Slop-Pilot
