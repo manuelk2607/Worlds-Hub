@@ -36,7 +36,19 @@ QA-Zustellung vollständig wiederhergestellt, Testempfänger und Tunnel beendet.
 Alle ursprünglichen Einstellungen des zentralen Piloten sind unverändert.
 Reine SQL-Zählung bestätigt acht Recovery-Fixtures ohne aktive Sitzungen
 ausschließlich im QA-Zweig; zentraler Pilot weiter ein Konto und null Fixtures.
-Die vollständige Browser-/BFF-Recovery-Abnahme bleibt als nächster Schritt offen.
+Die vollständige Browser-/BFF-Recovery-Abnahme bestand anschließend in Chromium
+(DE) und WebKit (EN), jeweils bei 320 px: echtes Hub-Formular, signierte QA-
+Zustellung, nativer Link mit Rücksprung, Reset über den unveränderten Hub-Build,
+Sprachwechsel ohne Verlust der Passworteingabe, lokalisierte Erfolgsmeldung,
+Widerruf beider alten Sitzungen, unverändertes zweites Konto und Replay-Abweisung.
+Der Hub lief für diese Prüfung lokal unter einer Browser-Testumleitung; der
+QA-Anbieter war echt. Die Umleitung reicht WebKits eigene Browser-Cookies mit,
+die erst nach dem Interception-Schritt an Netzwerkanfragen angefügt werden.
+Eine zusätzliche echte Live-Netzwerkprüfung mit einer nicht vorhandenen
+synthetischen Adresse bestand das englische WebKit-Formular samt Cookie/CSRF.
+Keine weiteren Konten angelegt. Zustellung erneut vollständig wiederhergestellt,
+beide Konfigurationen mit dem Ausgangsstand identisch; Empfänger und Tunnel beendet.
+Produktive Reset-Konfiguration und projektübergreifender Widerruf bleiben offen.
 Konkrete Anbietergrenzen und Abnahmen stehen in `docs/IDENTITY-LIFECYCLE.md`.
 
 ## Aktueller Meilenstein – isolierter Slop-Pilot
@@ -197,7 +209,8 @@ Der native `delete-user`-Endpunkt lieferte mit beiden angemeldeten QA-Konten
 HTTP 404. Eine funktionierende Selbstlöschung ist damit weiterhin offen.
 Im QA-Zweig ist `revoke_sessions_on_password_reset=true` gesetzt.
 Die vorherige zentrale Pilotkonfiguration meldet dafür noch `false`.
-Ein echter Reset samt Widerruf muss vor der Übernahme geprüft werden.
+Echter Reset und Widerruf sind inzwischen im QA-Zweig einschließlich Browser/BFF
+geprüft (Abnahme oben). Die produktive Übernahme ist noch nicht erfolgt.
 Der QA-Zweig und die Testkonten bleiben für diese Folgeprüfung erhalten.
 Die erneute Prüfung der ursprünglichen Pilotkonfiguration erfolgt vor ihrer
 nächsten Änderung. [Anbietergrenzen](https://neon.com/docs/auth/guides/plugins/oauth-provider)
@@ -209,7 +222,8 @@ widerruft die zweite Sitzung und lässt nur das neue Passwort zu.
 Anschließend wurden alle Sitzungen dieses Testkontos über den nativen
 Anbieter-Endpunkt widerrufen und ohne Cookie-Cache als ungültig geprüft.
 Keine persönlichen Zugangsdaten oder bestehenden Konten wurden geändert.
-Dies ersetzt nicht die noch offene E-Mail-Recovery-Abnahme.
+Die separate E-Mail-Recovery-Abnahme wurde anschließend wie oben dokumentiert
+im isolierten QA-Zweig abgeschlossen.
 
 `auth-v0.1.1` ist unter der Paketrevision
 `386bd19de441b8ecf9453ba5d592a3b5b40843dc` veröffentlicht.

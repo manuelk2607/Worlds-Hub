@@ -8,7 +8,7 @@ project IDs. The items below do not authorize a production cutover.
 | Registration, email verification, Hub login | User-confirmed OTP and real Safari callback | Complete project pilot and second relying party |
 | Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
-| Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Full browser/BFF acceptance. QA has `revoke_sessions_on_password_reset=true`; primary pilot still has `false` and remains unchanged |
+| Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation and production configuration remain open. QA has `revoke_sessions_on_password_reset=true`; primary pilot still has `false` and remains unchanged |
 | Self-deletion | Authenticated `delete-user` returned 404 for two QA fixtures | Supported deletion route, fresh ownership proof and revocation of all project sessions |
 | Cross-project logout | Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Actual provider delivery to registered clients and complete browser acceptance |
 
@@ -52,6 +52,30 @@ tunnel were stopped. Aggregate-only SQL confirmed eight recovery fixtures and
 zero active recovery sessions in QA, with zero such fixtures in the parent
 (one account). No personal account or project mapping was changed. Initial
 diagnostic attempts account for the additional inactive QA fixtures.
+
+## Browser recovery acceptance
+
+The existing two synthetic fixtures were reused; no additional accounts were
+created. Chromium (DE) and WebKit (EN), both at 320 px, passed the actual forgot
+form, signed delivery, navigation through the native QA link, the provider's
+redirect back to the reset form, and the reset POST through the unmodified Hub
+BFF. Changing DE/EN retained the entered password. After success the token was
+removed from the address, the localized confirmation was visible, both previous
+sessions were invalid, the old password was rejected, the new login retained the
+subject, the unrelated account remained active, and token replay was denied.
+
+This used the local production build under the configured Hub test origin via
+Playwright routing and the real QA provider. WebKit's intercepted request metadata
+omits cookies added later by its network layer; the in-process adapter therefore
+forwards cookies from that isolated browser context's own cookie jar. A separate
+unintercepted live WebKit EN check used a nonexistent synthetic address and passed
+the actual deployed form, secure cookie and CSRF checks without changing an account.
+No production identity issuer was replaced or relaxed.
+
+Afterward, original configuration fields were identical for QA and the primary
+pilot, delivery was disabled, and the receiver and tunnel were closed. All fixture
+sessions were revoked. Production reset revocation remains disabled; cross-project
+session revocation is a separate unresolved acceptance item.
 
 ## Sources checked on 2026-11-08
 
