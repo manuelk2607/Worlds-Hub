@@ -10,6 +10,24 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Zentrale Kontoverwaltung – Nachprüfung am 08.11.
+
+Die native QA-API bestätigt die maximale Passwortlänge von 128 Zeichen.
+Der Hub verwendet dieselbe Grenze für Formulare und Serverprüfung. Neue
+Passwörter benötigen zwölf Zeichen; bereits bestehende kürzere Passwörter
+werden beim Login unverändert weitergereicht. Zu lange Passwörter werden
+ohne Provideraufruf abgewiesen. DE/EN-Fehlertexte und Validierung bleiben
+lokalisiert. 65 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+Chromium und WebKit bestätigten bei 320 px die Grenzen, einen vorhandenen
+Acht-Zeichen-Login und übersetzte Formular-/Providerfehler mit Testantworten.
+
+Die echte Recovery-Abnahme ist vorbereitet. Die automatische Freigabeprüfung
+lehnte die vorübergehende QA-Zustellung von Rücksetzlinks über einen
+öffentlichen Testzugang ab; dafür ist ausdrücklich eine Freigabe angefragt.
+Die Einstellung blieb nachweislich unverändert, der ungenutzte Testempfänger
+und Tunnel sind beendet. Produktive OTP-/Auth-Einstellungen blieben erhalten.
+Konkrete Anbietergrenzen und Abnahmen stehen in `docs/IDENTITY-LIFECYCLE.md`.
+
 ## Aktueller Meilenstein – isolierter Slop-Pilot
 
 Die persönliche Cloudflare-Anmeldung und die gesonderte Tokenfreigabe sind

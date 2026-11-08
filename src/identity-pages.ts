@@ -2,6 +2,7 @@ import {escapeHtml as e} from './html.ts';
 import {authorizationClient,type IdentityConfig} from './identity.ts';
 import {t,type Locale,type MessageKey} from './i18n/core.ts';
 import {link,translated as tr,translatedAttribute as ta} from './i18n/html.ts';
+import {NEW_PASSWORD_MIN_LENGTH,PASSWORD_MAX_LENGTH} from './identity-policy.ts';
 
 export function identityPage(path:string,rawQuery:string,csrf:string,config:Pick<IdentityConfig,'origin'|'clients'>,locale:Locale='de'){
  const query=new URLSearchParams(rawQuery),oauth=query.has('client_id'),client=oauth?authorizationClient(rawQuery,config):null;
@@ -11,18 +12,19 @@ export function identityPage(path:string,rawQuery:string,csrf:string,config:Pick
  const form=(action:string,title:MessageKey,fields:string,button:MessageKey)=>`<form class="identity-form" data-identity-form="${action}" hidden><h2>${tr(locale,title)}</h2>${fields}<button class="button" type="submit">${tr(locale,button)}</button></form>`;
  const input=(label:MessageKey,name:string,type:string,autocomplete:string,extra='')=>`<label>${tr(locale,label)}<input type="${type}" name="${name}" autocomplete="${autocomplete}" ${extra}></label>`;
  const email=input('identity.email','email','email','email','maxlength="254" required');
- const password=input('identity.password','password','password','current-password','minlength="12" maxlength="200" required');
+ const password=input('identity.password','password','password','current-password',`minlength="1" maxlength="${PASSWORD_MAX_LENGTH}" required`);
+ const newPasswordAttributes=`minlength="${NEW_PASSWORD_MIN_LENGTH}" maxlength="${PASSWORD_MAX_LENGTH}" required`;
  const fields=form('login','identity.welcome',email+password,'identity.signInButton')+
-  form('signup','identity.signupTitle',input('identity.displayName','name','text','name','minlength="1" maxlength="80" required')+email+password.replace('current-password','new-password'),'identity.createAccount')+
+  form('signup','identity.signupTitle',input('identity.displayName','name','text','name','minlength="1" maxlength="80" required')+email+input('identity.password','password','password','new-password',newPasswordAttributes),'identity.createAccount')+
   form('verify','identity.verifyTitle',email+input('identity.otp','otp','text','one-time-code','inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required'),'identity.verifyButton')+
   form('send-code','identity.sendTitle',email,'identity.sendButton')+
   form('forgot','identity.forgotTitle',email,'identity.forgotButton')+
-  form('reset','identity.resetTitle',input('identity.newPassword','newPassword','password','new-password','minlength="12" maxlength="200" required'),'identity.resetButton');
+  form('reset','identity.resetTitle',input('identity.newPassword','newPassword','password','new-password',newPasswordAttributes),'identity.resetButton');
  const update=form('update','identity.updateTitle',input('identity.displayName','name','text','name','maxlength="80" required'),'identity.updateButton');
  const changePassword=accountPage?form('change-password','identity.changePassword',
-  input('identity.currentPassword','currentPassword','password','current-password','maxlength="200" required')+
-  input('identity.newPassword','newPassword','password','new-password','minlength="12" maxlength="200" required')+
-  input('identity.confirmPassword','confirmation','password','new-password','minlength="12" maxlength="200" required'),
+  input('identity.currentPassword','currentPassword','password','current-password',`maxlength="${PASSWORD_MAX_LENGTH}" required`)+
+  input('identity.newPassword','newPassword','password','new-password',newPasswordAttributes)+
+  input('identity.confirmPassword','confirmation','password','new-password',newPasswordAttributes),
   'identity.savePassword'):'';
  const accountTools=accountPage?`<button data-identity-action="change-password" data-identity-verified-action disabled>${tr(locale,'identity.changePassword')}</button><button data-identity-export data-identity-verified-action disabled>${tr(locale,'identity.exportData')}</button>`:'';
  const intro=client?tr(locale,'identity.introClient',{name:client.name}):tr(locale,'identity.intro');

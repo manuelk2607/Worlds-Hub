@@ -101,3 +101,41 @@ test('identity export contains only the authenticated profile, preference and mi
   assert.doesNotMatch(JSON.stringify(data),/provider-session-secret|other-user|a{64}|account_ref|revision/);
  }finally{f.db.close();}
 });
+
+test('password limits reject oversized credentials before the provider and keep existing short logins usable',async t=>{
+ const f=await fixture(),received:Record<string,unknown>[]=[];
+ t.mock.method(globalThis,'fetch',async(_input:RequestInfo|URL,init?:RequestInit)=>{
+  received.push(JSON.parse(String(init?.body)));
+  return Response.json({});
+ });
+ try{
+  const long='x'.repeat(129),valid='x'.repeat(12);
+  for(const [path,body] of [
+   ['sign-in/email',{email:'ada@example.test',password:long}],
+   ['sign-up/email',{email:'ada@example.test',name:'Ada',password:long}],
+   ['reset-password',{token:'fixture',newPassword:long}],
+   ['change-password',{currentPassword:long,newPassword:valid}],
+   ['change-password',{currentPassword:valid,newPassword:long}]
+  ] as const){
+   const response=await identityProxy(f.request(path,body),f.config);
+   assert.equal(response.status,400);
+   assert.deepEqual(await response.json(),{error:'PASSWORD_TOO_LONG'});
+  }
+  for(const [path,body] of [
+   ['sign-up/email',{email:'ada@example.test',name:'Ada',password:'x'.repeat(11)}],
+   ['reset-password',{token:'fixture',newPassword:'x'.repeat(11)}],
+   ['change-password',{currentPassword:valid,newPassword:'x'.repeat(11)}]
+  ] as const){
+   const response=await identityProxy(f.request(path,body),f.config);
+   assert.equal(response.status,400);
+   assert.deepEqual(await response.json(),{error:'PASSWORD_TOO_SHORT'});
+  }
+  assert.equal(received.length,0,'Rejected passwords must not use provider requests or change sessions.');
+  const exact=' '+'x'.repeat(126)+' ';
+  for(const password of ['old-1234',exact]){
+   const response=await identityProxy(f.request('sign-in/email',{email:'ada@example.test',password}),f.config);
+   assert.equal(response.status,200);
+   assert.equal(received.at(-1)?.password,password,'The full password must be forwarded without trimming or truncation.');
+  }
+ }finally{f.db.close();}
+});

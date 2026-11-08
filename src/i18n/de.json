@@ -270,7 +270,7 @@
   "error.emailNotVerified": "Bitte bestätige zuerst deine E-Mail-Adresse.",
   "error.emailExists": "Für diese E-Mail-Adresse besteht bereits ein Konto. Melde dich an oder setze dein Passwort zurück.",
   "error.passwordShort": "Das Passwort ist zu kurz. Verwende mindestens 12 Zeichen.",
-  "error.passwordLong": "Das Passwort ist zu lang.",
+  "error.passwordLong": "Das Passwort ist zu lang. Verwende höchstens 128 Zeichen.",
   "error.invalidCode": "Der Bestätigungscode ist ungültig oder abgelaufen. Fordere bei Bedarf einen neuen an.",
   "error.invalidLink": "Dieser Link ist ungültig oder abgelaufen. Starte den Vorgang bitte erneut.",
   "error.signupDisabled": "Neue Registrierungen sind derzeit nicht verfügbar.",

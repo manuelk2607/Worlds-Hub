@@ -34,7 +34,7 @@ if(identityRoot){
  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-identity-action]'))button.addEventListener('click',()=>show(button.dataset.identityAction!));
  const inputs=root.querySelectorAll<HTMLInputElement>('input');
  function localizeValidation(input:HTMLInputElement){
-  const key=input.validity.typeMismatch?'error.invalidEmail':input.name==='otp'&&input.validity.patternMismatch?'error.invalidCode':input.type==='password'&&input.validity.tooShort?'error.passwordShort':'error.invalidRequest';
+  const key=input.validity.typeMismatch?'error.invalidEmail':input.name==='otp'&&input.validity.patternMismatch?'error.invalidCode':input.type==='password'&&input.validity.tooLong?'error.passwordLong':input.type==='password'&&input.validity.tooShort?'error.passwordShort':'error.invalidRequest';
   input.setCustomValidity(text(key));
  }
  for(const input of inputs){

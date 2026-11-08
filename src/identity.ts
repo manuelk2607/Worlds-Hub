@@ -3,6 +3,7 @@ import { boundedBody, cookie, readCookie, sameOrigin, token } from '../packages/
 import { D1AuthStore, hash } from '../packages/auth/store.ts';
 import {requestLocale,t} from './i18n/core.ts';
 import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
+import {passwordPolicyError} from './identity-policy.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database }
 export interface IdentityEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database }
@@ -96,15 +97,22 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
       data=Object.fromEntries(fields[path].filter(k=>data![k]!==undefined).map(k=>[k,data![k]]));
       if(Object.values(data).some(v=>typeof v!=='string'))return json({error:'INVALID_FIELDS'},400);
     }
+    const passwordFields:Record<string,{name:string;isNew:boolean}[]>={
+      'sign-in/email':[{name:'password',isNew:false}],
+      'sign-up/email':[{name:'password',isNew:true}],
+      'reset-password':[{name:'newPassword',isNew:true}],
+      'change-password':[{name:'currentPassword',isNew:false},{name:'newPassword',isNew:true}]
+    };
+    for(const field of passwordFields[path]??[]){
+      const error=passwordPolicyError(data[field.name],field.isNew);
+      if(error)return json({error},400);
+    }
     if(path==='request-password-reset')data.redirectTo=config.origin+'/identity/reset';
     if(path==='sign-up/email')data.callbackURL=config.origin+'/identity/account';
     // Never accept arbitrary callback/redirect fields from the browser.
     if(path==='sign-in/email')delete data.callbackURL;
     if(path==='email-otp/send-verification-otp')data.type='email-verification';
     if(path==='change-password'){
-      const {currentPassword,newPassword}=data;
-      if(typeof currentPassword!=='string'||!currentPassword.length||currentPassword.length>200||
-        typeof newPassword!=='string'||newPassword.length<12||newPassword.length>200)return json({error:'INVALID_FIELDS'},400);
       data.revokeOtherSessions=true;
     }
     if(path==='oauth2/continue')data={selected:true,oauth_query:oauthQuery};

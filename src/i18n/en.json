@@ -270,7 +270,7 @@
   "error.emailNotVerified": "Please verify your email address first.",
   "error.emailExists": "An account already exists for this email address. Sign in or reset your password.",
   "error.passwordShort": "The password is too short. Use at least 12 characters.",
-  "error.passwordLong": "The password is too long.",
+  "error.passwordLong": "The password is too long. Use at most 128 characters.",
   "error.invalidCode": "The verification code is invalid or expired. Request a new one if needed.",
   "error.invalidLink": "This link is invalid or expired. Please start again.",
   "error.signupDisabled": "New registrations are currently unavailable.",
