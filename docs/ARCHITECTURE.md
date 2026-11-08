@@ -1,6 +1,9 @@
 # Architekturentscheidung und Sicherheitsgrenzen
 
-Stand: 2026-11-04. Entscheidung für die nächste Integrationsphase, kein bereits aktiver IdP.
+Aktueller Migrationsbestand und nachgewiesene Übernahmen: [MIGRATION-INVENTORY.md](MIGRATION-INVENTORY.md).
+
+Der folgende Architekturstand vom 04.11.2026 ist historisch. Zentrale Identität,
+Hub und Slop-QA sind inzwischen aktiv; weitere produktive Cutover bleiben offen.
 
 ## Bestand — read-only verifiziert
 

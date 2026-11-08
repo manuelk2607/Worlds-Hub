@@ -68,11 +68,12 @@ lokaler Formulare und keine automatische Kontenzusammenführung anhand von Namen
 Slop-Profil `Manuel` wurde nach Benennung durch den Projektbetreiber read-only
 im isolierten QA-Ziel gefunden: ohne Passwort. Die aktive Slop-Worlds-Identität
 wurde beim zentralen Aussteller mit bestätigter E-Mail gegengeprüft. Exakte IDs
-bleiben im Prozessspeicher; es wurde bisher noch keine Zuordnung geschrieben.
+bleiben im Prozessspeicher. Die geprüfte QA-Zuordnung ist inzwischen angewendet
+(siehe Abnahme unten); die Produktion ist unverändert.
 HF-Zugangsdaten liegen in einem separaten verschlüsselten Vault, nicht in der
 geklonten Profil-Datenbank; sie werden nicht exportiert oder kopiert.
 
-Laufende Umsetzung (noch nicht deployt): gezielt betreibergeprüfte, einmalige
+Implementierung und geprüfte Testbereitstellung: gezielt betreibergeprüfte, einmalige
 Migrationsfreigaben für passwortlose Profile; atomare Zuordnung samt Audit und
 Aktivierung vorhandener zentraler Sitzungen. Neue Username-Logins nach Migration
 werden abgewiesen. Vor der Migration ausgestellte gültige lokale Sitzungen
@@ -81,23 +82,77 @@ PGlite bestätigt Übernahme, Daten-/ID-Erhalt, aktive Sitzung, Ablauf, geänder
 Quelle, Replay, Admin-Ausschluss und Rücknahme. Slop-Build mit Typprüfungen und
 162 Tests bestanden. Reale PostgreSQL-Vorschau für das exakt geprüfte Profil
 bestand: einmalige Zuordnung und vollständiger Rollback, alle sechs
-Quelltabellen nach Zahl und Prüfsumme identisch. QA-Anwendung, Deployment und
-Browserabnahme des passwortlosen Profils folgen noch.
+Quelltabellen nach Zahl und Prüfsumme identisch. Slop `7ec02df` bestand die vollständige CI `42495932891` in Chromium/WebKit
+mit PostgreSQL 17 einschließlich zweier konkurrierender Betreiberübernahmen.
+Deploy `42496881577` erfolgreich. Die additive Freigabetabelle wurde nur im
+wiederhergestellten QA-Ziel eingerichtet; alle 13 Profile sind unverändert.
+Danach wurde die vorab geprüfte Freigabe für `Manuel` einmalig angewendet.
+Alle sechs Quelltabellen stimmen vor/nach dem Commit nach Zahl und Prüfsumme
+überein. Der echte Browser bestätigt: direkter Link, automatische zentrale
+Wiederanmeldung ohne neue Eingabe, „Spielprofil verknüpft“, danach das bestehende
+Spielprofil `Manuel` im Spiel. Kein lokales Passwort und kein neues Profil
+angelegt. Dies ist eine QA-Verknüpfung, keine produktive Migration.
 
 Der Shared-Client ergänzt den direkten Linkstart über `/auth/start`; Hub
-66 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Integration
-in die anderen drei Welt-Projekte und die korrigierte Paketfreigabe stehen noch aus.
+66 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Die Anmeldelink-Integration
+in die anderen drei Welt-Projekte ist inzwischen geprüft; weitere Autorisierungs-
+und Kontenübernahme-Arbeiten bleiben offen. Paket
+`auth-v0.1.3` ist als eigenständiger Subtree-Commit
+`b0e6eac7bc6fdd46317dc933a83936c16ecde816` geprüft und veröffentlicht.
 `auth-v0.1.2` verweist versehentlich auf die Hub-Wurzel und wird von keinem
 Projekt als Paketquelle verwendet. Die 0.1.3-Veröffentlichung verwendet wieder
 den vorhandenen Subtree-Split mit geprüftem Paketinhalt.
-Die Slop-Ansicht `b2e1551` hat eine erfolgreiche vollständige CI `42491050349`,
-ist aber noch nicht veröffentlicht, weil die neu präzisierten Anforderungen
-zur passwortlosen Übernahme vor dem Deployment ergänzt werden.
+Die ältere Slop-Ansicht `b2e1551` wurde durch die erfolgreich geprüfte und
+veröffentlichte Übernahmeversion `7ec02df` ersetzt (Deploy `42496881577`).
 
-Nächster Schritt: Slop-Übernahme mit PostgreSQL zunächst zurückrollen, dann
-geprüfte QA-Konfiguration deployen und das vom Betreiber benannte Profil
-kontrolliert zuordnen. Danach Anmeldelinks und Übergangssitzungen der übrigen
-Projekte ergänzen. Für Managed Auth ist weiterhin kein allgemein unterstützter
+Die zentralen Anmeldelinks sind jetzt in Sprachwelten `9d46f15`, IT-Worlds
+`321fe36` (Anwendungsstand `e0202c5`) und Music-Worlds `01e95bd` implementiert und gepusht. 197/128/23 Tests
+bestanden (IT zusätzlich 10 umgebungsbedingte Skips), Typen und Builds erfolgreich;
+Sprachwelten zusätzlich Lint/Übersetzungsabdeckung/Audit. Chromium/WebKit
+bestätigen DE/EN, 320/1280 px, direkte Links und den bisherigen Modus bei
+deaktivierten Flags; IT zusätzlich Theme/Mobilmenü/beide 404. Native Provider-/
+Produktionsübernahme ist damit nicht behauptet. Die Freigabeschalter bleiben aus.
+GitHub-Prüfungen vollständig erfolgreich: Sprachwelten `42514779942`, separate
+isolierte Datenbank-/Managed-Auth-Integration `42514846060`; Music `42514848840`
+inklusive bestehender isolierter Datenbankprüfung; IT `42515340829`. Der erste
+IT-Lauf erkannte den fehlenden Eintrag der neuen dynamischen Route im statischen
+Linkprüfer. Ausschließlich `/auth/start` ergänzt; 40.228 interne Links und
+SEO-Prüfung bestanden, erneute vollständige CI erfolgreich.
+
+Read-only Produktionsinventar: 2 Music-, 3 Sprachwelten-, 2 IT- und 13 Slop-
+Profile/Konten, darunter neun Slop-Profile ohne Passwort. Vollständige Snapshot-
+Zahlen, Quellziele und Grenzen stehen in `docs/MIGRATION-INVENTORY.md`. Keine
+produktiven Zuordnungen wurden geschrieben. Echte lokale Slop-Abmeldung und
+automatische Wiederanmeldung ohne Eingabe mit Rückkehr zu Manuel sind zusätzlich
+im Browser bestätigt. Dies ist kein globaler Logout.
+
+Slop `35d26ad` formuliert Sitzungsablauf in DE/EN zentral statt nach einem
+lokalen Benutzernamen zu fragen; Kontolink mit Tastaturfokus. Build, 162 Tests,
+Chromium/WebKit einschließlich simuliertem Refreshablauf und vollständige CI
+`42515091102` bestanden; Pilot-Deploy `42515687781` erfolgreich. Reine Diagnose
+der modernen Versionsmetadaten ergänzt in `fc4fc60`; neun gezielte Prüfer-Tests
+und separate Typprüfung bestanden. Sie gibt nur Feldnamen aus und verändert
+keine Version. Inspektion `42515850838` erfolgreich: Auch die neuere API liefert
+nur Asset-Konfiguration, keinen Manifesthash. Aktive Version nach Deploy ist
+`514bc3d9-e302-49f8-a6e0-b229152d6dc8`, Deployment
+`dfd89eff-6a83-4441-9ed7-4240bcad0db9`. Private Live-Smokes bestanden. Nach
+dem tatsächlichen Browser-Reload bleibt Manuel angemeldet. Tatsächliche
+Rücknahmen bleiben an vollständige CI gebunden und sind noch nicht ausgeführt.
+
+Für die native globale Abmeldeprüfung liegt ein konkret begrenzter Plan in
+`docs/NATIVE-LOGOUT-QA.md` vor. Vorübergehende Administratorrechte ausschließlich
+für ein synthetisches QA-Konto sind beim Nutzer angefragt, noch nicht erteilt;
+keine entsprechende Rollen-/Clientänderung ausgeführt.
+
+Nächster Schritt: Deployment-Rücknahme mit expliziter Versionskennung und
+Prüfung tatsächlich ausgelieferter Assets vorbereiten (Cloudflare unterstützt
+eine Kandidatenversion mit 0 Prozent Verkehr und gezielten Versions-Overrides;
+deren Anwendung muss anhand einer echten Versionsantwort bestätigt werden).
+Die native QA-Prüfung erst nach der angefragten Rollenfreigabe ausführen.
+Sprachwelten benötigt vor Aktivierung außerdem die zentrale ID-Auflösung für
+Beiträge/Administration; der aktuelle Adapter deckt den Lernbereich ab. Weitere
+echte Provider-/Migrationsabläufe abschließen; produktiven Cutover erst nach ihrem jeweiligen Migrations-,
+Rollen-, Daten- und Rücknahmenachweis durchführen. Für Managed Auth ist weiterhin kein allgemein unterstützter
 Import beliebiger Fremd-Sitzungen oder Passwort-Hashes nachgewiesen; alte
 Stack-Auth-Anleitungen sind keine Belege für die eingesetzte Better-Auth-Instanz.
 
