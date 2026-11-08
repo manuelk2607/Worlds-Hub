@@ -20,6 +20,10 @@ ohne Provideraufruf abgewiesen. DE/EN-Fehlertexte und Validierung bleiben
 lokalisiert. 65 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 Chromium und WebKit bestätigten bei 320 px die Grenzen, einen vorhandenen
 Acht-Zeichen-Login und übersetzte Formular-/Providerfehler mit Testantworten.
+Commit `504ec19` ist veröffentlicht. Die Live-Prüfung bestätigt 400 mit
+lokalisiertem Fehlercode bei überlangen Eingaben für Login, Registrierung,
+Reset und Passwortwechsel. Dabei wurde kein Konto angelegt oder geändert.
+Vollständiger CI-/Deploy-/Live-Smoke-Lauf `42467739726` erfolgreich.
 
 Die echte Recovery-Abnahme ist vorbereitet. Die automatische Freigabeprüfung
 lehnte die vorübergehende QA-Zustellung von Rücksetzlinks über einen
@@ -88,7 +92,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv unter https://worlds-hub.maki26.workers.dev/. Das Repository https://github.com/manuelk2607/Worlds-Hub ist am 05.11.2026 öffentlich lesbar. Die öffentliche Lesbarkeit wurde ohne Anmeldedaten geprüft.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter Deploy: Commit `0183b63`, Cloudflare-Version `f1bcd604-2fcd-4d09-a226-92eadd294d2e`. 64 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42466441547)
+- Aktueller geprüfter Deploy: Commit `504ec19`, Cloudflare-Version `f6fee3b1-d52c-490d-86cb-55116d314cc2`. 65 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42467739726)
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 

@@ -7,7 +7,7 @@ project IDs. The items below do not authorize a production cutover.
 | --- | --- | --- |
 | Registration, email verification, Hub login | User-confirmed OTP and real Safari callback | Complete project pilot and second relying party |
 | Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
-| Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Deployed UI and proxy use the same 128-character maximum; new passwords require 12 characters |
+| Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Full two-browser CI and live checks passed |
 | Password reset | QA branch has `revoke_sessions_on_password_reset=true`; primary pilot still has `false` | Real delivered reset link, one-use consumption, two old sessions revoked, unrelated account preserved |
 | Self-deletion | Authenticated `delete-user` returned 404 for two QA fixtures | Supported deletion route, fresh ownership proof and revocation of all project sessions |
 | Cross-project logout | Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Actual provider delivery to registered clients and complete browser acceptance |
