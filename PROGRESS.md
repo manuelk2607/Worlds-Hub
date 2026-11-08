@@ -86,7 +86,10 @@ Browserabnahme des passwortlosen Profils folgen noch.
 
 Der Shared-Client ergänzt den direkten Linkstart über `/auth/start`; Hub
 66 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Integration
-in die anderen drei Welt-Projekte und Freigabe von `auth-v0.1.2` stehen noch aus.
+in die anderen drei Welt-Projekte und die korrigierte Paketfreigabe stehen noch aus.
+`auth-v0.1.2` verweist versehentlich auf die Hub-Wurzel und wird von keinem
+Projekt als Paketquelle verwendet. Die 0.1.3-Veröffentlichung verwendet wieder
+den vorhandenen Subtree-Split mit geprüftem Paketinhalt.
 Die Slop-Ansicht `b2e1551` hat eine erfolgreiche vollständige CI `42491050349`,
 ist aber noch nicht veröffentlicht, weil die neu präzisierten Anforderungen
 zur passwortlosen Übernahme vor dem Deployment ergänzt werden.

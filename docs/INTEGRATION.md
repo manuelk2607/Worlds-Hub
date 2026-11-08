@@ -73,3 +73,12 @@ Transaktion. Der Browser wird direkt zum zentralen Anmeldedienst und anschließe
 zur registrierten Anwendung zurückgeführt. Weder Cookie-Freigabe noch ein
 zwischen den Anwendungen weitergereichter Sitzungstoken sind erforderlich.
 Die POST-Start-, Callback- und Logout-Prüfungen werden dadurch nicht gelockert.
+
+
+Paketveröffentlichungen entstehen weiterhin mit
+`git subtree split --prefix=packages/auth`; der markierte Commit muss
+`@worlds-hub/auth` direkt an der Wurzel enthalten. Der versehentlich auf die
+Hub-Wurzel gesetzte Tag `auth-v0.1.2` wird nicht als Paketquelle verwendet und
+nicht nachträglich umgeschrieben. Version 0.1.3 ist die korrigierte
+Paketveröffentlichung des identischen Linkstarts. Vor der Verwendung stets
+Paketname, Version, Exporte und Inhalt des markierten Commits prüfen.
