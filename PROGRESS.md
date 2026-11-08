@@ -21,7 +21,7 @@ lokalisiert. 65 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 Chromium und WebKit bestätigten bei 320 px die Grenzen, einen vorhandenen
 Acht-Zeichen-Login und übersetzte Formular-/Providerfehler mit Testantworten.
 Commit `504ec19` ist veröffentlicht. Die Live-Prüfung bestätigt 400 mit
-lokalisiertem Fehlercode bei überlangen Eingaben für Login, Registrierung,
+Fehlercode für die lokalisierte Meldung bei überlangen Eingaben für Login, Registrierung,
 Reset und Passwortwechsel. Dabei wurde kein Konto angelegt oder geändert.
 Vollständiger CI-/Deploy-/Live-Smoke-Lauf `42467739726` erfolgreich.
 
