@@ -57,6 +57,47 @@ Anbietersitzungen des betroffenen Kontos. Es wurde kein persönlicher Reset
 ausgelöst. Projektübergreifender Widerruf bleibt separat offen.
 Konkrete Anbietergrenzen und Abnahmen stehen in `docs/IDENTITY-LIFECYCLE.md`.
 
+## Aktuelle Vorgaben – zentrale Anmeldung und bestehende Sitzungen
+
+Der Nutzer hat ausdrücklich bestätigt: In allen vier Anwendungen führt die
+Anmeldung nur noch zum Worlds Hub; zusätzliche lokale Passwörter sind kein
+Bestandteil des Zielablaufs. Bestehende Konten und gültige Sitzungen sollen
+möglichst ohne erneute Eingaben übernommen werden. Keine bloße Umbenennung
+lokaler Formulare und keine automatische Kontenzusammenführung anhand von Namen.
+
+Slop-Profil `Manuel` wurde nach Benennung durch den Projektbetreiber read-only
+im isolierten QA-Ziel gefunden: ohne Passwort. Die aktive Slop-Worlds-Identität
+wurde beim zentralen Aussteller mit bestätigter E-Mail gegengeprüft. Exakte IDs
+bleiben im Prozessspeicher; es wurde bisher noch keine Zuordnung geschrieben.
+HF-Zugangsdaten liegen in einem separaten verschlüsselten Vault, nicht in der
+geklonten Profil-Datenbank; sie werden nicht exportiert oder kopiert.
+
+Laufende Umsetzung (noch nicht deployt): gezielt betreibergeprüfte, einmalige
+Migrationsfreigaben für passwortlose Profile; atomare Zuordnung samt Audit und
+Aktivierung vorhandener zentraler Sitzungen. Neue Username-Logins nach Migration
+werden abgewiesen. Vor der Migration ausgestellte gültige lokale Sitzungen
+behalten ihr ursprüngliches Ablaufdatum; Refresh verlängert sie nicht.
+PGlite bestätigt Übernahme, Daten-/ID-Erhalt, aktive Sitzung, Ablauf, geänderte
+Quelle, Replay, Admin-Ausschluss und Rücknahme. Slop-Build mit Typprüfungen und
+162 Tests bestanden. Reale PostgreSQL-Vorschau für das exakt geprüfte Profil
+bestand: einmalige Zuordnung und vollständiger Rollback, alle sechs
+Quelltabellen nach Zahl und Prüfsumme identisch. QA-Anwendung, Deployment und
+Browserabnahme des passwortlosen Profils folgen noch.
+
+Der Shared-Client ergänzt den direkten Linkstart über `/auth/start`; Hub
+66 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Integration
+in die anderen drei Welt-Projekte und Freigabe von `auth-v0.1.2` stehen noch aus.
+Die Slop-Ansicht `b2e1551` hat eine erfolgreiche vollständige CI `42491050349`,
+ist aber noch nicht veröffentlicht, weil die neu präzisierten Anforderungen
+zur passwortlosen Übernahme vor dem Deployment ergänzt werden.
+
+Nächster Schritt: Slop-Übernahme mit PostgreSQL zunächst zurückrollen, dann
+geprüfte QA-Konfiguration deployen und das vom Betreiber benannte Profil
+kontrolliert zuordnen. Danach Anmeldelinks und Übergangssitzungen der übrigen
+Projekte ergänzen. Für Managed Auth ist weiterhin kein allgemein unterstützter
+Import beliebiger Fremd-Sitzungen oder Passwort-Hashes nachgewiesen; alte
+Stack-Auth-Anleitungen sind keine Belege für die eingesetzte Better-Auth-Instanz.
+
 ## Kontrollierte Deployment-Rücknahme – laufend
 
 Slop `a4a3f7a` ergänzt einen festen Pilot-Versionsprüfer und einen manuellen
@@ -67,10 +108,12 @@ Deployments. Kein `force`, keine produktiven Worker oder Datenbankänderungen.
 Build mit beiden Typprüfungen und alle 156 Unit-Tests bestanden; der neue
 Prüfer wurde zusätzlich separat typgeprüft. Die vollständige CI
 `42489252839` bestand Chromium, WebKit und PostgreSQL. Die lesende
-Cloudflare-Metadatenprüfung `42489823444` scheiterte ohne Schreibaufruf.
-Der nachfolgende Prüfer korrigiert die einmalige Verarbeitung des robots-Inhalts
-und meldet nur sichere Fehlerursachen. Erneute vollständige CI und lesende
-Metadatenprüfung sind als nächster Schritt nötig. Die tatsächliche Versionsübung bleibt
+Erster Prüflauf `42489823444` scheiterte ohne Schreibaufruf; der robots-Inhalt
+wird danach korrekt einmal gelesen. CI `42489938907` bestand beide Browser und
+PostgreSQL. Lesende Abnahme `42490657075` für Slop `6ff0153` erfolgreich:
+aktive Version `82cd43c1-82d0-4515-a83a-bb99f3acee90`, Deployment
+`7d6c3681-d2ae-42c1-b6fd-2bf908af741e`. Für ASSETS fehlen Inhaltskennungen;
+Name und Typ allein erlauben keine sichere Gleichheitsannahme. Die tatsächliche Versionsübung bleibt
 bis zum Nachweis kompatibler Assets und Bindungen ausdrücklich offen.
 
 ## Aktueller Meilenstein – isolierter Slop-Pilot
@@ -113,9 +156,24 @@ private Header, gesperrte Sitemap, anonyme API 401, strikten Origin-Schutz,
 exakten Pilot-Client, PKCE, `max_age=300` und englische Hub-Anmeldung
 einschließlich HF-Hinweis. Der echte native Browserweg führt jetzt ebenfalls
 bis zum zentralen Formular für Slop Urself Pilot.
-Die persönliche Anmeldung und OAuth-Freigabe sind im Browser zur
-Nutzereingabe geöffnet. Der echte Callback und der lokale Eigentumsnachweis
-bleiben bis dahin offen. Es wurde noch kein Bestandskonto verknüpft.
+Der Nutzer hat Anmeldung und Freigabe inzwischen abgeschlossen. Der echte
+Callback kehrte nach `/auth/worlds` zurück; die QA-Datenbank bestätigt eine
+aktive Worlds-Sitzung beim zentralen Aussteller, null Profilzuordnungen und
+weiterhin 13 Spielprofile. Der Nutzer meldete die rohe HTML-Kontoseite.
+Slop `3399961` / `b2e1551` lädt die vorhandene Gestaltung, trennt Login- und
+Verknüpfungsstatus und zeigt Voraussetzungen statt eines nicht nutzbaren
+Passwortformulars. DE/EN-Kataloge, Sprachschalter ohne Formularverlust und
+verständliche Kennzeichnung als getrennte Testversion sind ergänzt.
+Build, beide Typprüfungen und 159 Unit-Tests bestanden; Chromium und WebKit
+lokal bei 320 px und Desktop erfolgreich. CI `42491050349` läuft vor dem
+Deployment. Der lokale Eigentumsnachweis ist weiterhin offen; kein Bestandskonto
+wurde verknüpft.
+
+Zusätzlich real geprüft: Aus dem anfangs abgemeldeten Hub führte die normale
+Anmeldeschaltfläche mit der aktiven zentralen Sitzung automatisch zu
+„Hallo, Manuel.“. Keine erneute Passwort-/Codeeingabe oder neue Freigabe war
+nötig. Damit ist SSO für Hub und Slop-Testclient im Browser nachgewiesen;
+alle vier produktiven Anwendungen und projektübergreifender Logout bleiben offen.
 Migrationsnachweise bleiben bis zur separaten Pilotaktivierung deaktiviert.
 
 Die visuelle Abnahme fand abgeschnittene Schrittbeschriftungen und doppelte

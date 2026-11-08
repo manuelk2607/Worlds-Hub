@@ -62,3 +62,14 @@ Feature-Flag abschalten, neue OIDC-Sessions widerrufen, alte Anmeldungen weiter 
 Die Schema-Vorlage bleibt REVIEW ONLY. Vor Aktivierung im jeweiligen Repository dessen tatsächlichen historischen Kontoschlüssel/Fremdschlüssel, Runtime-Rolle, Rechte und Migrationstest ergänzen. Keine zentrale Mapping-Datenbank für alle Apps, kein PUBLIC-Grant und keine Übernahme einer zentralen Rolle. Query-Adapter ausschließlich serverseitig; Identitäten/Proofs niemals aus einem Browser-Body übernehmen.
 
 Lokale PGlite-Tests (Postgres/WASM, nur Dev-Abhängigkeit) führen dieses echte SQL aus: dualer Proof, konkurrierende Bestätigung, Sitzung/Expiry, beide Eigentümer-Constraints, FK, SQL-Parameter und absichtlich scheiterndes Audit mit vollständigem Rollback. Historische IDs und Rollen bleiben gleich. PGlite hat eine einzelne Verbindung; echte parallele Neon-Verbindungen und produktive RLS müssen weiterhin im isolierten App-Pilot geprüft werden. Keine produktive Datenbank für diese Tests verwendet.
+
+## Direkter Anmeldelink
+
+Der gemeinsame Client bietet neben dem bestehenden geschützten POST-Start
+`startLoginLink` für einen gewöhnlichen Link auf die eigene `/auth/start`-Route.
+Diese GET-Route akzeptiert ausschließlich eine Top-Level-Dokumentnavigation,
+prüft die eigene Origin und erstellt dieselbe kurzlebige PKCE-/State-/Nonce-
+Transaktion. Der Browser wird direkt zum zentralen Anmeldedienst und anschließend
+zur registrierten Anwendung zurückgeführt. Weder Cookie-Freigabe noch ein
+zwischen den Anwendungen weitergereichter Sitzungstoken sind erforderlich.
+Die POST-Start-, Callback- und Logout-Prüfungen werden dadurch nicht gelockert.

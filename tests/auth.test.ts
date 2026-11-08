@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import { startLogin,callback,session,logout,backchannelLogout,safeNext,boundedBody,SESSION_COOKIE,type AuthConfig } from '../packages/auth/oidc.ts';
+import { startLogin,startLoginLink,callback,session,logout,backchannelLogout,safeNext,boundedBody,SESSION_COOKIE,type AuthConfig } from '../packages/auth/oidc.ts';
 import { centralProof } from '../packages/auth/linking.ts';
 import { hash } from '../packages/auth/store.ts';
 import { provider,cookieHeader,MemoryStore } from './helpers.ts';
@@ -8,6 +8,16 @@ async function begin(config:AuthConfig){return startLogin(new Request(config.ori
 test('isolated OIDC pilot and security boundaries',async t=>{
   const idp=await provider();t.mock.method(globalThis,'fetch',idp.fetch);
   await t.test('rejects cross-origin login and GET mutations',async()=>{const c=idp.config();assert.equal((await startLogin(new Request(c.origin+'/auth/login',{method:'POST',headers:{origin:'https://evil.test'}}),c)).status,403);assert.equal((await startLogin(new Request(c.origin+'/auth/login'),c)).status,405);});
+  await t.test('a top-level login link keeps PKCE and callback binding without a local form',async()=>{
+    const c=idp.config(),url=c.origin+'/auth/start?ui_locales=en&next=https://evil.test';
+    assert.equal((await startLoginLink(new Request(url),c)).status,403);
+    assert.equal((await startLoginLink(new Request(url,{method:'POST'}),c)).status,405);
+    assert.equal((await startLoginLink(new Request('https://evil.test/auth/start',{headers:{'sec-fetch-mode':'navigate','sec-fetch-dest':'document'}}),c)).status,421);
+    const r=await startLoginLink(new Request(url,{headers:{'sec-fetch-mode':'navigate','sec-fetch-dest':'document'}}),c);
+    assert.equal(r.status,303);assert.match(r.headers.get('set-cookie')!,/HttpOnly; Secure; SameSite=Lax/);
+    const target=new URL(r.headers.get('location')!);assert.equal(target.searchParams.get('code_challenge_method'),'S256');assert.equal(target.searchParams.get('ui_locales'),'en');
+    const completed=await callback(new Request(idp.authorize(target.href),{headers:{cookie:cookieHeader(r)}}),c);assert.equal(completed.headers.get('location'),'/konto');
+  });
   await t.test('JSON login initiation keeps browser binding and PKCE without following provider redirects',async()=>{const c=idp.config();const r=await startLogin(new Request(c.origin+'/auth/login',{method:'POST',headers:{origin:c.origin,accept:'application/json'}}),c);assert.equal(r.status,200);assert.equal(r.headers.get('location'),null);assert.match(r.headers.get('set-cookie')!,/HttpOnly; Secure; SameSite=Lax/);const body=await r.json() as {url:string};assert.equal(new URL(body.url).searchParams.get('code_challenge_method'),'S256');const result=await callback(new Request(idp.authorize(body.url),{headers:{cookie:cookieHeader(r)}}),c);assert.equal(result.status,303);});
   await t.test('PKCE S256, state, nonce and fixed redirect; hostile next rejected',async()=>{const c=idp.config();const r=await startLogin(new Request(c.origin+'/auth/login?next=https://evil.test',{method:'POST',headers:{origin:c.origin}}),c);const location=new URL(r.headers.get('location')!);assert.equal(location.searchParams.get('code_challenge_method'),'S256');assert.equal(location.searchParams.get('redirect_uri'),c.origin+'/auth/callback');assert.ok(location.searchParams.get('nonce'));assert.ok(location.searchParams.get('state'));const result=await callback(new Request(idp.authorize(location.href),{headers:{cookie:cookieHeader(r)}}),c);assert.equal(result.headers.get('location'),'/konto');});
   await t.test('one IdP sign-in authenticates two RPs; sessions remain project scoped',async()=>{const c=idp.config(),pilot=idp.config('https://pilot.test','pilot');const prompts=idp.prompts();const a=await begin(c),b=await callback(new Request(idp.authorize(a.headers.get('location')!),{headers:{cookie:cookieHeader(a)}}),c);const p=await begin(pilot),q=await callback(new Request(idp.authorize(p.headers.get('location')!),{headers:{cookie:cookieHeader(p)}}),pilot);assert.equal(idp.prompts(),prompts);assert.equal(idp.prompts(),1);assert.equal((await session(new Request(c.origin,{headers:{cookie:cookieHeader(b)}}),c))?.sub,'user-1');assert.equal(await session(new Request(pilot.origin,{headers:{cookie:cookieHeader(b)}}),pilot),null);assert.equal((await session(new Request(pilot.origin,{headers:{cookie:cookieHeader(q)}}),pilot))?.sub,'user-1');assert.match(b.headers.getSetCookie().find(c=>c.startsWith(SESSION_COOKIE))!,/HttpOnly; Secure; SameSite=Lax/);assert.doesNotMatch(cookieHeader(b),/server-only|eyJ|Domain=/);assert.doesNotMatch(JSON.stringify([...(c.store as MemoryStore).sessions.values()]),/server-only/);});
