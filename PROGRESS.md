@@ -43,11 +43,24 @@ Der echte native Formularstart offenbarte `Origin: null` durch die bisherige
 `same-origin`; die strenge Origin-Prüfung bleibt erhalten. Ein neuer
 Browser-Regressionstest reproduzierte den Fehler und besteht nach der
 Korrektur in Chromium und WebKit bei 320 px. 149 Tests und Build bestanden.
-CI `42465438360` prüft den endgültigen Commit vor dessen Deployment.
-Die Hub-Registry ist bereits deployt und der zweisprachige Live-Smoke
-erfolgreich. Nächster Schritt ist der geprüfte Slop-Deploy samt echtem
-Browserablauf und anschließend persönlichem Eigentumsnachweis.
+CI `42465438360` bestand für den endgültigen Commit beide Browser samt
+neuem Formular-Regressionstest und die PostgreSQL-/HF-/Logout-Integrationen.
+Deploy `42465941358` ist erfolgreich. Der Live-Smoke bestätigt Root 200,
+private Header, gesperrte Sitemap, anonyme API 401, strikten Origin-Schutz,
+exakten Pilot-Client, PKCE, `max_age=300` und englische Hub-Anmeldung
+einschließlich HF-Hinweis. Der echte native Browserweg führt jetzt ebenfalls
+bis zum zentralen Formular für Slop Urself Pilot.
+Die persönliche Anmeldung und OAuth-Freigabe sind im Browser zur
+Nutzereingabe geöffnet. Der echte Callback und der lokale Eigentumsnachweis
+bleiben bis dahin offen. Es wurde noch kein Bestandskonto verknüpft.
 Migrationsnachweise bleiben bis zur separaten Pilotaktivierung deaktiviert.
+
+Die visuelle Abnahme fand abgeschnittene Schrittbeschriftungen und doppelte
+Innenabstände an den Welt-Labels. Die Stilregeln beschränken sich jetzt auf
+die Zahlenkreise beziehungsweise die äußeren Labels und formatieren nicht
+mehr die eingebetteten Übersetzungsspannen. 64 Tests, Typprüfung, Lint,
+Build und Artefaktprüfung bestanden. Chromium und WebKit prüfen DE/EN bei
+320 px und Desktop auf lesbare Schritte, korrekte Labelabstände und Überlauf.
 
 ## Ziel und Grenzen
 Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC-SSO. Anwendungen, Repositories, Datenbanken und Berechtigungen bleiben getrennt. Adventskalender ist vollständig ausgeschlossen. Keine E-Mail-basierte Kontozusammenführung, keine Passwortübernahme; Slops persönliche HF-Anbindung, Kontingente, Jobs und Moderation bleiben verpflichtend und unverändert.
