@@ -59,8 +59,10 @@ Die visuelle Abnahme fand abgeschnittene Schrittbeschriftungen und doppelte
 Innenabstände an den Welt-Labels. Die Stilregeln beschränken sich jetzt auf
 die Zahlenkreise beziehungsweise die äußeren Labels und formatieren nicht
 mehr die eingebetteten Übersetzungsspannen. 64 Tests, Typprüfung, Lint,
-Build und Artefaktprüfung bestanden. Chromium und WebKit prüfen DE/EN bei
-320 px und Desktop auf lesbare Schritte, korrekte Labelabstände und Überlauf.
+Build und Artefaktprüfung bestanden. Chromium und WebKit bestätigten DE/EN
+bei 320 px und Desktop mit lesbaren Schritten, korrekten Labelabständen
+und ohne horizontalen Überlauf. Die aktive Sprache wurde mitgeprüft.
+Die Gestaltung ist seit `0183b63` veröffentlicht; der Live-Smoke ist erfolgreich.
 
 ## Ziel und Grenzen
 Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC-SSO. Anwendungen, Repositories, Datenbanken und Berechtigungen bleiben getrennt. Adventskalender ist vollständig ausgeschlossen. Keine E-Mail-basierte Kontozusammenführung, keine Passwortübernahme; Slops persönliche HF-Anbindung, Kontingente, Jobs und Moderation bleiben verpflichtend und unverändert.
@@ -68,7 +70,7 @@ Eigenständiger Hub mit vier direkten Projektlinks und schrittweisem echtem OIDC
 ## Produktion, Repository und Kosten
 - Produktiv unter https://worlds-hub.maki26.workers.dev/. Das Repository https://github.com/manuelk2607/Worlds-Hub ist am 05.11.2026 öffentlich lesbar. Die öffentliche Lesbarkeit wurde ohne Anmeldedaten geprüft.
 - Worker worlds-hub, Konto ec3c070d8e4f88d2fc533d7d797f2daa, Namespace maki26.workers.dev. Private alte Sites-Vorschau bleibt Zusatzvorschau.
-- Aktueller geprüfter Deploy: Commit `237a476`, Cloudflare-Version `c3073d69-251f-474f-9619-e641e1f82add`. 64 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42464764430)
+- Aktueller geprüfter Deploy: Commit `0183b63`, Cloudflare-Version `f1bcd604-2fcd-4d09-a226-92eadd294d2e`. 64 Tests, Typprüfung, Lint, Build, Audit und zweisprachiger Live-Smoke bestanden. [GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/42466441547)
 - GitHub Actions ausschließlich manuell, gepinnte Actions, contents:read, 10-Minuten-Limit; Deploy standardmäßig aus. Vor erstem Lauf GitHub Free mit 0.01 USD / 12.00 USD inkludiertem Compute und 0 / 0.5 GB Storage geprüft. Kurze Läufe innerhalb vorhandener kostenloser Kontingente; keine bezahlten Pläne, Domains oder Services aktiviert. Neon-Organisation Free. Limits/Kostenfallen: docs/COSTS.md.
 - Eigener, ausdrücklich genehmigter Token worlds-hub deploy: ausschließlich Account Workers Scripts:Edit, Ablauf 2027-02-02; kontoweite Restreichweite vor Freigabe erklärt. Nur verschlüsseltes Repository-Secret CLOUDFLARE_API_TOKEN. Kein Token eines anderen Projekts, keine Secrets in Git/Dateien/Logs. Lokaler Wrangler-Login abgelaufen, Actions-Deployment funktioniert.
 
