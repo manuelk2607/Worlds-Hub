@@ -132,7 +132,9 @@ Chromium/WebKit einschließlich simuliertem Refreshablauf und vollständige CI
 `42515091102` bestanden; Pilot-Deploy `42515687781` erfolgreich. Reine Diagnose
 der modernen Versionsmetadaten ergänzt in `fc4fc60`; neun gezielte Prüfer-Tests
 und separate Typprüfung bestanden. Sie gibt nur Feldnamen aus und verändert
-keine Version. Inspektion `42515850838` erfolgreich: Auch die neuere API liefert
+keine Version. Die vollständige CI `42515706390` für `fc4fc60` ist ebenfalls
+in Chromium und WebKit erfolgreich (163 Unit-Tests plus PostgreSQL-/Browserabläufe).
+Inspektion `42515850838` erfolgreich: Auch die neuere API liefert
 nur Asset-Konfiguration, keinen Manifesthash. Aktive Version nach Deploy ist
 `514bc3d9-e302-49f8-a6e0-b229152d6dc8`, Deployment
 `dfd89eff-6a83-4441-9ed7-4240bcad0db9`. Private Live-Smokes bestanden. Nach
