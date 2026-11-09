@@ -114,14 +114,22 @@ anschließend Ausgangsversion wieder 100 Prozent. Live: Ausgangsversion korrekt,
 noindex/no-store und erreichbar. Alle sechs QA-Quelltabellen sind nach Anzahl
 und Prüfsumme identisch. Produktionskonten/-daten unverändert.
 
-Der Prüfer wartet jetzt begrenzt auf bekannte Zwischenzustände, ohne Schreib-
-aufrufe zu wiederholen; unbekannte Deployments stoppen sofort. Sichere
-Phasen-/Fehlerdiagnose ergänzt. 178 lokale Tests: 177 bestanden, ein ausdrücklich
-CI-spezifischer sauberer Buildtest lokal ausgelassen. Werkzeugtypen bestanden.
-Neuer Prüfcommit `6bf3740`, vollständige CI `42592633591` läuft noch.
-Nächster Schritt: nach deren Erfolg diesen Stand im festen Testworker
-veröffentlichen und den gesamten kontrollierten Ablauf erfolgreich wiederholen.
-Eine endgültige Produktionsfreigabe wird daraus noch nicht abgeleitet.
+Die begrenzte Bestätigungswartezeit und sichere Diagnose sind jetzt vollständig
+extern abgenommen. Code `6bf3740`, vollständige CI **42592633591** erfolgreich:
+**178/178 Unit-Tests ohne Skips**, Anwendungs-/Werkzeugtypen, PostgreSQL 17 und
+vollständige Chromium-/WebKit-Integration. Veröffentlichung **42593695422**
+erfolgreich. Der abschließende Rücknahmelauf **42593917604** bestand vollständig:
+15 Dateien beider Versionen bei null Prozent Kandidatenverkehr geprüft,
+Kandidat `5f7c87d4-585a-4319-b892-e768815c24e1` bei 100 Prozent und danach
+Ausgangsversion `fc844a11-1d66-40d6-b7e1-99b6981922f9` wiederhergestellt.
+Beide Zustände per Management-API, Laufzeit-ID und privatem Smoke geprüft.
+Die sechs Quelltabellen sind anschließend erneut nach Zahl und Prüfsumme
+unverändert. Live liefert wieder die Ausgangsversion mit noindex/no-store.
+
+Damit ist die kontrollierte Deployment-Rücknahme nachgewiesen. Dieser einzelne
+Blocker ist erledigt; globale Abmeldung, Kontolöschung, weitere Eigentumsnachweise,
+neue Projektprofile aus zentraler Identität und Produktionsmigration bleiben
+offen. Keine Produktionsdaten oder persönlichen HF-Verbindungen geändert.
 
 ## Aktuelle Vorgaben – zentrale Anmeldung und bestehende Sitzungen
 

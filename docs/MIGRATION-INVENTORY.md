@@ -71,15 +71,15 @@ Eigentumsnachweis vorliegt; niemand erhält dadurch fremde Inhalte oder Rechte.
 
 ## Nächste Freigabekriterien
 
-1. Vollständige erfolgreiche Pilot-Rücknahme abschließen. Der strenge bisherige
-   Anbieter-Manifestvergleich bleibt erhalten. Zusätzlich ist die Prüfung mit
-   tatsächlicher Laufzeit-ID und vollständiger SHA-256-Dateiliste implementiert.
-   Externer Lauf 42591696625 bestätigte 15 Dateien beider Versionen bei 0 Prozent
-   Kandidatenverkehr. Lesende Diagnose 42592201712 bestätigt echten Wechsel auf
-   Kandidat 100 Prozent und Rückkehr zur Ausgangsversion 100 Prozent; sechs
-   Quelltabellen identisch. Die sofortige Nachprüfung brach allerdings ab, daher
-   noch kein vollständig erfolgreicher Workflow. Begrenzte Bestätigungswartezeit
-   und sichere Diagnose sind ergänzt; CI 42592633591 für 6bf3740 läuft noch.
+1. **Erledigt: kontrollierte Pilot-Deployment-Rücknahme.** Code 6bf3740,
+   vollständige CI 42592633591, Veröffentlichung 42593695422 und abschließender
+   externer Ablauf 42593917604 erfolgreich. 15 Dateien beider tatsächlicher
+   Laufzeitversionen bei 0 Prozent geprüft, Kandidat bei 100 Prozent und
+   Ausgangsversion wiederhergestellt; sechs Quelltabellen identisch. Aktive
+   Ausgangsversion fc844a11-1d66-40d6-b7e1-99b6981922f9. Der frühere Abbruch der
+   sofortigen Nachkontrolle ist durch begrenzte Zustandsbestätigung behoben.
+   Der alte Anbieter-Manifestvergleich bleibt streng; die zusätzliche Prüfung
+   verlangt exakten Commit, vollständige Dateiprüfsummen und Laufzeitnachweis.
 2. Je Projekt aktuellen Backup-/Restore-/Mapping-/Rollen-/Datennachweis prüfen.
 3. Echte zentrale Providerabläufe der weiteren Anwendungen und unterstützte
    Übernahme bestehender Identitäten/Sitzungen klären; keine Hash-/Cookiekopie.
