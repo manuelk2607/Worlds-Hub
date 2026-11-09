@@ -98,3 +98,16 @@ Cross-project session revocation remains a separate unresolved acceptance item.
 - [Project-scoped key permissions](https://neon.com/docs/manage/api-keys)
 - [OAuth client update fields](https://neon.com/docs/reference/api/auth/update-neon-auth-o-auth-client)
 - [Signed webhook delivery](https://neon.com/docs/auth/guides/webhooks)
+
+## Native Logout-Metadaten: begrenzte QA-Abnahme
+
+Nach ausdrücklicher Freigabe wurde genau ein neues synthetisches QA-Konto
+vorübergehend auf `admin` gesetzt. Frische Anmeldung und Sitzungsabruf bestätigten
+die Rolle; native Clientregistrierung antwortete weiterhin mit 401 ohne
+JSON-Felder. Kein Client angelegt, keine Rückkanalzustellung versucht und keine
+bestehende Konfiguration geändert. Rolle zurückgenommen, danach ausdrücklich
+freigegebene Entfernung ausschließlich dieses neuen Testkontos über die native
+Verwaltung. Nachkontrolle: null Konto-/Sitzungszeilen für die exakte Fixture-ID.
+Dies beweist die konkrete native Ablehnung, nicht die Abwesenheit jedes denkbaren
+Anbieterwegs. Globale Projektabmeldung bleibt unbewiesen. Vollständiges Protokoll
+und Cleanup: `NATIVE-LOGOUT-QA.md`.

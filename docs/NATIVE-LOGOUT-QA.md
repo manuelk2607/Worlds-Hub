@@ -1,4 +1,4 @@
-# Begrenzte native Abmeldeprüfung (noch nicht freigegeben)
+# Begrenzte native Abmeldeprüfung – durchgeführt
 
 Ziel ist ausschließlich `snowy-frost-91455200` / `br-jolly-leaf-ba8vt1pe`
 (`qa-account-lifecycle-20261107`) und dessen tatsächlicher QA-Aussteller
@@ -10,7 +10,7 @@ Die native OpenAPI führt Rückkanal-/Logout-Metadaten auf; die dokumentierte
 Verwaltungs-API bietet dafür keine entsprechenden Felder. Die reine Existenz
 von Discovery-/OpenAPI-Feldern beweist weder Nutzbarkeit noch Zustellung.
 
-Nach ausdrücklicher Freigabe:
+Ausdrücklich freigegebener Prüfablauf:
 
 1. Genau ein neues synthetisches Konto im QA-Zweig anlegen; Passwort zufällig
    und ausschließlich im Arbeitsspeicher. Keine Nachricht an ein echtes Postfach.
@@ -31,3 +31,35 @@ Nach ausdrücklicher Freigabe:
 Diese begrenzte Prüfung kann eine unterstützte Anbieterfunktion bestätigen
 oder eine konkrete Grenze nachweisen. Sie allein aktiviert keine globale
 Abmeldung und ersetzt keine produktive Abnahme.
+
+## Tatsächliches Ergebnis
+
+Die persönliche Freigabe für genau diese QA-Prüfung liegt vor. Ein neues
+synthetisches Konto wurde angelegt, über die offizielle Verwaltung vorübergehend
+auf `admin` gesetzt und frisch nativ angemeldet. Der erneute native
+Sitzungsabruf bestätigte dieselbe ID und tatsächlich `role=admin`.
+
+Der einmalige Aufruf von `/oauth2/create-client` mit öffentlichem Client,
+PKCE-/Code-Konfiguration, festen QA-Zielen und den drei Logout-Metadatenfeldern
+lieferte dennoch **HTTP 401 ohne JSON-Felder**. Es wurde kein Testclient angelegt;
+Speicherung und Rücklesen der Logout-Metadaten konnten daher nicht geprüft
+werden. Weder Clientregistrierung allgemein freigeschaltet noch bestehende
+Clients, Origins, Ressourcen oder Auth-Konfigurationen geändert. Dieses Ergebnis
+belegt die konkrete Ablehnung dieses nativen Wegs, keine allgemeine Aussage über
+jede mögliche Anbieterintegration.
+
+Die Rolle wurde garantiert über die offizielle Verwaltung auf `user`
+zurückgesetzt und separat gelesen. Die Abmeldung beendete die frisch angelegte
+Sitzung; eine zusätzliche Registrierungssitzung blieb zunächst bestehen.
+Zwei ausschließlich auf dieses synthetische Konto beschränkte Versuche des
+nativen Sitzungswiderrufs wurden ebenfalls mit 401 abgewiesen. Keine SQL-
+Manipulation an nativen Sessions, keine ausgegebenen Zugangsdaten und kein
+Tokenversand an einen fremden Empfänger. Nach gesonderter ausdrücklicher
+Nutzerfreigabe wurde ausschließlich dieses neu angelegte QA-Konto über
+`delete_auth_user` entfernt. Die getrennte read-only Nachkontrolle bestätigt
+**0 Konto- und 0 Sitzungszeilen** für seine exakte ID.
+
+Keine produktiven Daten oder persönlichen Konten betroffen. Für die geforderte
+globale Abmeldung fehlt weiterhin eine offiziell nutzbare und real geprüfte
+Client-/Logout-Anbindung. Keine manuell erzeugten Logout-Tokens oder direkte
+Änderung interner Provider-Tabellen als Ersatz verwenden.

@@ -57,6 +57,38 @@ Anbietersitzungen des betroffenen Kontos. Es wurde kein persönlicher Reset
 ausgelöst. Projektübergreifender Widerruf bleibt separat offen.
 Konkrete Anbietergrenzen und Abnahmen stehen in `docs/IDENTITY-LIFECYCLE.md`.
 
+## Neue Abnahmen: Sprachwelten und native Logout-Grenze
+
+Sprachwelten `13fb704` erhält die historische lokale UUID jetzt in der gesamten
+Anwendung: Beiträge, Vorschläge, Admin-Gates, Spielnamen, Audio und
+Übersetzungsvorschläge. Rollen bleiben in der lokalen Tabelle. Aktive bisherige
+Sitzungen behalten Vorrang; abgelaufene Cookies verdecken keine gültige Worlds-
+Zuordnung. Allgemeine Profileinstellungen führen DE/EN zum Hub, Projektlogout
+nutzt CSRF. Bestätigter Ablauf räumt private Ansichten; vorübergehende
+Providerfehler erhalten den sichtbaren Zustand.
+
+Vollständige GitHub-CI `42519675450` erfolgreich: 200 Unit-Tests, Typen, Lint,
+Übersetzungsabdeckung, vollständiger Audit, Build und 154 bisherige + 8 neue
+Chromium-/WebKit-Browserfälle. Separate echte QA-Integration `42519682396`
+bestanden: Route-/PostgreSQL-Prüfung mit derselben historischen UUID,
+Beitragserstellung/-lesen/-bearbeiten/-entfernen, Heftzuordnung, fehlende
+Adminrechte und Widerruf ohne Gast-Fallback. Zusätzlich vollständiger
+`npm run test:integration` gegen laufenden Loopback-Server und Managed Auth.
+Die Worlds-Sitzung der Datenbankprüfung ist synthetisch; kein produktiver
+OIDC-/Migrationsnachweis. Sprachwelten-Produktion unverändert.
+
+Die inzwischen ausdrücklich freigegebene begrenzte native Logout-Prüfung wurde
+im festen QA-Zweig durchgeführt. Trotz frisch bestätigter Anbieterrolle `admin`
+lieferte `/oauth2/create-client` 401 ohne JSON-Felder. Kein Client wurde angelegt;
+Logout-Metadaten sind daher weiterhin nicht als nutzbar nachgewiesen. Rolle
+zurück auf `user`, frische Sitzung beendet. Eine verbleibende Registrierungssitzung
+wurde erkannt; nach gesonderter Freigabe wurde ausschließlich das neue synthetische
+Konto über die offizielle Verwaltung gelöscht. Nachkontrolle: 0 Konto- und
+0 Sitzungszeilen für diese ID. Keine internen Session-Tabellen verändert und
+keine Produktions-/Origin-/Clientkonfiguration geändert. Details und Grenzen:
+`docs/NATIVE-LOGOUT-QA.md`. Ein unterstützter, real geprüfter Weg zum globalen
+Logout bleibt offen; keine eigene Tokenabkürzung einführen.
+
 ## Aktuelle Vorgaben – zentrale Anmeldung und bestehende Sitzungen
 
 Der Nutzer hat ausdrücklich bestätigt: In allen vier Anwendungen führt die
