@@ -31,6 +31,26 @@ sichere anwendungseigene Self-Service-Gateway, ein separat freizugebender
 Runtime-Zugang und die tatsächliche Invalidierung aller Projekt-BFF-Sitzungen.
 Es wurde kein Verwaltungszugang für Produktion eingerichtet.
 
+Code `20ea245` ist gepusht. GitHub Actions `42658302512` bestand für genau
+diesen Commit: 74 Tests, Typen, Lint, Build, Artefaktprüfung und Produktions-
+Dependency-Audit. Dieser Test-/Dokumentationsstand erfordert kein Deployment.
+
+Eine neue reale Slop-Pilot-Anmeldung am 09.11. lief im Browser vom Link
+„Mit Worlds anmelden“ direkt zum bereits verknüpften Profil Manuel, ohne neue
+Passwort-, Code- oder Consent-Eingabe. Die gespeicherte, validierte OIDC-Sitzung
+enthält `authenticatedAt`, aber kein `sid`. Eine read-only Nachkontrolle beider
+Zweige bestätigte denselben pseudonymisierten Nutzer; es wurden keine Tokens
+oder Cookies ausgelesen. Das ist ein konkreter Befund dieses Anmeldevorgangs,
+keine allgemeine Behauptung über sämtliche Anbieterantworten. Native Sitzung
+und Projekt-BFF können deshalb nicht über eine vermeintlich vorhandene `sid`
+verbunden werden. Kein Slop-Produktionskonto und keine HF-Anbindung geändert.
+
+Nächste Umsetzung: sicheren eigenen Kontoverwaltungsweg und verlässlichen
+Widerruf der Projekt-BFFs vorbereiten; native Admin-Funktion allein genügt
+nicht. Parallel bleibt die ausdrücklich einmalige Eigentumsbestätigung für
+Sprachwelten-Konten mit abgelaufener bisheriger Sitzung offen. Dafür vorhandenes
+SDK und i18n wiederverwenden; der reguläre Login bleibt der Worlds-Link.
+
 ## Sprachwelten: bestätigte Kontoübernahme und lokaler Logout
 
 Code `38afa15` auf `feature/worlds-hub-sso` ergänzt den geschützten HTTP-Ablauf

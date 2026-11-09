@@ -66,3 +66,21 @@ Client-/Logout-Anbindung. Keine manuell erzeugten Logout-Tokens oder direkte
 freigegebene Admin-API-Prüfung hat inzwischen einen unterstützten nativen
 Sitzungswiderruf und administrative Kontolöschung bestätigt; siehe
 `NATIVE-ADMIN-QA.md`. Das ersetzt die noch offene Projekt-BFF-Anbindung nicht.
+
+## Echte Projektanmeldung ohne `sid` am 09.11.2026
+
+Der reguläre Slop-Pilot-Link führte mit der vorhandenen zentralen Sitzung ohne
+erneute Passwort-, Code- oder Consent-Eingabe zu `/auth/worlds`. Die Seite
+zeigte das bereits verknüpfte Profil Manuel. Der tatsächliche OIDC-Callback
+erzeugte im isolierten Slop-Zweig eine neue Projekt-BFF-Sitzung. Read-only
+wurden nur gehashte Subject-/Sitzungs-IDs sowie das Vorhandensein der Claims
+abgeglichen; keine Zugriffstokens, Cookie-Werte oder Passwörter gelesen.
+
+Der BFF-Datensatz enthält `authenticatedAt`, aber weder `payload.sid` noch
+eine `sid`-Spalte mit Wert. Die zentrale Sitzung kann daher bei diesem realen
+Anmeldevorgang nicht anhand einer mitgelieferten `sid` zugeordnet werden.
+Der pseudonymisierte Subject-Abgleich bestätigte denselben zentralen Nutzer.
+Dieser Befund beweist weder allgemeine Anbieter-Unterstützung noch deren
+generelle Abwesenheit. Ein angebliches `sid`-Mapping ist kein geeigneter Ersatz
+für den noch zu implementierenden tatsächlichen BFF-Widerruf. Keine neue
+Freigabe, Kontoverknüpfung, HF-Aktion oder Produktionsänderung durchgeführt.
