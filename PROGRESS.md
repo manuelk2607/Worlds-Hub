@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-08 (Europe/Stockholm)
+Stand: 2026-11-09 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -9,6 +9,29 @@ zentralen Konto, zentrale Nachweise über den Migrationsstand und die reale
 Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
+
+## Kontoanzeige folgt der Serveridentität – Sprachwelten
+
+Code `76b97e8` auf `feature/worlds-hub-sso` korrigiert im isolierten Worlds-Modus
+die bisher mögliche Abweichung zwischen Browsercache und tatsächlicher
+Serveridentität. Private Ansichten, Profilname, Kontolink und Abmeldeauswahl
+folgen derselben Auswahl wie die Autorisierung. Gültige bisherige Sitzungen
+behalten Vorrang; ein veralteter nativer SDK-Cache verdeckt keine Worlds-
+Zuordnung und hält nach bestätigtem Ablauf keine privaten Ansichten offen.
+Der Status enthält ausschließlich lokale ID, Namen, Herkunft und gegebenenfalls
+den eigenen CSRF-Wert. Keine nativen Rollen, E-Mails oder Sitzungstokens.
+
+Lokal bestanden 206 Unit-Tests, Typprüfung, Lint, DE/EN-Abdeckung, Offline-Build
+und 16 Chromium-/WebKit-Browserfälle bei 320/1280 px. Die getrennte echte
+QA-Integration `42606461691` bestand Migrationen, PostgreSQL-/Autorisierungs-
+prüfungen und den vollständigen nativen HTTP-Test gegen Managed Auth.
+Vollständige GitHub-CI `42606394576` ebenfalls erfolgreich: 206 Unit-Tests,
+Typen, Lint, Übersetzungsabdeckung, vollständiger Dependency-Audit, Build und
+154 bisherige + 16 Worlds-Browserfälle.
+Keine produktiven Konten, Konfigurationen oder Migrationen geändert.
+Eigentumsnachweise vorhandener Konten, echte zentrale SSO-Abnahme und globaler
+Logout bleiben offen; auch der Logout bei zwei gleichzeitig gültigen lokalen
+Anmeldearten benötigt vor dem produktiven Wechsel eine eigene Abnahme.
 
 ## Zentrale Kontoverwaltung – Nachprüfung am 08.11.
 
