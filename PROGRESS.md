@@ -49,14 +49,34 @@ die Übernahme. Fristen werden nicht durch spätere Sitzungsverlängerung erweit
 Keine Übernahme allein durch Namen/E-Mails und keine Eignung für Slop-Sitzungen,
 die nur durch öffentliche Namenseingabe entstanden sind. Bestehende atomare
 Zuordnungs-/Audit-/Konfliktregeln sowie die bisherigen Nachweisarten bleiben
-erhalten. Keine Provider-Cookies, Tokens oder Sitzungszeilen werden übertragen.
+erhalten. Zwischen Anwendungen werden keine Provider-Cookies, Tokens oder
+Sitzungszeilen kopiert.
 
 Lokal bestanden **71 Tests**, Typprüfung, Lint, Build und Artefaktprüfung.
 Die neuen Tests prüfen alte gültige Sitzungen, beide Sitzungsbindungen,
 Quellprüfung, Privilegien, Fristen und atomaren parallelen Proof-Verbrauch
-mit echtem PostgreSQL in PGlite. Noch keine reale Projektübernahme: Als Nächstes
-Paketprüfung auf GitHub, geprüfte Paketveröffentlichung und HTTP-/SDK-Anbindung
-in Sprachwelten, anschließend echte isolierte SSO-/Eigentümerabnahme.
+mit echtem PostgreSQL in PGlite. Vollständige GitHub-Prüfung `42637470398` für
+Code `27f1cd6` erfolgreich, ohne Deployment. Tag `auth-v0.1.4` zeigt auf den
+geprüften eigenständigen Paket-Commit
+`2343fdaf8892fb028495064d0377f5533d67272c`; Paketname, Exporte und Quellinhalt
+gegen die geprüfte Unterstruktur verglichen.
+
+Sprachwelten-Code `946abb4` bindet diese Revision im Testzweig ein und prüft den
+bisherigen Eigentümer mit dem offiziellen SDK direkt beim konfigurierten
+Managed-Auth-Dienst. Browsercache, fremde Cookies, Provider-Rollen und vom
+Browser gewählte Identitäten werden nicht als Eigentumsnachweis verwendet.
+210 lokale Tests, Typen, Lint, DE/EN-Abdeckung und Build bestanden.
+Echte getrennte QA-Integration `42640109664` erfolgreich: bestehende Sitzung
+des neu angelegten synthetischen Kontos vor beiden Schritten validiert,
+parallele Bestätigung erzeugte eine Zuordnung und ein Audit. Native Sitzungs-ID,
+Erstellungs- und Ablaufzeiten sowie historische UUID und Heft-/Beitragseigentum
+blieben erhalten; keine zusätzliche Anmeldung. Auch vollständiger nativer
+HTTP-Test bestanden. Zentraler Nachweis noch synthetisch; der reale
+Alters-/Erneuerungsfall einer bereits länger bestehenden Anbietersitzung bleibt
+zu prüfen. Vollständige CI `42640042187` ebenfalls erfolgreich: 210 Unit-Tests,
+Typen, Lint, DE/EN-Abdeckung, vollständiger Audit, Build und 154 bisherige + 16
+Worlds-Browserfälle. HTTP-Übernahmeroute und echte zentrale Browserabnahme folgen;
+keine produktive Projektübernahme erfolgt.
 
 ## Zentrale Kontoverwaltung – Nachprüfung am 08.11.
 
