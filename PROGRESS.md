@@ -131,6 +131,34 @@ Blocker ist erledigt; globale Abmeldung, Kontolöschung, weitere Eigentumsnachwe
 neue Projektprofile aus zentraler Identität und Produktionsmigration bleiben
 offen. Keine Produktionsdaten oder persönlichen HF-Verbindungen geändert.
 
+## Sprachwelten: zentrale Neuanmeldung ohne zweites Auth-Konto
+
+Neuer Prüfcommit `3c1da8b` ergänzt Migration 028 mit anwendungseigenen
+Datenprofilen. Bestehende native UUIDs, Rollen, Beitragszuordnungen und bereits
+vorhandene Verknüpfungen bleiben unverändert. Neue zentral angemeldete Nutzer
+benötigen keine zweite Registrierung, keinen lokalen Namen und kein lokales
+Passwort. Profilname aus der validierten zentralen Sitzung; keine Zuordnung
+nach Namens-/E-Mail-Gleichheit und keine Kopie nativer Auth-Zeilen.
+
+Profil, Zuordnung und Audit entstehen atomar. Gleichzeitige Wiederholungen
+hinterlassen ein Profil und einen Audit-Eintrag; Auditfehler rollen alles zurück.
+Sperren und entfernte native Quellen bleiben gesperrt. Aktive bisherige
+Sitzungen verhindern versehentliche Neuanlagen. POST/CSRF, Origin, Formulargröße,
+Methode und enge Rücksprungliste werden serverseitig geprüft. Lokale Rollen
+bleiben unverändert; neue Profile erhalten keine Administratorrechte. Die
+Administration erkennt zentrale Profile ohne lokale Kopie ihrer E-Mail.
+
+206 lokale Tests, Typen, Lint, DE/EN-Abdeckung, Audit und Build bestanden.
+Die acht bestehenden Worlds-Browserfälle und vier neue Einstiegsfälle bestanden;
+letztere jeweils DE/EN, Chromium/WebKit, 320/1280 px, tatsächliche Modell-/
+Formularlogik in PGlite und echte HTTP-303-Rückkehr. Synthetische Sitzungen,
+kein realer neuer OIDC-Nachweis. Neues natives Auth-Konto: null.
+Vollständige CI `42600250409` und separate echte QA-Integration `42600259412`
+laufen noch. Produktionsschema und produktive Konten unverändert. Vor
+Veröffentlichung bleiben tatsächliche SSO-/Migrationsabnahme und Gestaltung
+der Kontozwischenseite offen; Datenprofile dürfen bei Rücknahmen nicht
+entfernt oder auf den alten nativen Fremdschlüssel zurückgezwungen werden.
+
 ## Aktuelle Vorgaben – zentrale Anmeldung und bestehende Sitzungen
 
 Der Nutzer hat ausdrücklich bestätigt: In allen vier Anwendungen führt die
