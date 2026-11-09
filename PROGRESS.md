@@ -153,8 +153,13 @@ Die acht bestehenden Worlds-Browserfälle und vier neue Einstiegsfälle bestande
 letztere jeweils DE/EN, Chromium/WebKit, 320/1280 px, tatsächliche Modell-/
 Formularlogik in PGlite und echte HTTP-303-Rückkehr. Synthetische Sitzungen,
 kein realer neuer OIDC-Nachweis. Neues natives Auth-Konto: null.
-Vollständige CI `42600250409` und separate echte QA-Integration `42600259412`
-laufen noch. Produktionsschema und produktive Konten unverändert. Vor
+Vollständige CI **42600250409** und separate echte QA-Integration **42600259412**
+für **3c1da8b** sind erfolgreich: 206 Unit-Tests, 154 bisherige + 12 Worlds-
+Browserfälle, Migration 028, tatsächlicher gleichzeitiger Profilstart,
+unveränderte native Metadaten, Administration, eigene Beiträge und Widerruf.
+Auch das vollständige laufende native HTTP-System ist geprüft. Tests verwendeten
+synthetische zentrale BFF-Sitzungen; neuer realer OIDC-Nachweis bleibt offen.
+Produktionsschema und produktive Konten unverändert. Vor
 Veröffentlichung bleiben tatsächliche SSO-/Migrationsabnahme und Gestaltung
 der Kontozwischenseite offen; Datenprofile dürfen bei Rücknahmen nicht
 entfernt oder auf den alten nativen Fremdschlüssel zurückgezwungen werden.
