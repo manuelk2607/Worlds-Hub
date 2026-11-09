@@ -89,6 +89,40 @@ keine Produktions-/Origin-/Clientkonfiguration geändert. Details und Grenzen:
 `docs/NATIVE-LOGOUT-QA.md`. Ein unterstützter, real geprüfter Weg zum globalen
 Logout bleibt offen; keine eigene Tokenabkürzung einführen.
 
+## Rücknahme im Slop-Testworker: echte Versions- und Dateinachweise
+
+Die offizielle Versionsmetadaten-Bindung ist ausschließlich im Testworker
+aktiv. Eingesendete Header können die ausgegebene Laufzeit-ID nicht setzen;
+WebSocket-Antworten und Produktion bleiben erhalten. Der zusätzliche Ablauf
+bindet den geprüften Commit und die vollständige SHA-256-Dateiliste an beide
+Versionen. Kandidaten werden zuerst ohne normalen Verkehr geprüft, anschließend
+kurz aktiviert und wieder zurückgestellt. Der alte Vergleich mit einem
+Anbieter-Manifesthash bleibt unverändert streng.
+
+Code `2c96971` bestand vollständige CI `42590222784`: 176 Unit-Tests ohne Skips,
+beide Typprüfungen, Werkzeugtypen, PostgreSQL 17 und vollständige Chromium- und
+WebKit-Spiel-/Auth-Integration. Veröffentlichung `42591477378` erfolgreich.
+Aktive Ausgangsversion: `8a83dc9c-c0aa-4511-80e9-b115ae555e35`.
+
+Im externen Lauf `42591696625` bestanden tatsächlich alle 15 Dateien beider
+per Laufzeit-ID belegter Versionen bei 0 Prozent Kandidatenverkehr. Danach
+wurden Kandidat und Ausgangsversion gewechselt, aber die sofortige Kontrolle
+brach ab. Der Workflow ist daher nicht vollständig erfolgreich. Die unabhängige
+lesende Diagnose `42592201712` bestätigt die Deploymentfolge: Kandidat
+`93829760-9493-4bfb-9c7b-60fa952ba609` bei 0 Prozent, dann 100 Prozent,
+anschließend Ausgangsversion wieder 100 Prozent. Live: Ausgangsversion korrekt,
+noindex/no-store und erreichbar. Alle sechs QA-Quelltabellen sind nach Anzahl
+und Prüfsumme identisch. Produktionskonten/-daten unverändert.
+
+Der Prüfer wartet jetzt begrenzt auf bekannte Zwischenzustände, ohne Schreib-
+aufrufe zu wiederholen; unbekannte Deployments stoppen sofort. Sichere
+Phasen-/Fehlerdiagnose ergänzt. 178 lokale Tests: 177 bestanden, ein ausdrücklich
+CI-spezifischer sauberer Buildtest lokal ausgelassen. Werkzeugtypen bestanden.
+Neuer Prüfcommit `6bf3740`, vollständige CI `42592633591` läuft noch.
+Nächster Schritt: nach deren Erfolg diesen Stand im festen Testworker
+veröffentlichen und den gesamten kontrollierten Ablauf erfolgreich wiederholen.
+Eine endgültige Produktionsfreigabe wird daraus noch nicht abgeleitet.
+
 ## Aktuelle Vorgaben – zentrale Anmeldung und bestehende Sitzungen
 
 Der Nutzer hat ausdrücklich bestätigt: In allen vier Anwendungen führt die

@@ -71,11 +71,15 @@ Eigentumsnachweis vorliegt; niemand erhält dadurch fremde Inhalte oder Rechte.
 
 ## Nächste Freigabekriterien
 
-1. Tatsächliche Pilot-Deployment-Rücknahme validieren. Reine Inspektion
-   42515850838 bestätigt auch in der neueren API nur Asset-Konfiguration, keinen
-   Manifesthash. Der bestehende Vergleich stoppt deshalb sicher. Eine gezielte
-   0-Prozent-Versionsprüfung mit belegter Versionsantwort und vollständigen
-   Asset-Prüfsummen ist der nächste konkrete Prüfweg, noch nicht implementiert.
+1. Vollständige erfolgreiche Pilot-Rücknahme abschließen. Der strenge bisherige
+   Anbieter-Manifestvergleich bleibt erhalten. Zusätzlich ist die Prüfung mit
+   tatsächlicher Laufzeit-ID und vollständiger SHA-256-Dateiliste implementiert.
+   Externer Lauf 42591696625 bestätigte 15 Dateien beider Versionen bei 0 Prozent
+   Kandidatenverkehr. Lesende Diagnose 42592201712 bestätigt echten Wechsel auf
+   Kandidat 100 Prozent und Rückkehr zur Ausgangsversion 100 Prozent; sechs
+   Quelltabellen identisch. Die sofortige Nachprüfung brach allerdings ab, daher
+   noch kein vollständig erfolgreicher Workflow. Begrenzte Bestätigungswartezeit
+   und sichere Diagnose sind ergänzt; CI 42592633591 für 6bf3740 läuft noch.
 2. Je Projekt aktuellen Backup-/Restore-/Mapping-/Rollen-/Datennachweis prüfen.
 3. Echte zentrale Providerabläufe der weiteren Anwendungen und unterstützte
    Übernahme bestehender Identitäten/Sitzungen klären; keine Hash-/Cookiekopie.
