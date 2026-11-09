@@ -10,6 +10,39 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Sprachwelten: einmaliger Nachweis bei abgelaufener Bestandsanmeldung
+
+Code `9b54f19` ergänzt im isolierten Testmodus die private Kontoübernahme mit
+dem vorhandenen Auth-Dialog/SDK. Regulärer Login bleibt der Worlds-Link; eine
+aktive alte Sitzung kann weiterhin ohne neue Passworteingabe übernommen werden.
+Bei abgelaufener Sitzung können Nutzer ihr bisheriges Konto ausdrücklich
+bestätigen oder dessen Passwort wiederherstellen. Keine neue Registrierung,
+kein Namens-/E-Mail-Merge, keine Zuordnung allein durch Öffnen des Dialogs.
+Die vorhandene Bestätigung prüft anschließend beide Identitäten erneut.
+Auch alte Adminsitzungen bekommen den Weg zur geforderten frischen Bestätigung.
+
+`3f5a40d` erhält DE/EN bereits in der ersten HTML-Antwort und im Seitentitel.
+Sprachwechsel bewahrt Eingaben und übersetzt sichtbare Meldungen; mobile
+44-px-Sprachziele, noindex und bestehende Gestaltung. Reset-Tokens werden aus
+der Adresse entfernt und nicht für eine Anmeldeweiterleitung gespeichert.
+Lokal: 217 Tests, Typen, Lint, DE/EN-Abdeckung, vollständiger Audit, Build und
+36 Worlds-Browserfälle bestanden; die betroffenen SSR-/Resetfälle zusätzlich
+gezielt in Chromium/WebKit bei 320/1280 px geprüft und visuell gesichtet.
+
+Echte isolierte QA **42683460761** für `9b54f19` erfolgreich: Berechtigung zum
+Übernehmen vor/nach der Zuordnung, offizielle native Eigentumsprüfung,
+historische IDs und Heft-/Beitragseigentum, keine Rollenvergabe und beide
+lokalen Abmeldungen. Zentrale Projektsitzung dort weiterhin synthetisch.
+Vollständige CI **42684100840** für `3f5a40d` erfolgreich: 217 Tests, Typen,
+Lint, Übersetzungen, Audit, Build sowie 154 bisherige + 36 Worlds-Browserfälle.
+Auch die ursprüngliche Übernahme-CI **42683427322** bestand vollständig.
+Keine produktive Migration oder Veröffentlichung. Weiter: ursprüngliche
+Laufzeit bisheriger Übergangssitzungen sichern, neue lokale Anmeldungen bei
+verknüpften Konten stilllegen und echte zentrale Browserabnahme durchführen.
+Der konkrete, noch nicht implementierte Übergangsplan steht im Sprachwelten-
+Repository unter `docs/worlds-transition-sessions.md`; keine neuen Nachweise
+bei späteren lokalen Logins und keine Veränderung nativer Provider-Tabellen.
+
 ## Native Verwaltungs-API: reale Abmeldung und Löschung bestätigt
 
 Die zusätzlich ausdrücklich freigegebene Prüfung in `br-jolly-leaf-ba8vt1pe`
@@ -45,11 +78,10 @@ keine allgemeine Behauptung über sämtliche Anbieterantworten. Native Sitzung
 und Projekt-BFF können deshalb nicht über eine vermeintlich vorhandene `sid`
 verbunden werden. Kein Slop-Produktionskonto und keine HF-Anbindung geändert.
 
-Nächste Umsetzung: sicheren eigenen Kontoverwaltungsweg und verlässlichen
-Widerruf der Projekt-BFFs vorbereiten; native Admin-Funktion allein genügt
-nicht. Parallel bleibt die ausdrücklich einmalige Eigentumsbestätigung für
-Sprachwelten-Konten mit abgelaufener bisheriger Sitzung offen. Dafür vorhandenes
-SDK und i18n wiederverwenden; der reguläre Login bleibt der Worlds-Link.
+Weiter offen: sicheren eigenen Kontoverwaltungsweg und verlässlichen Widerruf
+der Projekt-BFFs vorbereiten; die native Admin-Funktion allein genügt nicht.
+Der zusätzliche Sprachwelten-Übernahmedialog ist oben dokumentiert; der
+reguläre Login bleibt der Worlds-Link.
 
 ## Sprachwelten: bestätigte Kontoübernahme und lokaler Logout
 
