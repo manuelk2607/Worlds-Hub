@@ -62,4 +62,7 @@ Nutzerfreigabe wurde ausschließlich dieses neu angelegte QA-Konto über
 Keine produktiven Daten oder persönlichen Konten betroffen. Für die geforderte
 globale Abmeldung fehlt weiterhin eine offiziell nutzbare und real geprüfte
 Client-/Logout-Anbindung. Keine manuell erzeugten Logout-Tokens oder direkte
-Änderung interner Provider-Tabellen als Ersatz verwenden.
+Änderung interner Provider-Tabellen als Ersatz verwenden. Die spätere, gesondert
+freigegebene Admin-API-Prüfung hat inzwischen einen unterstützten nativen
+Sitzungswiderruf und administrative Kontolöschung bestätigt; siehe
+`NATIVE-ADMIN-QA.md`. Das ersetzt die noch offene Projekt-BFF-Anbindung nicht.

@@ -1,6 +1,6 @@
 # Central account lifecycle acceptance
 
-Status: 2026-11-08. Keep the working Managed Better Auth identity and existing
+Status: 2026-11-09. Keep the working Managed Better Auth identity and existing
 project IDs. The items below do not authorize a production cutover.
 
 | Capability | Evidence | Remaining acceptance |
@@ -9,16 +9,18 @@ project IDs. The items below do not authorize a production cutover.
 | Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
 | Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation remains open. After QA restoration, the same reset-revocation option was enabled in the primary pilot; all other settings are unchanged |
-| Self-deletion | Authenticated `delete-user` returned 404 for two QA fixtures | Supported deletion route, fresh ownership proof and revocation of all project sessions |
-| Cross-project logout | Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Actual provider delivery to registered clients and complete browser acceptance |
+| Self-deletion | Public `delete-user` returned 404; separately approved native SDK `admin.removeUser` returned 200, actually removed its synthetic target and invalidated its session | Safe own-user gateway, fresh ownership proof, separately approved runtime credentials and revocation of all project sessions |
+| Cross-project logout | Native SDK `admin.revokeUserSessions` actually revoked both target sessions while preserving the control. Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Supported invalidation of every project BFF, safe runtime authority and complete browser acceptance; actual backchannel delivery is not established |
 
 ## Provider configuration limits
 
-The documented management API exposes user deletion separately from the public
-auth API. Its project-scoped key can modify project resources, so a runtime
-deletion integration needs its own reviewed credential scope and ownership
-checks. No such credential has been created or installed. Existing credentials
-are not reused for this purpose.
+The native SDK Admin namespace supports targeted session revocation and user
+removal in the actual isolated QA branch; see `NATIVE-ADMIN-QA.md`. Its temporary
+administrator could manage all identities in that branch, so a runtime gateway
+needs separately reviewed credentials and strict ownership checks. All three
+new fixtures and their sessions were removed; the original 13 QA accounts and
+sessions are unchanged. No runtime administrator or credential has been created
+or installed. Existing personal credentials are not reused for this purpose.
 
 The currently documented OAuth client management fields do not include
 `backchannel_logout_uri` or `post_logout_redirect_uris`. The QA instance's

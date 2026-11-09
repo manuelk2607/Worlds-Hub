@@ -10,6 +10,27 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Native Verwaltungs-API: reale Abmeldung und Löschung bestätigt
+
+Die zusätzlich ausdrücklich freigegebene Prüfung in `br-jolly-leaf-ba8vt1pe`
+mit drei neuen synthetischen Konten ist erfolgreich. Das offizielle SDK konnte
+über einen frisch bestätigten QA-Administrator genau zwei Sitzungen seines
+Zielkontos lesen und beenden sowie das neu angemeldete Zielkonto entfernen:
+`admin.listUserSessions`, `admin.revokeUserSessions`, `admin.removeUser` jeweils
+200. Zielcookies ungültig, Kontrollkonto unverändert aktiv. Kandidatenrolle
+zurück auf `user`, alle eigenen Sitzungen beendet, genau die drei neuen Konten
+entfernt. Nachkontrolle: 0 Konten/0 Sitzungen für diese IDs; ursprüngliche 13
+QA-Konten, Rollen, Zeilenfingerabdrücke und Sitzungszahlen exakt unverändert.
+Keine E-Mails, Produktionsänderung oder persistente Verwaltungszugangsdaten.
+
+Das Harness ist hart auf den QA-Aussteller und seine drei eigenen IDs begrenzt;
+74 lokale Tests, Typen, Lint, Build und Artefaktprüfung bestanden. Details:
+`docs/NATIVE-ADMIN-QA.md`. Der frühere 401 bei OAuth-Clientregistrierung war
+keine allgemeine Ablehnung dieser anderen Verwaltungswege. Noch offen sind der
+sichere anwendungseigene Self-Service-Gateway, ein separat freizugebender
+Runtime-Zugang und die tatsächliche Invalidierung aller Projekt-BFF-Sitzungen.
+Es wurde kein Verwaltungszugang für Produktion eingerichtet.
+
 ## Sprachwelten: bestätigte Kontoübernahme und lokaler Logout
 
 Code `38afa15` auf `feature/worlds-hub-sso` ergänzt den geschützten HTTP-Ablauf
