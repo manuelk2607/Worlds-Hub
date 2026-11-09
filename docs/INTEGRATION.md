@@ -1,5 +1,11 @@
 # Änderungen an den vier unabhängigen Projekten
 
+Der folgende Projektplan enthält historische Zwischenstände. Maßgeblich für
+bereits implementierte und tatsächlich geprüfte Teile ist `PROGRESS.md`.
+Der unten ergänzte Managed-Session-Vertrag erlaubt einen gültigen bestehenden
+Eigentumsnachweis für normale verwaltete Konten; die alte Anforderung einer
+frischen Projektanmeldung bleibt für privilegierte Konten bestehen.
+
 Keine der folgenden produktiven Änderungen wurde angewendet. Dieser Plan gehört zum neuen Hub-Repository. Kein gemeinsames Datenbank-Monolith, keine Passwortübertragung, keine automatische E-Mail-Zuordnung.
 
 ## Pilot: IT-Worlds
@@ -73,6 +79,40 @@ Transaktion. Der Browser wird direkt zum zentralen Anmeldedienst und anschließe
 zur registrierten Anwendung zurückgeführt. Weder Cookie-Freigabe noch ein
 zwischen den Anwendungen weitergereichter Sitzungstoken sind erforderlich.
 Die POST-Start-, Callback- und Logout-Prüfungen werden dadurch nicht gelockert.
+
+## Übernahme aus einer bestehenden Managed-Auth-Sitzung
+
+Paket 0.1.4 ergänzt `prepareManagedSessionLink` und
+`confirmManagedSessionLink` auf demselben atomaren `LinkStore`. Die Anwendung
+muss den Eigentümer bei beiden Aktionen mit dem offiziellen serverseitigen
+Managed-Auth-Sitzungsabruf prüfen. Nur Aussteller, Konto-ID, Sitzungs-ID,
+ursprünglicher Erstellungszeitpunkt, Ablauf und aktueller Prüfzeitpunkt gehen
+in den serverinternen Nachweis; keine Cookies, Tokens, Passwörter oder E-Mails.
+Die Rollenprüfung erfolgt anhand der tatsächlichen lokalen Anwendungsrechte.
+
+Eine normale noch gültige verwaltete Sitzung darf älter als fünf Minuten sein.
+Ihr Alter wird nicht als frischer Login ausgegeben. Die letzte Anbieterprüfung
+muss weniger als 15 Sekunden zurückliegen. Privilegierte lokale Konten benötigen
+weiterhin eine höchstens fünf Minuten alte Quellanmeldung oder einen getrennten,
+ausdrücklich geprüften Eigentumsnachweis. Der zentrale signierte `auth_time`
+muss in beiden Fällen frisch sein. Jeder HTTP-Adapter muss Origin, CSRF,
+Formulargröße und erlaubte Rücksprünge selbst prüfen und darf keine vom Browser
+gelieferten Identitäts- oder Sitzungsfelder als Nachweis verwenden.
+
+Der einmalige Proof ist über einen domänenspezifischen JSON-/SHA-256-Wert an
+beide Konten, Aussteller und Sitzungen sowie den lokalen Privilegzustand gebunden.
+Ein Wechsel oder Widerruf vor Bestätigung verhindert die Übernahme. Seine
+gespeicherte Frist endet spätestens mit der ursprünglichen Quellsitzungsfrist,
+der zentralen Frischefrist oder nach fünf Minuten. Ein späteres Verlängern der
+Anbietersitzung verlängert diesen Proof nicht. Bestehende Zuordnungen werden
+weiterhin weder überschrieben noch anhand gleicher Namen/E-Mails zusammengeführt.
+
+Dieser Weg gilt ausdrücklich nicht für öffentliche Benutzernamen, Gast-Cookies
+oder allein durch Namenseingabe ausgestellte Slop-Sitzungen. Dort bleibt ein
+gesonderter vertrauenswürdiger Eigentumsnachweis erforderlich. Bestehende
+Passwort-/Managed-Reauth-/HF-Review-Funktionen bleiben unverändert. Das Paket
+allein aktiviert keine Projektmigration; die HTTP-/SDK-Anbindung und reale
+SSO-Abnahme müssen je Projekt folgen.
 
 
 Paketveröffentlichungen entstehen weiterhin mit

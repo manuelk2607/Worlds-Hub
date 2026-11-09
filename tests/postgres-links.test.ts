@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 import {PostgresLinkStore} from '../packages/auth/postgres-links.ts';
-import {prepareLink,confirmLink,projectAccount} from '../packages/auth/linking.ts';
+import {prepareLink,confirmLink,projectAccount,prepareManagedSessionLink,confirmManagedSessionLink} from '../packages/auth/linking.ts';
 
 test('real local Postgres: account mapping is atomic and keeps historical owners',async t=>{
  const db=new PGlite();
@@ -64,6 +64,19 @@ test('real local Postgres: account mapping is atomic and keeps historical owners
    assert.equal(await store.lookup(central.issuer,unusual.subject),'historical-a');
    assert.equal(await count('legacy_accounts'),2);
    await assert.rejects(()=>prepareLink(central,{...legacy,accountId:'nonexistent-account'},store,now));
+  });
+  await t.test('an old live managed session binds both owners and consumes its proof atomically once',async()=>{
+   await reset();
+   const source={kind:'managed-auth-session' as const,issuer:'https://native.test/auth',accountId:legacy.accountId,
+    sessionId:'original-managed-session',createdAt:now-86_400_000,expiresAt:now+60_000,validatedAt:now,privileged:false};
+   const proof=await prepareManagedSessionLink(central,source,store,now);
+   await assert.rejects(()=>confirmManagedSessionLink(proof,central,{...source,sessionId:'another-session'},store,now));
+   assert.equal(await count('worlds_link_proofs'),1);
+   const results=await Promise.allSettled([confirmManagedSessionLink(proof,central,source,store,now),confirmManagedSessionLink(proof,central,source,store,now)]);
+   assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+   assert.equal(await count('worlds_link_proofs'),0);assert.equal(await count('worlds_link_audit'),1);
+   assert.equal(await projectAccount(central.issuer,central.subject,store),legacy.accountId);
+   assert.deepEqual((await db.query('SELECT * FROM legacy_accounts ORDER BY id')).rows,[{id:'historical-a',role:'learner'},{id:'historical-b',role:'admin'}]);
   });
  }finally{await db.close();}
 });

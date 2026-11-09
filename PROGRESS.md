@@ -33,6 +33,31 @@ Eigentumsnachweise vorhandener Konten, echte zentrale SSO-Abnahme und globaler
 Logout bleiben offen; auch der Logout bei zwei gleichzeitig gültigen lokalen
 Anmeldearten benötigt vor dem produktiven Wechsel eine eigene Abnahme.
 
+## Eigentumsnachweis aus bestehenden verwalteten Sitzungen
+
+Das gemeinsame Auth-Paket 0.1.4 ergänzt einen Übernahmevertrag für normale,
+bereits angemeldete Managed-Auth-Konten. Die vorhandene Sitzung darf älter sein;
+ihr ursprüngliches Datum wird erhalten und nicht zu einer frischen Anmeldung
+umgedeutet. Vorbereiten und Bestätigen benötigen jeweils einen aktuellen
+offiziellen serverseitigen Sitzungsabruf. Der zentrale signierte Anmeldezeitpunkt
+muss frisch sein; lokale Verwaltungsrechte verlangen zusätzlich eine frische
+Quellanmeldung oder einen getrennten geprüften Eigentumsnachweis.
+
+Der einmalige Proof bindet beide Aussteller, Konten und Sitzungen sowie den
+lokalen Privilegzustand. Wechsel, Ablauf oder Widerruf vor Bestätigung verhindern
+die Übernahme. Fristen werden nicht durch spätere Sitzungsverlängerung erweitert.
+Keine Übernahme allein durch Namen/E-Mails und keine Eignung für Slop-Sitzungen,
+die nur durch öffentliche Namenseingabe entstanden sind. Bestehende atomare
+Zuordnungs-/Audit-/Konfliktregeln sowie die bisherigen Nachweisarten bleiben
+erhalten. Keine Provider-Cookies, Tokens oder Sitzungszeilen werden übertragen.
+
+Lokal bestanden **71 Tests**, Typprüfung, Lint, Build und Artefaktprüfung.
+Die neuen Tests prüfen alte gültige Sitzungen, beide Sitzungsbindungen,
+Quellprüfung, Privilegien, Fristen und atomaren parallelen Proof-Verbrauch
+mit echtem PostgreSQL in PGlite. Noch keine reale Projektübernahme: Als Nächstes
+Paketprüfung auf GitHub, geprüfte Paketveröffentlichung und HTTP-/SDK-Anbindung
+in Sprachwelten, anschließend echte isolierte SSO-/Eigentümerabnahme.
+
 ## Zentrale Kontoverwaltung – Nachprüfung am 08.11.
 
 Die native QA-API bestätigt die maximale Passwortlänge von 128 Zeichen.
