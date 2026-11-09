@@ -10,6 +10,40 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Sprachwelten: bestätigte Kontoübernahme und lokaler Logout
+
+Code `38afa15` auf `feature/worlds-hub-sso` ergänzt den geschützten HTTP-Ablauf
+zum Übernehmen eines bereits angemeldeten verwalteten Kontos. Beide Sitzungen
+werden bei Vorbereiten und Bestätigen geprüft; im Browser stehen nur CSRF und
+ein einmaliger Proof. Zuordnungen/Audit entstehen atomar, historische IDs,
+Beiträge und Lernstände bleiben erhalten. Eine passende vorhandene Verbindung
+kann direkt fortgesetzt werden. Fehlende verschachtelte Framework-Routen sind
+ergänzt und über den laufenden Webserver geprüft.
+
+Die Kontodokumente verwenden zentrale DE/EN-Texte, mobilen Sprachschalter,
+gespeichertes Design und die bestehende Gestaltung. Namen werden escaped und
+nicht übersetzt. Nonce-CSP schützt Skripte/Styles; `strict-origin` erhält die
+Formular-Herkunft ohne Weitergabe sensibler Callback-Parameter. Projektlogout
+beendet native und Worlds-Anmeldung im Projekt; die unabhängige Hub-Sitzung
+bleibt erhalten. Bei Ausfällen wird kein irreführender Erfolg ausgegeben.
+Anonyme Aufrufe ohne Anmeldedaten benötigen keinen alten Anbieterabruf.
+
+Lokal bestanden: 215 Unit-Tests, Typen, Lint, Übersetzungsabdeckung, vollständiger
+Audit, Build und 24 Chromium-/WebKit-Fälle bei 320/1280 px. DE/EN-Wechsel während
+der Bestätigung, Design, Rückkehr, gleiche Daten ohne altes Cookie, beide
+lokalen Abmeldungen und tatsächliche Routeranbindung geprüft; Screenshots
+kontrolliert. Vollständige CI `42649568470` erfolgreich: 215 Unit-Tests,
+Typen, Lint, DE/EN-Abdeckung, vollständiger Audit, Build und 154 bisherige + 24
+Worlds-Browserfälle. Getrennte echte QA-Integration `42650094132` ebenfalls
+erfolgreich: tatsächliche HTTP-Controller mit offiziellem Native-Eigentümernachweis,
+eine parallele Bestätigung, unveränderte native Sitzungsmetadaten, historische
+Datenzuordnung und Beenden von Native-Sitzung und lokalem Worlds-BFF.
+Vollständiger nativer HTTP-Test bestand. Zentrale Sitzungen im Datenbank-/
+Browsermodell sind weiterhin synthetisch. Einmalige frische Bestätigung alter
+Adminanmeldungen, Begrenzung nativer Übergangssitzungen auf den ursprünglichen
+Ablauf und Stilllegung neuer lokaler Logins bei verknüpften Konten bleiben vor
+Produktion offen. Reale zentrale Browserabnahme und globaler Logout fehlen ebenso.
+
 ## Kontoanzeige folgt der Serveridentität – Sprachwelten
 
 Code `76b97e8` auf `feature/worlds-hub-sso` korrigiert im isolierten Worlds-Modus
@@ -30,8 +64,8 @@ Typen, Lint, Übersetzungsabdeckung, vollständiger Dependency-Audit, Build und
 154 bisherige + 16 Worlds-Browserfälle.
 Keine produktiven Konten, Konfigurationen oder Migrationen geändert.
 Eigentumsnachweise vorhandener Konten, echte zentrale SSO-Abnahme und globaler
-Logout bleiben offen; auch der Logout bei zwei gleichzeitig gültigen lokalen
-Anmeldearten benötigt vor dem produktiven Wechsel eine eigene Abnahme.
+Logout bleiben offen. Der neuere Stand zum lokalen Logout beider Anmeldearten
+steht im vorstehenden HTTP-Übernahme-Checkpoint.
 
 ## Eigentumsnachweis aus bestehenden verwalteten Sitzungen
 
@@ -75,8 +109,8 @@ HTTP-Test bestanden. Zentraler Nachweis noch synthetisch; der reale
 Alters-/Erneuerungsfall einer bereits länger bestehenden Anbietersitzung bleibt
 zu prüfen. Vollständige CI `42640042187` ebenfalls erfolgreich: 210 Unit-Tests,
 Typen, Lint, DE/EN-Abdeckung, vollständiger Audit, Build und 154 bisherige + 16
-Worlds-Browserfälle. HTTP-Übernahmeroute und echte zentrale Browserabnahme folgen;
-keine produktive Projektübernahme erfolgt.
+Worlds-Browserfälle. Der neuere HTTP-Übernahme-Checkpoint steht oben; die echte
+zentrale Browserabnahme und produktive Projektübernahme bleiben offen.
 
 ## Zentrale Kontoverwaltung – Nachprüfung am 08.11.
 
