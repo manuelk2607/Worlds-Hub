@@ -32,6 +32,83 @@ test('D1 rate buckets are atomic, bounded and contain no raw IP or credentials',
 const fixtureUser={id:'central-1',email:'ada@example.test',name:'Ada',emailVerified:true};
 const providerSession=()=>Response.json({user:fixtureUser,session:{userId:fixtureUser.id,token:'provider-session-secret'}});
 
+test('signing out all devices uses only the verified account and fences in-flight Hub callbacks',async t=>{
+ const f=await fixture();
+ f.db.exec(await readFile('migrations/0005_hub_session_revocations.sql','utf8'));
+ const config={...f.config,deviceSignOutEnabled:true};
+ const store=new D1AuthStore(f.binding),expires=Date.now()+60_000;
+ const value={issuer:baseUrl,sub:fixtureUser.id,expires,csrf:'fixture',authenticatedAt:Date.now()-60_000};
+ await store.putSession('self',value);
+ await store.putSession('another-device',value);
+ await store.putSession('other',{...value,sub:'another-user'});
+ await store.putSession('foreign',{...value,issuer:'https://other.test'});
+ let identity: 'signed-out'|'mismatched'|'verified'='signed-out',providerCalls=0,confirmed=false;
+ t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+  const url=new URL(String(input));
+  providerCalls++;
+  if(url.pathname.endsWith('/get-session')){
+   assert.equal(url.searchParams.get('disableCookieCache'),'true');
+   assert.equal(url.searchParams.get('disableRefresh'),'true');
+   if(identity==='signed-out')return Response.json(null);
+   if(identity==='mismatched')return Response.json({user:fixtureUser,session:{userId:'another-user'}});
+   return providerSession();
+  }
+  assert.equal(String(input),baseUrl+'/revoke-sessions');
+  assert.deepEqual(JSON.parse(String(init?.body)),{});
+  assert.equal(await store.getSession('self'),null);
+  assert.equal(await store.getSession('another-device'),null);
+  await assert.rejects(store.putSession('late-old-callback',value),/predates sign-out/);
+  return confirmed?Response.json({status:true,token:'do-not-expose'}):Response.json({status:false},{status:503});
+ });
+ try{
+  const request=(extra:Record<string,string>={})=>f.request('revoke-sessions',{userId:'another-user',allAccounts:true},extra);
+  assert.equal((await identityProxy(request(),f.config)).status,404);
+  assert.equal((await identityProxy(request({origin:'https://other.test'}),config)).status,403);
+  assert.equal((await identityProxy(request({'x-worlds-identity-csrf':'wrong'}),config)).status,403);
+  assert.equal(providerCalls,0);
+  assert.equal((await identityProxy(request(),config)).status,401);
+  identity='mismatched';
+  assert.equal((await identityProxy(request(),config)).status,401);
+  assert.ok(await store.getSession('self'));
+  identity='verified';
+  const partial=await identityProxy(request(),config);
+  assert.deepEqual(await partial.json(),{error:'DEVICE_SIGN_OUT_PARTIAL'});
+  assert.equal(partial.headers.get('set-cookie'),null);
+  assert.ok(await store.getSession('other'));
+  assert.ok(await store.getSession('foreign'));
+  confirmed=true;
+  const response=await identityProxy(request(),config);
+  assert.equal(response.status,200);
+  assert.deepEqual(await response.json(),{success:true});
+  for(const name of ['__Host-worlds-session','__Secure-neon-auth.session_token','__Secure-neon-auth.local.session_data']){
+   assert.ok(response.headers.getSetCookie().some(cookie=>cookie.startsWith(name+'=;')&&cookie.includes('Max-Age=0')));
+  }
+  const fence=f.db.prepare('SELECT revoked_at FROM hub_session_revocations WHERE issuer=? AND subject=?')
+   .get(baseUrl,fixtureUser.id)?.revoked_at;
+  assert.equal(typeof fence,'number');
+  await assert.rejects(store.putSession('late-missing-auth-time',{...value,authenticatedAt:undefined}),/predates sign-out/);
+  await assert.rejects(store.putSession('late-same-second',{...value,authenticatedAt:Number(fence)}),/predates sign-out/);
+  await store.putSession('fresh',{...value,authenticatedAt:Number(fence)+1000});
+  assert.ok(await store.getSession('fresh'));
+  assert.ok(await store.getSession('other'));
+  assert.ok(await store.getSession('foreign'));
+ }finally{f.db.close();}
+});
+
+test('device sign-out appears in both languages only for enabled account settings',async()=>{
+ const f=await fixture();
+ try{
+  for(const locale of ['de','en'] as const){
+   assert.doesNotMatch(identityPage('/identity/account','',f.csrf.value,f.config,locale).body,/data-identity-device-sign-out/);
+   const enabled={...f.config,deviceSignOutEnabled:true};
+   const page=identityPage('/identity/account','',f.csrf.value,enabled,locale).body;
+   assert.match(page,/data-identity-device-sign-out/);
+   assert.match(page,locale==='de'?/Auf allen Geräten bei Worlds Hub abmelden/:/Sign out of Worlds Hub on all devices/);
+   assert.doesNotMatch(identityPage('/identity/login','',f.csrf.value,enabled,locale).body,/data-identity-device-sign-out/);
+  }
+ }finally{f.db.close();}
+});
+
 test('password change rechecks the central session, forces provider revocation and removes only this identity’s Hub sessions',async t=>{
  const f=await fixture();
  f.db.exec(await readFile('migrations/0001_auth.sql','utf8'));

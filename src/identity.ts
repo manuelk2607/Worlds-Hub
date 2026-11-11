@@ -1,19 +1,20 @@
-import { handleAuthProxyRequest, resolveNeonAuthLogging } from '@neon/auth/server';
-import { boundedBody, cookie, readCookie, sameOrigin, token } from '../packages/auth/oidc.ts';
+import { handleAuthProxyRequest, NEON_AUTH_SESSION_COOKIE_NAME, NEON_AUTH_SESSION_DATA_COOKIE_NAME, resolveNeonAuthLogging } from '@neon/auth/server';
+import { boundedBody, cookie, readCookie, sameOrigin, SESSION_COOKIE, token } from '../packages/auth/oidc.ts';
 import { D1AuthStore, hash } from '../packages/auth/store.ts';
 import {requestLocale,t} from './i18n/core.ts';
 import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
 import {passwordPolicyError} from './identity-policy.ts';
+import {revokeHubSessions} from './hub-session-revocation.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
-export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database }
-export interface IdentityEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database }
+export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean }
+export interface IdentityEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string }
 const CSRF_COOKIE='__Host-worlds-identity-csrf';
 const quiet=resolveNeonAuthLogging({logLevel:'silent'});
 const endpoints:Record<string,string>={
   'get-session':'GET','sign-in/email':'POST','sign-up/email':'POST','sign-out':'POST',
   'email-otp/send-verification-otp':'POST','email-otp/verify-email':'POST',
   'request-password-reset':'POST','reset-password':'POST','update-user':'POST',
-  'change-password':'POST','export':'POST',
+  'change-password':'POST','export':'POST','revoke-sessions':'POST',
   'oauth2/continue':'POST','oauth2/consent':'POST'
 };
 export function identityConfig(env:IdentityEnv):IdentityConfig|null {
@@ -23,7 +24,7 @@ export function identityConfig(env:IdentityEnv):IdentityConfig|null {
     if(origin.protocol!=='https:'||origin.origin!==env.SITE_ORIGIN||issuer.protocol!=='https:'||issuer.username||issuer.password||issuer.search||issuer.hash)return null;
     const clients=JSON.parse(env.IDENTITY_CLIENTS??'[]') as IdentityClient[];
     if(!Array.isArray(clients)||clients.some(c=>typeof c.clientId!=='string'||!c.clientId||typeof c.name!=='string'||!c.name||!Array.isArray(c.redirects)||!c.redirects.length||typeof c.resource!=='string'||new URL(c.resource).protocol!=='https:'||c.redirects.some(r=>{const u=new URL(r);return u.protocol!=='https:'||!!u.username||!!u.password||!!u.hash||!!u.search;})))return null;
-    return {origin:origin.origin,baseUrl:issuer.href.replace(/\/$/,''),cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB};
+    return {origin:origin.origin,baseUrl:issuer.href.replace(/\/$/,''),cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,deviceSignOutEnabled:env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true'};
   }catch{return null;}
 }
 export function identityCsrf(request:Request){const previous=readCookie(request,CSRF_COOKIE);const value=previous&&/^[A-Za-z0-9_-]{32,128}$/.test(previous)?previous:token();return {value,setCookie:cookie(CSRF_COOKIE,value,3600)};}
@@ -55,21 +56,22 @@ export async function limitIdentity(request:Request,path:string,config:IdentityC
   return !!row&&row.count<=limit;
 }
 
-function requestProvider(request:Request,config:IdentityConfig,path:string,data?:Record<string,unknown>) {
+function requestProvider(request:Request,config:IdentityConfig,path:string,data?:Record<string,unknown>,noRefresh=false) {
   const url=new URL(request.url);
   if(path==='get-session')url.searchParams.set('disableCookieCache','true');
+  if(noRefresh)url.searchParams.set('disableRefresh','true');
   const upstream=new Request(url,{method:data?'POST':'GET',headers:request.headers,...(data?{body:JSON.stringify(data)}:{})});
   return handleAuthProxyRequest({request:upstream,path,baseUrl:config.baseUrl,cookieSecret:config.cookieSecret,sessionDataTtl:1,sameSite:'lax',log:quiet});
 }
 
-async function verifiedAccount(request:Request,config:IdentityConfig) {
-  const response=await requestProvider(request,config,'get-session');
+async function verifiedAccount(request:Request,config:IdentityConfig,noRefresh=false) {
+  const response=await requestProvider(request,config,'get-session',undefined,noRefresh);
   if(response.status===401||response.status===403)return null;
   if(!response.ok)throw new Error('Session lookup failed');
   const data=await response.json() as {user?:{id?:unknown;email?:unknown;name?:unknown;emailVerified?:unknown};session?:{userId?:unknown}}|null;
   const user=data?.user;
   if(!data?.session||!user||typeof user.id!=='string'||!user.id||typeof user.email!=='string'||user.emailVerified!==true)return null;
-  if(data.session.userId!==undefined&&data.session.userId!==user.id)return null;
+  if((noRefresh||data.session.userId!==undefined)&&data.session.userId!==user.id)return null;
   return {id:user.id,email:user.email,name:typeof user.name==='string'?user.name:null,emailVerified:true};
 }
 
@@ -78,6 +80,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
   if(url.origin!==config.origin)return json({error:'INVALID_HOST'},421);
   if(!Object.hasOwn(endpoints,path))return json({error:'NOT_FOUND'},404);
+  if(path==='revoke-sessions'&&!config.deviceSignOutEnabled)return json({error:'NOT_FOUND'},404);
   if(endpoints[path]!==request.method)return json({error:'METHOD_NOT_ALLOWED'},405);
   let data:Record<string,unknown>|undefined,oauthQuery:string|undefined;
   if(request.method==='POST'){
@@ -91,7 +94,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
       'sign-in/email':['email','password','oauth_query'],'sign-up/email':['email','password','name'],
       'email-otp/send-verification-otp':['email'],'email-otp/verify-email':['email','otp'],
       'request-password-reset':['email'],'reset-password':['token','newPassword'],
-      'update-user':['name'],'sign-out':[],'change-password':['currentPassword','newPassword'],'export':[]
+      'update-user':['name'],'sign-out':[],'change-password':['currentPassword','newPassword'],'export':[],'revoke-sessions':[]
     };
     if(fields[path]){
       data=Object.fromEntries(fields[path].filter(k=>data![k]!==undefined).map(k=>[k,data![k]]));
@@ -120,9 +123,24 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   }
   try{if(!await limitIdentity(request,path,config))return json({error:'RATE_LIMITED',message:t(requestLocale(request),'error.rateLimited')},429);}catch{return json({error:'RATE_LIMIT_UNAVAILABLE'},503);}
   let account:Awaited<ReturnType<typeof verifiedAccount>>=null;
-  if(path==='change-password'||path==='export'){
-    try{account=await verifiedAccount(request,config);}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+  if(path==='change-password'||path==='export'||path==='revoke-sessions'){
+    try{account=await verifiedAccount(request,config,path==='revoke-sessions');}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
     if(!account)return json({error:'SIGN_IN_REQUIRED'},401);
+  }
+  if(path==='revoke-sessions'&&account){
+    // Commit local revocation before ending the verified native session so
+    // a transient local storage failure can be retried from the same browser.
+    try{await revokeHubSessions(config.db,config.baseUrl,account.id);}
+    catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+    try{
+      const provider=await requestProvider(request,config,path,{});
+      const result=provider.ok?await provider.json() as {status?:unknown}|null:null;
+      if(result?.status!==true)return json({error:'DEVICE_SIGN_OUT_PARTIAL'},503);
+      const response=json({success:true});
+      for(const value of provider.headers.getSetCookie())response.headers.append('set-cookie',value);
+      for(const name of [NEON_AUTH_SESSION_COOKIE_NAME,NEON_AUTH_SESSION_DATA_COOKIE_NAME,SESSION_COOKIE])response.headers.append('set-cookie',cookie(name,'',0));
+      return response;
+    }catch{return json({error:'DEVICE_SIGN_OUT_PARTIAL'},503);}
   }
   if(path==='export'&&account){
     try{

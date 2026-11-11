@@ -10,9 +10,25 @@ project IDs. The items below do not authorize a production cutover.
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
 | Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation remains open. After QA restoration, the same reset-revocation option was enabled in the primary pilot; all other settings are unchanged |
 | Self-deletion | Public `delete-user` returned 404; separately approved native SDK `admin.removeUser` returned 200, actually removed its synthetic target and invalidated its session | Safe own-user gateway, fresh ownership proof, separately approved runtime credentials and revocation of all project sessions |
-| Cross-project logout | Native SDK `admin.revokeUserSessions` actually revoked both target sessions while preserving the control. Four adapters verify signed OIDC backchannel tokens and reject replay; local database/runtime integrations pass | Supported invalidation of every project BFF, safe runtime authority and complete browser acceptance; actual backchannel delivery is not established |
+| Cross-project logout | Native SDK `revokeSessions()` revoked both sessions of an ordinary test account while preserving the control. The Hub can revoke its own sessions and fence old callbacks. Four adapters verify signed OIDC backchannel tokens and reject replay | Supported invalidation of every project BFF and complete browser acceptance. Actual backchannel delivery remains open |
 
 ## Provider configuration limits
+
+The native `revokeSessions()` method uses the account's existing session.
+In the already expiring Sprachwelten QA branch `br-twilight-river-ba9t32rl`,
+it returned 200 and revoked both own sessions while a separate account's
+session stayed valid. The final aggregate check found two synthetic accounts
+with zero active sessions in that branch. No role or provider setting changed.
+
+The Hub implementation uses migration 0005 and
+`IDENTITY_DEVICE_SIGN_OUT_ENABLED=true` with matching Hub and managed issuers.
+The action verifies the subject without a cache refresh, records a short-lived
+Hub revocation marker and atomically removes that subject's Hub sessions
+before asking the provider to revoke its native sessions. The database rejects
+late callbacks with an older or missing signed authentication time for that
+subject. Existing sessions for other accounts remain valid. Provider failure
+returns partial completion and preserves the browser's native session for a
+retry. The feature flag and migration are pending hosted QA.
 
 The native SDK Admin namespace supports targeted session revocation and user
 removal in the actual isolated QA branch; see `NATIVE-ADMIN-QA.md`. Its temporary

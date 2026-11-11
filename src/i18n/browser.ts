@@ -59,6 +59,7 @@ export function errorKey(code:unknown):MessageKey {
   invalid_otp:'error.invalidCode',otp_expired:'error.invalidCode',invalid_token:'error.invalidLink',token_expired:'error.invalidLink',
   signup_disabled:'error.signupDisabled',invalid_request:'error.invalidRequest',invalid_fields:'error.invalidRequest',
   identity_unavailable:'error.identityUnavailable',rate_limit_unavailable:'error.identityUnavailable',
+  device_sign_out_partial:'error.deviceSignOutPartial',
  };
  return map[normalized]??'error.tryAgain';
 }

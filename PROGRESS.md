@@ -10,13 +10,34 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Worlds Hub: Abmeldung auf allen Geräten
+
+Ein normaler Nutzer konnte über die offizielle eigene Neon-Auth-Abmeldung
+beide Sitzungen seines Testkontos beenden. Die Sitzung des Kontrollkontos
+blieb während der Prüfung gültig. Danach bestätigte der lesende Abgleich
+null aktive Testsitzungen. Verwendet wurde nur der bereits befristete
+Sprachwelten-QA-Zweig `br-twilight-river-ba9t32rl`.
+
+Der Hub prüft die zentrale Sitzung ungecacht und sendet keine frei
+wählbare Konto-ID an den Anbieter. Migration 0005 sperrt verspätete
+Hub-Callbacks, deren Anmeldezeit vor der Abmeldung liegt, und der
+Widerruf löscht die bisherigen Hub-Sitzungen desselben Kontos atomar.
+Die Oberfläche unterscheidet bestätigte und teilweise Abmeldungen.
+
+76 Tests, Typprüfung, Lint, Build, Audit und die lokale Wrangler-Migration
+bestanden. Chromium DE und WebKit EN bestanden die Abbruch- und
+Bestätigungsprüfung bei 320 px mit synthetischer Anbieterantwort. Die neue
+Aktion bleibt bis zur Abnahme deaktiviert. Die Zustellung des Widerrufs an
+alle vier Projekte steht aus.
+
 ## Sprachwelten: öffentliche Testadresse vorbereitet
 
 Sprachwelten `92f3a0e` paketiert einen eigenen Worker mit Testbindungen,
 Indexierungsschutz und Sperre bei ungültiger Konfiguration. Build, lokale
 Workerprüfung und der Paketprüfschritt in GitHub **43119641505** bestanden.
 `0a5fca4` ergänzt den ausdrücklich manuell gestarteten Release mit einer
-auf 24 Stunden begrenzten Datenbank aus dem getrennten QA-Projekt.
+auf 24 Stunden begrenzten Datenbank aus dem getrennten QA-Projekt. Die
+vollständige CI **43120379271** für diesen Commit ist bestanden.
 
 Der zentrale PKCE-Client „Sprachwelten Test“ verlangt Einwilligung und
 erlaubt genau den Callback des neuen Testworkers. Die geprüfte Hub-

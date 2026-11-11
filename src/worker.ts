@@ -5,6 +5,7 @@ import {layout,home,detail,account,loggedOut,privacy,notFound} from './pages.ts'
 import {projects} from './projects.ts';
 import {escapeHtml} from './html.ts';
 import {migrationConfig, readMigrationStatus, receiveMigrationReceipt, type MigrationEnv} from './migration-receipts.ts';
+import {pruneHubRevocations} from './hub-session-revocation.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
 import {backchannelLogout,boundedBody,callback,logout,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
 import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type RouteId,type Values} from './i18n/core.ts';
@@ -81,6 +82,7 @@ export default {
   }
   const central=identityConfig(env);
   const config=authConfig(env);
+  if(central?.deviceSignOutEnabled&&config?.issuer!==central.baseUrl)central.deviceSignOutEnabled=false;
   const migration=migrationConfig(env,origin,config?.issuer,env.AUTH_DB);
   if(path.startsWith('/api/identity/'))return finish(central?await identityProxy(request,central,migration):Response.json({error:'IDENTITY_NOT_CONFIGURED'},{status:503}));
   if(path.startsWith('/api/migrations/receipts/'))return finish(migration?await receiveMigrationReceipt(request,migration):Response.json({error:'NOT_FOUND'},{status:404}));
@@ -128,5 +130,10 @@ export default {
   const response=finish(text(request.method==='HEAD'?'':html,'text/html',statusCode));
   if(env.PUBLIC_INDEXING!=='true')response.headers.set('X-Robots-Tag','noindex, nofollow');return response;
  },
- async scheduled(_event:unknown,env:Env){if(env.AUTH_DB)await env.AUTH_DB.batch(['auth_transactions','auth_sessions','auth_replays','identity_rate_limits'].map(table=>env.AUTH_DB!.prepare(`DELETE FROM ${table} WHERE id IN (SELECT id FROM ${table} WHERE expires < ? ORDER BY expires LIMIT 500)`).bind(Date.now())));}
+ async scheduled(_event:unknown,env:Env){
+  const db=env.AUTH_DB;if(!db)return;
+  const now=Date.now();
+  await db.batch(['auth_transactions','auth_sessions','auth_replays','identity_rate_limits'].map(table=>db.prepare(`DELETE FROM ${table} WHERE id IN (SELECT id FROM ${table} WHERE expires < ? ORDER BY expires LIMIT 500)`).bind(now)));
+  if(env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true')await pruneHubRevocations(db,now);
+ }
 };

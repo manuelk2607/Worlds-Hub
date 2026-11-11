@@ -71,6 +71,20 @@ if(identityRoot){
   }catch(error){showError(error);}finally{pending(false);}
  });
  root.querySelector('[data-identity-continue]')?.addEventListener('click',async()=>{if(busy)return;pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}});
+ root.querySelector('[data-identity-device-sign-out]')?.addEventListener('click',async()=>{
+  if(busy||!window.confirm(text('identity.signOutDevicesConfirm')))return;
+  pending(true);status(message,'status.waiting');
+  try{
+   await api('revoke-sessions',{});
+   currentUser=undefined;root.dataset.verified='false';
+   const sessionPanel=root.querySelector<HTMLElement>('[data-identity-session]');
+   const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
+   if(sessionPanel)sessionPanel.hidden=true;
+   if(anonymous)anonymous.hidden=false;
+   show('login');status(message,'status.signedOutDevices');
+   root.querySelector<HTMLInputElement>('[data-identity-form="login"] input')?.focus();
+  }catch(error){showError(error);}finally{pending(false);}
+ });
  root.querySelector('[data-identity-logout]')?.addEventListener('click',async()=>{if(busy)return;pending(true);try{await api('sign-out',{});location.assign('/identity/login');}catch(error){showError(error);}finally{pending(false);}});
  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-consent]'))button.addEventListener('click',async()=>{if(busy)return;pending(true);try{const data=await api('oauth2/consent',{accept:button.dataset.consent==='true',oauth_query:rawQuery});if(data.url)navigate(data.url);}catch(error){showError(error);}finally{pending(false);}});
  document.addEventListener('worlds:locale',()=>{
