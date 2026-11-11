@@ -25,7 +25,8 @@ Widerruf löscht die bisherigen Hub-Sitzungen desselben Kontos atomar.
 Die Oberfläche unterscheidet bestätigte und teilweise Abmeldungen.
 
 76 Tests, Typprüfung, Lint, Build, Audit und die lokale Wrangler-Migration
-bestanden. Chromium DE und WebKit EN bestanden die Abbruch- und
+bestanden. GitHub **43122373505** bestätigte den Build und die Tests für
+`848ee3e`. Chromium DE und WebKit EN bestanden die Abbruch- und
 Bestätigungsprüfung bei 320 px mit synthetischer Anbieterantwort. Die neue
 Aktion bleibt bis zur Abnahme deaktiviert. Die Zustellung des Widerrufs an
 alle vier Projekte steht aus.
