@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-09 (Europe/Stockholm)
+Stand: 2026-11-12 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -9,6 +9,34 @@ zentralen Konto, zentrale Nachweise über den Migrationsstand und die reale
 Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
+
+## Sprachwelten: bisherige Sitzungen nach der Verknüpfung begrenzen
+
+Code `c5dc2d4` auf `feature/worlds-hub-sso` hält alle bei der ersten
+Verknüpfung aktiven Geräte mit ursprünglicher Ablaufzeit fest. Der Server prüft
+die bisherige Sitzung ungecacht beim Anbieter und lässt nach der Zuordnung
+nur die erfassten Sitzungen bis zu ihrer Frist zu. Neue lokale Anmeldungen
+und erst nach der Bestandsaufnahme angelegte lokale Konten erhalten keinen
+Projektzugriff. Der Anmeldeweg zur einmaligen Übernahme prüft auch das
+Zielkonto und beendet eine bei Ablehnung frisch ausgestellte Sitzung.
+
+Das Trennen der Zuordnung entfernt die Übergangssitzungen. Ein verifizierter
+zentraler Widerruf beendet auch den bisherigen Anmeldezugriff und erhält die
+Projektzuordnung. Abgelaufene Nachweise werden in begrenzten Stapeln bereinigt.
+Die bestehende Kontoverwaltung führt zum Hub. Schema 029 und der
+Migrationsrunner verarbeiten die Änderungen transaktional.
+
+Lokal bestanden 227 Tests, Typprüfung, Lint, Übersetzungen, Audit, Build und
+36 Browserfälle. Isolierte Integration **43116714438** bestand mit echtem
+Anmeldedienst, zwei bisherigen Geräten, späterem blockiertem Login,
+Sitzungsbereinigung, fester Ablaufzeit, historischer Konto-ID und echtem HTTP.
+Die vollständige CI **43116706384** bestand für denselben Commit mit 227
+Unit-Tests, 154 bisherigen und 36 Worlds-Browserfällen sowie Typen, Lint,
+Übersetzungen, Audit und Build. Der produktive Abgleich vom 12.11.2026
+ergab drei Konten mit lokalen Zugangsdaten und keine Google-Zuordnung.
+Google ist als Anbieter eingerichtet und gehört zum Ablauf für den
+Registrierungsstichtag. Nächster Schritt ist die isolierte öffentliche
+Sprachwelten-Testadresse für den echten OIDC-Rückweg und die Deployment-Rücknahme.
 
 ## Sprachwelten: einmaliger Nachweis bei abgelaufener Bestandsanmeldung
 
@@ -36,12 +64,8 @@ lokalen Abmeldungen. Zentrale Projektsitzung dort weiterhin synthetisch.
 Vollständige CI **42684100840** für `3f5a40d` erfolgreich: 217 Tests, Typen,
 Lint, Übersetzungen, Audit, Build sowie 154 bisherige + 36 Worlds-Browserfälle.
 Auch die ursprüngliche Übernahme-CI **42683427322** bestand vollständig.
-Keine produktive Migration oder Veröffentlichung. Weiter: ursprüngliche
-Laufzeit bisheriger Übergangssitzungen sichern, neue lokale Anmeldungen bei
-verknüpften Konten stilllegen und echte zentrale Browserabnahme durchführen.
-Der konkrete, noch nicht implementierte Übergangsplan steht im Sprachwelten-
-Repository unter `docs/worlds-transition-sessions.md`; keine neuen Nachweise
-bei späteren lokalen Logins und keine Veränderung nativer Provider-Tabellen.
+Der geprüfte Übergangsschutz und die noch offene zentrale Browserabnahme
+stehen im Abschnitt oben.
 
 ## Native Verwaltungs-API: reale Abmeldung und Löschung bestätigt
 
