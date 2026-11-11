@@ -46,5 +46,13 @@
       "https://slopurself-worlds-pilot.maki26.workers.dev/auth/callback"
     ],
     "resource": "https://slopurself-worlds-pilot.maki26.workers.dev/api"
+  },
+  {
+    "clientId": "OASgoIYylIAFtdcITzQqJZMddYVdbNPp",
+    "name": "Sprachwelten Test",
+    "redirects": [
+      "https://sprachwelten-worlds-pilot.maki26.workers.dev/auth/callback"
+    ],
+    "resource": "https://sprachwelten-worlds-pilot.maki26.workers.dev/api"
   }
 ]
