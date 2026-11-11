@@ -10,6 +10,26 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Sprachwelten: öffentliche Testadresse vorbereitet
+
+Sprachwelten `92f3a0e` paketiert einen eigenen Worker mit Testbindungen,
+Indexierungsschutz und Sperre bei ungültiger Konfiguration. Build, lokale
+Workerprüfung und der Paketprüfschritt in GitHub **43119641505** bestanden.
+`0a5fca4` ergänzt den ausdrücklich manuell gestarteten Release mit einer
+auf 24 Stunden begrenzten Datenbank aus dem getrennten QA-Projekt.
+
+Der zentrale PKCE-Client „Sprachwelten Test“ verlangt Einwilligung und
+erlaubt genau den Callback des neuen Testworkers. Die geprüfte Hub-
+Konfiguration `cf5566c` ist als Worker-Version
+`3811df2a-9e47-43a9-8eaa-ae923c1e5b0e` live. GitHub **43120400722**
+bestand mit 74 Tests, Build, Audit und Live-Prüfung. Eine echte anonyme
+Anfrage an den zentralen Anbieter erreichte die Hub-Loginseite mit
+dem neuen Client und der exakten Rücksprungadresse.
+
+Die Sprachwelten-Testadresse wartet auf den freigegebenen Worker-Zugang
+und Cloudflare-Anmeldung. Der Callback mit einer zentralen Benutzersitzung,
+die Rücknahme des Test-Releases und die produktive Kontoübernahme stehen aus.
+
 ## Sprachwelten: bisherige Sitzungen nach der Verknüpfung begrenzen
 
 Code `c5dc2d4` auf `feature/worlds-hub-sso` hält alle bei der ersten
