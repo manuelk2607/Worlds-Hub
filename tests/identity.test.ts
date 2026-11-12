@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {decodeJwt,exportJWK,generateKeyPair} from 'jose';
 import {identityConfig,identityCsrf,authorizationClient,identityProxy,limitIdentity,type IdentityConfig} from '../src/identity.ts';
 import {identityPage} from '../src/identity-pages.ts';
 import {sqliteD1} from './sqlite-helper.ts';
@@ -106,6 +107,88 @@ test('device sign-out appears in both languages only for enabled account setting
    assert.match(page,locale==='de'?/Auf allen Geräten bei Worlds Hub abmelden/:/Sign out of Worlds Hub on all devices/);
    assert.doesNotMatch(identityPage('/identity/login','',f.csrf.value,enabled,locale).body,/data-identity-device-sign-out/);
   }
+ }finally{f.db.close();}
+});
+
+test('the expiring sign-out pilot authorizes only the verified test subject and sends only to the test worlds',async t=>{
+ const f=await fixture();
+ try{
+  for(const name of ['0005_hub_session_revocations','0006_project_session_revocation_delivery']){
+   f.db.exec(await readFile('migrations/'+name+'.sql','utf8'));
+  }
+  const targets=['https://sprachwelten-worlds-pilot.maki26.workers.dev','https://slopurself-worlds-pilot.maki26.workers.dev'];
+  const testClients=targets.map((target,i)=>({clientId:'test-'+i,name:'Test world',redirects:[target+'/auth/callback'],resource:target+'/api'}));
+  const production={...testClients[0],redirects:['https://sprachwelten.maki26.workers.dev/auth/callback'],resource:'https://sprachwelten.maki26.workers.dev/api'};
+  const {privateKey}=await generateKeyPair('EdDSA',{extractable:true});
+  const pilot={subject:fixtureUser.id,expiresAt:Date.now()+60_000};
+  const env={IDENTITY_ENABLED:'true',SITE_ORIGIN:origin,IDENTITY_AUTH_URL:baseUrl,IDENTITY_COOKIE_SECRET:f.config.cookieSecret,
+   IDENTITY_CLIENTS:JSON.stringify([client,production,...testClients]),AUTH_DB:f.binding,IDENTITY_DEVICE_SIGN_OUT_ENABLED:'pilot',
+   IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify(pilot),WORLDS_SESSION_EVENT_PRIVATE_JWK:JSON.stringify({kid:'test-signing',...await exportJWK(privateKey)}),
+   WORLDS_SESSION_EVENT_CLIENT_IDS:JSON.stringify([production.clientId])};
+  const audiences=targets.map(target=>target+'/auth/events/session-revoked');
+  const config=identityConfig(env)!;
+  assert.deepEqual(config.deviceSignOutPilot,pilot);
+  assert.deepEqual(config.projectSessionEvents?.audiences,audiences);
+  for(const invalid of [
+   {...env,IDENTITY_DEVICE_SIGN_OUT_PILOT:undefined},
+   {...env,IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify({...pilot,expiresAt:Date.now()-1})},
+   {...env,IDENTITY_CLIENTS:JSON.stringify([client,production,testClients[0]])},
+   {...env,WORLDS_SESSION_EVENT_PRIVATE_JWK:undefined},
+  ]){
+   assert.equal(identityConfig(invalid)?.deviceSignOutEnabled,false);
+  }
+  for(const language of ['de','en'] as const){
+   const html=identityPage('/identity/account','',f.csrf.value,config,language).body;
+   assert.match(html,/data-identity-device-sign-out="pilot"[^>]+hidden/);
+   assert.doesNotMatch(html,new RegExp(pilot.subject));
+  }
+  const store=new D1AuthStore(f.binding);
+  const session={issuer:baseUrl,sub:pilot.subject,expires:Date.now()+60_000,csrf:'fixture'};
+  await store.putSession('pilot',session);
+  await store.putSession('other',{...session,sub:'another-account'});
+  let userId='another-account',sessionOwner=userId,providerRevocations=0;
+  const deliveries:string[]=[];
+  t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+   const target=new URL(String(input));
+   if(target.pathname.endsWith('/get-session')){
+    return Response.json({user:{...fixtureUser,id:userId},session:{userId:sessionOwner,token:'private-session'}});
+   }
+   if(target.href===baseUrl+'/revoke-sessions'){
+    assert.deepEqual(JSON.parse(String(init?.body)),{});
+    providerRevocations++;
+    return Response.json({status:true});
+   }
+   assert.ok(audiences.includes(target.href));
+   const event=decodeJwt(String(init?.body));
+   assert.deepEqual(event.sub_id,{format:'iss_sub',iss:baseUrl,sub:pilot.subject});
+   assert.equal(event.aud,target.href);
+   deliveries.push(target.href);
+   return new Response(null,{status:202});
+  });
+  const current=async()=>{
+   const response=await identityProxy(new Request(origin+'/api/identity/get-session',{headers:f.headers}),config);
+   return response.json() as Promise<{deviceSignOutAllowed?:boolean;session:{token?:string}}>;
+  };
+  const action=()=>f.request('revoke-sessions',{userId:pilot.subject});
+  assert.equal((await current()).deviceSignOutAllowed,undefined);
+  assert.equal((await identityProxy(action(),config)).status,404);
+  assert.ok(await store.getSession('pilot'));
+  assert.equal(providerRevocations,0);
+  userId=pilot.subject;
+  assert.equal((await current()).deviceSignOutAllowed,undefined);
+  assert.equal((await identityProxy(action(),config)).status,401);
+  sessionOwner=pilot.subject;
+  const capability=await current();
+  assert.equal(capability.deviceSignOutAllowed,true);
+  assert.equal(capability.session.token,undefined);
+  const expired={...config,deviceSignOutPilot:{...pilot,expiresAt:Date.now()-1}};
+  assert.equal((await identityProxy(action(),expired)).status,404);
+  const signedOut=await identityProxy(f.request('revoke-sessions',{userId:'another-account'}),config);
+  assert.deepEqual(await signedOut.json(),{success:true,projectSessionsEnded:true});
+  assert.equal(providerRevocations,1);
+  assert.deepEqual(deliveries.sort(),audiences.sort());
+  assert.equal(await store.getSession('pilot'),null);
+  assert.ok(await store.getSession('other'));
  }finally{f.db.close();}
 });
 

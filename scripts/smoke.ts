@@ -29,6 +29,8 @@ const auth=await fetch(origin+'/auth/login?next=%2Fen%2Faccount&ui_locales=en',{
 for(const path of ['/identity/login?ui_locales=en','/api/identity/get-session']){const response=await fetch(origin+path,{redirect:'manual'});assert.equal(response.status,200);assert.match(response.headers.get('x-robots-tag')!,/noindex/);assert.equal(response.headers.get('cache-control'),'no-store');const body=await response.text();if(path.endsWith('get-session'))assert.deepEqual(JSON.parse(body),{user:null,session:null});else{assert.match(body,/worlds-identity-csrf/);assert.match(body,/<html lang="en"/);}}
 const jsonStart=await fetch(origin+'/auth/login',{method:'POST',headers:{origin,accept:'application/json'},redirect:'manual'});assert.equal(jsonStart.status,200);assert.equal(new URL((await jsonStart.json() as {url:string}).url).searchParams.get('code_challenge_method'),'S256');assert.match(jsonStart.headers.get('set-cookie')!,/HttpOnly/);
 const identityMutation=await fetch(origin+'/api/identity/sign-out',{method:'POST',headers:{origin,'content-type':'application/json'},body:'{}',redirect:'manual'});assert.equal(identityMutation.status,403);
+const expectPilot=process.env.EXPECT_DEVICE_SIGN_OUT_PILOT==='true';
+let accountCsrfCookie='';
 for(const language of ['de','en']){
  const settings=await fetch(origin+'/identity/account?ui_locales='+language,{redirect:'manual'});
  assert.equal(settings.status,200);
@@ -38,7 +40,18 @@ for(const language of ['de','en']){
  assert.ok(body.includes('<html lang="'+language+'"'));
  assert.match(body,/data-identity-form="change-password"/);
  assert.match(body,/data-identity-export/);
+ if(expectPilot){
+  assert.match(body,/data-identity-device-sign-out="pilot"[^>]+hidden/);
+  accountCsrfCookie=settings.headers.getSetCookie().find(value=>value.startsWith('__Host-worlds-identity-csrf='))?.split(';')[0]??'';
+  assert.ok(accountCsrfCookie);
+ }else assert.doesNotMatch(body,/data-identity-device-sign-out/);
 }
+const deviceSignOut=await fetch(origin+'/api/identity/revoke-sessions',{
+ method:'POST',headers:{origin,'content-type':'application/json',...(accountCsrfCookie?{
+  cookie:accountCsrfCookie,'x-worlds-identity-csrf':accountCsrfCookie.split('=')[1],
+ }:{})},body:'{}',
+});
+assert.equal(deviceSignOut.status,expectPilot?401:404);
 for(const path of ['change-password','export']){
  const response=await fetch(origin+'/api/identity/'+path,{method:'POST',headers:{origin,'content-type':'application/json'},body:'{}'});
  assert.equal(response.status,403);

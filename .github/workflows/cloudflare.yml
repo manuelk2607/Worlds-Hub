@@ -12,6 +12,10 @@ on:
         description: Initialize missing identity signing secret (explicit pilot setup only)
         type: boolean
         default: false
+      device_sign_out_pilot:
+        description: Temporarily enable device sign-out for the configured test identity and test workers
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -40,6 +44,12 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing repository secret CLOUDFLARE_API_TOKEN'; exit 1; }
+      - name: Validate pilot deployment selection
+        if: inputs.device_sign_out_pilot
+        env:
+          DEPLOY: ${{ inputs.deploy }}
+          INITIALIZE_IDENTITY_SECRET: ${{ inputs.initialize_identity_secret }}
+        run: test "$DEPLOY" = true && test "$INITIALIZE_IDENTITY_SECRET" = false && test "$GITHUB_REF" = refs/heads/main
       - name: Initialize identity secret only when explicitly requested
         if: inputs.deploy && inputs.initialize_identity_secret
         env:
@@ -47,10 +57,19 @@ jobs:
           INITIALIZE_IDENTITY_SECRET: 'true'
         run: node --experimental-strip-types scripts/init-identity-secret.ts
       - name: Deploy only the checked Worlds Hub Worker
-        if: inputs.deploy
+        if: inputs.deploy && !inputs.device_sign_out_pilot
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run deploy:cloudflare
+      - name: Deploy only the checked Worlds Hub sign-out pilot
+        if: inputs.deploy && inputs.device_sign_out_pilot
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          IDENTITY_DEVICE_SIGN_OUT_PILOT: ${{ secrets.IDENTITY_DEVICE_SIGN_OUT_PILOT }}
+          WORLDS_SESSION_EVENT_PRIVATE_JWK: ${{ secrets.WORLDS_SESSION_EVENT_PRIVATE_JWK }}
+        run: node --experimental-strip-types scripts/deploy-device-sign-out-pilot.ts
       - name: Verify production
         if: inputs.deploy
+        env:
+          EXPECT_DEVICE_SIGN_OUT_PILOT: ${{ inputs.device_sign_out_pilot }}
         run: npm run smoke

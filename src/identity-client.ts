@@ -5,11 +5,12 @@ if(identityRoot){
  const root=identityRoot,message=root.querySelector<HTMLElement>('[data-identity-message]')!,csrf=root.querySelector<HTMLMetaElement>('meta[name="worlds-identity-csrf"]')!.content;
  const rawQuery=location.search.slice(1),params=new URLSearchParams(rawQuery),oauth=params.has('client_id');
  const forms=[...root.querySelectorAll<HTMLFormElement>('[data-identity-form]')];
+ const deviceSignOut=root.querySelector<HTMLButtonElement>('[data-identity-device-sign-out]');
  let busy=false,freshSignInRequired=false,currentUser:{id:string;name?:string;email:string;emailVerified:boolean}|undefined;
  function show(mode:string){forms.forEach(form=>{form.hidden=form.dataset.identityForm!==mode;});root.querySelectorAll<HTMLButtonElement>('.identity-tabs button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.identityAction===mode)));clearStatus(message);}
  async function api(path:string,body?:Record<string,unknown>){
   const response=await fetch('/api/identity/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json','x-worlds-identity-csrf':csrf}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
-  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
+  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;deviceSignOutAllowed?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
   if(!response.ok)throw new Error(data.code??data.error??String(response.status));return data;
  }
  function navigate(url:string){const target=new URL(url,location.origin);if(target.protocol!=='https:')throw new Error('UNSAFE_REDIRECT');location.assign(target.href);}
@@ -22,6 +23,7 @@ if(identityRoot){
    createdAt>Date.now()+5000||Date.now()-createdAt>=Number(maxAge)*1000);
   const active=!!currentUser?.emailVerified&&!freshSignInRequired;
   root.dataset.verified=String(active);
+  if(deviceSignOut?.dataset.identityDeviceSignOut==='pilot')deviceSignOut.hidden=!active||data.deviceSignOutAllowed!==true;
   const panel=root.querySelector<HTMLElement>('[data-identity-session]');
   if(panel)panel.hidden=!currentUser||reset||freshSignInRequired;
   const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
@@ -71,9 +73,10 @@ if(identityRoot){
   }catch(error){showError(error);}finally{pending(false);}
  });
  root.querySelector('[data-identity-continue]')?.addEventListener('click',async()=>{if(busy)return;pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}});
- const deviceSignOut=root.querySelector<HTMLButtonElement>('[data-identity-device-sign-out]');
  deviceSignOut?.addEventListener('click',async()=>{
-  if(busy||!window.confirm(text(deviceSignOut.dataset.identityDeviceSignOut==='projects'?'identity.signOutWorldsDevicesConfirm':'identity.signOutDevicesConfirm')))return;
+  const scope=deviceSignOut.dataset.identityDeviceSignOut;
+  const confirmation=scope==='pilot'?'identity.signOutPilotDevicesConfirm':scope==='projects'?'identity.signOutWorldsDevicesConfirm':'identity.signOutDevicesConfirm';
+  if(busy||deviceSignOut.hidden||!window.confirm(text(confirmation)))return;
   pending(true);status(message,'status.waiting');
   try{
    const result=await api('revoke-sessions',{});
@@ -83,7 +86,8 @@ if(identityRoot){
    if(sessionPanel)sessionPanel.hidden=true;
    if(anonymous)anonymous.hidden=false;
    show('login');
-   status(message,result.projectSessionsEnded===undefined?'status.signedOutDevices':result.projectSessionsEnded?'status.signedOutWorldsDevices':'status.projectSignOutPending');
+   status(message,result.projectSessionsEnded===undefined?'status.signedOutDevices':result.projectSessionsEnded?
+    scope==='pilot'?'status.signedOutPilotDevices':'status.signedOutWorldsDevices':'status.projectSignOutPending');
    root.querySelector<HTMLInputElement>('[data-identity-form="login"] input')?.focus();
   }catch(error){showError(error);}finally{pending(false);}
  });

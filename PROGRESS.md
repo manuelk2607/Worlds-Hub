@@ -12,6 +12,18 @@ lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
 ## Hub-Schema veröffentlicht und geprüft
 
+Für die gemeinsame Live-Abnahme ist eine befristete Abmeldeaktion für
+die verifizierte Identität aus beiden Tests vorbereitet. Sie prüft bei
+jedem Aufruf die bestätigte Sitzung beim Anmeldedienst. Sie adressiert
+Sprachwelten Test und Slop Urself Test anhand ihrer exakten Callbacks.
+Geplante Wiederholungen sind auf dasselbe Konto und beide Empfänger
+beschränkt. Die Abmeldeaktion erscheint in DE/EN nur beim berechtigten
+Konto. Lokal bestanden 81 Tests, Typprüfung, Lint, Build und Wrangler-
+Probelauf. Chromium DE (320 px) und WebKit EN (1280 px) bestätigten
+die Sichtbarkeit und die Abbruchaktion. Live-Abgleich: eine aktive
+Sprachwelten-Testsitzung und eine bestehende Slop-Testprofilzuordnung
+für dieselbe Identität. Der Live-Testmodus erfordert eigene Freigabe.
+
 Worlds Hub `29f3caa` läuft als Worker-Version
 `ddde7014-06bd-4ba7-ab4b-632218f4011b`. GitHub **43132137632** bestand
 einschließlich Live-Prüfung für Anmeldung, DE/EN, SEO und Schutz privater Seiten.

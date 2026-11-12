@@ -135,12 +135,14 @@ export default {
   const db=env.AUTH_DB;if(!db)return;
   const now=Date.now();
   await db.batch(['auth_transactions','auth_sessions','auth_replays','identity_rate_limits'].map(table=>db.prepare(`DELETE FROM ${table} WHERE id IN (SELECT id FROM ${table} WHERE expires < ? ORDER BY expires LIMIT 500)`).bind(now)));
-  if(env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true')await pruneHubRevocations(db,now);
+  if(['true','pilot'].includes(env.IDENTITY_DEVICE_SIGN_OUT_ENABLED??''))await pruneHubRevocations(db,now);
   const identity=identityConfig(env),projects=identity?.projectSessionEvents;
-  if(projects&&authConfig(env)?.issuer===identity.baseUrl){
-   const expired=await pruneProjectRevocationDeliveries(projects,now);
+  if(projects||env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='pilot'){
+   const expired=await pruneProjectRevocationDeliveries(db,now);
    if(expired)console.warn('Unconfirmed project sign-outs expired',expired);
-   await deliverProjectRevocations(projects,undefined,now);
+  }
+  if(projects&&authConfig(env)?.issuer===identity.baseUrl){
+   await deliverProjectRevocations(projects,identity.deviceSignOutPilot?.subject,now);
   }
  }
 };

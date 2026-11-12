@@ -28,7 +28,7 @@ before asking the provider to revoke its native sessions. The database rejects
 late callbacks with an older or missing signed authentication time for that
 subject. Existing sessions for other accounts remain valid. Provider failure
 returns partial completion and preserves the browser's native session for a
-retry. The feature flag and migration are pending hosted QA.
+retry. The migrations are deployed and the general action awaits hosted QA.
 
 For connected projects, migration 0006 stores pending deliveries atomically
 with the Hub revocation. Configure `WORLDS_SESSION_EVENT_CLIENT_IDS` as an
@@ -42,8 +42,28 @@ cookie or provider token is forwarded.
 A recipient acknowledges only a committed update. The Hub retries pending
 deliveries hourly for up to 24 hours using the same cutoff. Delayed
 acknowledgements cannot erase a newer queued action. The interface reports
-pending acknowledgements explicitly. The delivery key, client list and
-database migrations have not been enabled on the live Hub.
+pending acknowledgements explicitly.
+
+### Expiring live sign-out pilot
+
+The manual Cloudflare workflow accepts `device_sign_out_pilot=true` on
+`main` alongside `deploy=true`. This mode requires the applied D1
+revocation migrations and two reachable test workers.
+
+- Store `IDENTITY_DEVICE_SIGN_OUT_PILOT` as a repository secret containing
+  the verified subject and an absolute future expiry in Unix milliseconds.
+- Store `WORLDS_SESSION_EVENT_PRIVATE_JWK` as a separate repository secret.
+  Its public half must match both test workers. The pilot derives its
+  recipients from the exact Sprachwelten Test and Slop Urself Test
+  callbacks in the registry.
+- Sign into the Hub account and both test workers in the same browser.
+  Confirm the action on `/identity/account` and check that all three
+  sessions have ended. A pending acknowledgement appears in the Hub UI
+  and may be retried during the authorized window.
+- Restore the prior inactive Worker version after the test, then remove
+  the two temporary GitHub secrets. Confirm that the sign-out route is
+  gated again. The D1 schema and committed revocations survive the Worker
+  version change.
 
 The native SDK Admin namespace supports targeted session revocation and user
 removal in the actual isolated QA branch; see `NATIVE-ADMIN-QA.md`. Its temporary

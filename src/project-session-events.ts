@@ -111,8 +111,8 @@ export async function deliverProjectRevocations(
   return !pending;
 }
 
-export async function pruneProjectRevocationDeliveries(config: ProjectSessionEvents, now: number) {
-  const removed = await config.db.prepare(`
+export async function pruneProjectRevocationDeliveries(db: D1Database, now: number) {
+  const removed = await db.prepare(`
     DELETE FROM project_session_revocation_delivery WHERE event_id IN (
       SELECT event_id FROM project_session_revocation_delivery WHERE expires_at<=?
       ORDER BY expires_at LIMIT 500

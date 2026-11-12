@@ -86,7 +86,7 @@ test('queued delivery verifies end to end and retries only unacknowledged projec
     await revokeHubSessions(binding,issuer,subject,activeNow,config);
     assert.equal(await deliverProjectRevocations(config,subject,activeNow),false);
     assert.deepEqual(db.prepare('SELECT DISTINCT revoked_through FROM project_session_revocation_delivery').all().map(row=>row.revoked_through),[activeNow+1000]);
-    assert.equal(await pruneProjectRevocationDeliveries(config,activeNow+sessionEventMaxDelay+1000),2);
+    assert.equal(await pruneProjectRevocationDeliveries(binding,activeNow+sessionEventMaxDelay+1000),2);
   } finally {
     await projectDb.close();
     db.close();

@@ -7,8 +7,10 @@ import {passwordPolicyError} from './identity-policy.ts';
 import {revokeHubSessions} from './hub-session-revocation.ts';
 import {deliverProjectRevocations,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
-export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; projectSessionEvents?:ProjectSessionEvents }
-export interface IdentityEnv extends ProjectSessionEventEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string }
+export interface DeviceSignOutPilot { subject:string; expiresAt:number }
+export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; deviceSignOutPilot?:DeviceSignOutPilot; projectSessionEvents?:ProjectSessionEvents }
+export interface IdentityEnv extends ProjectSessionEventEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string; IDENTITY_DEVICE_SIGN_OUT_PILOT?:string }
+const pilotOrigins=['https://sprachwelten-worlds-pilot.maki26.workers.dev','https://slopurself-worlds-pilot.maki26.workers.dev'];
 const CSRF_COOKIE='__Host-worlds-identity-csrf';
 const quiet=resolveNeonAuthLogging({logLevel:'silent'});
 const endpoints:Record<string,string>={
@@ -18,6 +20,14 @@ const endpoints:Record<string,string>={
   'change-password':'POST','export':'POST','revoke-sessions':'POST',
   'oauth2/continue':'POST','oauth2/consent':'POST'
 };
+export function parseDeviceSignOutPilot(raw:string|undefined,now=Date.now()):DeviceSignOutPilot|undefined {
+  try {
+    const value=JSON.parse(raw??'null') as Partial<DeviceSignOutPilot>|null;
+    if(typeof value?.subject!=='string'||!/^[A-Za-z0-9_-]{1,256}$/.test(value.subject)||
+      typeof value.expiresAt!=='number'||!Number.isSafeInteger(value.expiresAt)||value.expiresAt<=now)return;
+    return {subject:value.subject,expiresAt:value.expiresAt};
+  }catch{return;}
+}
 export function identityConfig(env:IdentityEnv):IdentityConfig|null {
   if(env.IDENTITY_ENABLED!=='true'||!env.SITE_ORIGIN||!env.IDENTITY_AUTH_URL||!env.IDENTITY_COOKIE_SECRET||env.IDENTITY_COOKIE_SECRET.length<32||!env.AUTH_DB)return null;
   try {
@@ -25,9 +35,18 @@ export function identityConfig(env:IdentityEnv):IdentityConfig|null {
     if(origin.protocol!=='https:'||origin.origin!==env.SITE_ORIGIN||issuer.protocol!=='https:'||issuer.username||issuer.password||issuer.search||issuer.hash)return null;
     const clients=JSON.parse(env.IDENTITY_CLIENTS??'[]') as IdentityClient[];
     if(!Array.isArray(clients)||clients.some(c=>typeof c.clientId!=='string'||!c.clientId||typeof c.name!=='string'||!c.name||!Array.isArray(c.redirects)||!c.redirects.length||typeof c.resource!=='string'||new URL(c.resource).protocol!=='https:'||c.redirects.some(r=>{const u=new URL(r);return u.protocol!=='https:'||!!u.username||!!u.password||!!u.hash||!!u.search;})))return null;
-    const baseUrl=issuer.href.replace(/\/$/,''),deviceSignOutEnabled=env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true';
-    const projectSessionEvents=deviceSignOutEnabled?projectSessionEventConfig(env,origin.origin,baseUrl,clients,env.AUTH_DB):undefined;
-    return {origin:origin.origin,baseUrl,cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,deviceSignOutEnabled,projectSessionEvents};
+    const baseUrl=issuer.href.replace(/\/$/,'');
+    const globalSignOut=env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true';
+    const pilot=env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='pilot'?parseDeviceSignOutPilot(env.IDENTITY_DEVICE_SIGN_OUT_PILOT):undefined;
+    const pilotClients=pilot?pilotOrigins.map(target=>clients.find(client=>
+      client.redirects.length===1&&client.redirects[0]===target+'/auth/callback'&&client.resource===target+'/api'
+    )).filter((client):client is IdentityClient=>!!client):[];
+    const eventSettings=pilot?{...env,WORLDS_SESSION_EVENT_CLIENT_IDS:JSON.stringify(pilotClients.map(client=>client.clientId))}:env;
+    const projectSessionEvents=globalSignOut||(pilot&&pilotClients.length===pilotOrigins.length)
+      ?projectSessionEventConfig(eventSettings,origin.origin,baseUrl,pilot?pilotClients:clients,env.AUTH_DB):undefined;
+    const deviceSignOutPilot=projectSessionEvents?pilot:undefined;
+    return {origin:origin.origin,baseUrl,cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,
+      deviceSignOutEnabled:globalSignOut||!!deviceSignOutPilot,deviceSignOutPilot,projectSessionEvents};
   }catch{return null;}
 }
 export function identityCsrf(request:Request){const previous=readCookie(request,CSRF_COOKIE);const value=previous&&/^[A-Za-z0-9_-]{32,128}$/.test(previous)?previous:token();return {value,setCookie:cookie(CSRF_COOKIE,value,3600)};}
@@ -131,6 +150,8 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
     if(!account)return json({error:'SIGN_IN_REQUIRED'},401);
   }
   if(path==='revoke-sessions'&&account){
+    const pilot=config.deviceSignOutPilot;
+    if(pilot&&(pilot.expiresAt<=Date.now()||pilot.subject!==account.id))return json({error:'NOT_FOUND'},404);
     // Commit local revocation before ending the verified native session so
     // a transient local storage failure can be retried from the same browser.
     const projects=config.projectSessionEvents;
@@ -176,11 +197,14 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   }
   // Do not expose raw session tokens or set-auth-token/set-auth-jwt headers from the managed API.
   const result:Record<string,unknown>={};
-  const session=body.session as {expiresAt?:unknown;createdAt?:unknown}|undefined,user=body.user as {id?:unknown;name?:unknown;email?:unknown;emailVerified?:unknown}|undefined;
+  const session=body.session as {expiresAt?:unknown;createdAt?:unknown;userId?:unknown}|undefined,user=body.user as {id?:unknown;name?:unknown;email?:unknown;emailVerified?:unknown}|undefined;
   if(user)result.user={id:user.id,name:user.name,email:user.email,emailVerified:user.emailVerified};
   if(session)result.session={expiresAt:session.expiresAt,createdAt:session.createdAt};
   for(const k of ['status','success','redirect','code','message','error'])if(['boolean','string'].includes(typeof body[k]))result[k]=body[k];
   if(body.url!==undefined){const target=allowedResultUrl(body.url,oauthQuery,config);if(!target)return json({error:'UNTRUSTED_IDENTITY_REDIRECT'},502);result.url=target;}
   if(path==='get-session'&&!user){result.user=null;result.session=null;}
+  const pilot=config.deviceSignOutPilot;
+  if(path==='get-session'&&response.ok&&config.deviceSignOutEnabled&&pilot&&pilot.expiresAt>Date.now()&&
+    user?.emailVerified===true&&user.id===pilot.subject&&session?.userId===pilot.subject)result.deviceSignOutAllowed=true;
   return new Response(JSON.stringify(result),{status:response.status,headers});
 }

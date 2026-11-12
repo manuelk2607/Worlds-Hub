@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
 import {readFile} from 'node:fs/promises';
+import {decodeJwt,exportJWK,generateKeyPair} from 'jose';
 import {sqliteD1} from './sqlite-helper.ts';
 import {projects} from '../src/projects.ts';
 import {hash} from '../packages/auth/store.ts';
@@ -39,3 +40,43 @@ test('device locale initializes a missing profile preference without overwriting
 });
 
 test('scheduled auth cleanup bounds D1 writes and preserves valid sessions',async()=>{const {db,binding}=await sqliteD1();try{db.exec(await readFile('migrations/0002_identity_rate_limits.sql','utf8'));const now=Date.now();const insert=db.prepare('INSERT INTO auth_transactions (id,payload,expires) VALUES (?,?,?)');for(let i=0;i<501;i++)insert.run('old-'+i,'{}',now-1000);insert.run('valid','{}',now+60000);await worker.scheduled({}, {AUTH_DB:binding});assert.equal(db.prepare('SELECT count(*) AS count FROM auth_transactions WHERE expires < ?').get(now)?.count,1);assert.ok(db.prepare('SELECT id FROM auth_transactions WHERE id = ?').get('valid'));}finally{db.close();}});
+
+test('scheduled pilot deliveries stay within the authorized account, test audiences and expiry',async t=>{
+ const {db,binding}=await sqliteD1();
+ try{
+  for(const name of ['0002_identity_rate_limits','0005_hub_session_revocations','0006_project_session_revocation_delivery']){
+   db.exec(await readFile('migrations/'+name+'.sql','utf8'));
+  }
+  const issuer='https://issuer.test/auth',subject='pilot-fixture',now=Date.now();
+  const targets=['https://sprachwelten-worlds-pilot.maki26.workers.dev','https://slopurself-worlds-pilot.maki26.workers.dev'];
+  const clients=[...targets,'https://sprachwelten.maki26.workers.dev'].map((target,i)=>({
+   clientId:'client-'+i,name:'World',redirects:[target+'/auth/callback'],resource:target+'/api',
+  }));
+  const endpoint=(target:string)=>target+'/auth/events/session-revoked';
+  const {privateKey}=await generateKeyPair('EdDSA',{extractable:true});
+  const pilot={subject,expiresAt:now+60_000};
+  const env={AUTH_DB:binding,SITE_ORIGIN:origin,AUTH_ENABLED:'true',OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',
+   OIDC_ID_TOKEN_ALG:'EdDSA',IDENTITY_ENABLED:'true',IDENTITY_AUTH_URL:issuer,IDENTITY_COOKIE_SECRET:'test-only-cookie-secret-of-32-characters',
+   IDENTITY_CLIENTS:JSON.stringify(clients),IDENTITY_DEVICE_SIGN_OUT_ENABLED:'pilot',
+   IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify(pilot),WORLDS_SESSION_EVENT_PRIVATE_JWK:JSON.stringify({kid:'fixture',...await exportJWK(privateKey)})};
+  const insert=db.prepare('INSERT INTO project_session_revocation_delivery VALUES (?,?,?,?,?,?,?)');
+  for(const [recipient,owner,id] of [
+   [targets[0],subject,'eligible'],[targets[1],'different-account','foreign-account'],
+   ['https://sprachwelten.maki26.workers.dev',subject,'foreign-recipient'],
+  ]){
+   insert.run(endpoint(recipient),issuer,owner,id,now-1000,now+60_000,now-1000);
+  }
+  const sent:string[]=[];
+  t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+   sent.push(String(input));
+   assert.deepEqual(decodeJwt(String(init?.body)).sub_id,{format:'iss_sub',iss:issuer,sub:subject});
+   return new Response(null,{status:202});
+  });
+  await worker.scheduled({}, {...env,IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify({...pilot,expiresAt:now-1})});
+  assert.equal(sent.length,0);
+  await worker.scheduled({},env);
+  assert.deepEqual(sent,[endpoint(targets[0])]);
+  assert.deepEqual(db.prepare('SELECT event_id FROM project_session_revocation_delivery ORDER BY event_id').all().map(row=>row.event_id),
+   ['foreign-account','foreign-recipient']);
+ }finally{db.close();}
+});
