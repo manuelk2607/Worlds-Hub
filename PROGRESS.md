@@ -16,9 +16,12 @@ Das Auth-Paket 0.1.5 signiert und prüft Sitzungswiderrufe mit getrenntem
 Hub-Schlüssel, genauer Empfängeradresse und festem Identitätsaussteller.
 Ein Postgres-Empfänger bestätigt erst nach Commit. Die Datenbank bewahrt
 spätere Anmeldungen und verhindert, dass ein verspäteter Callback eine
-widerrufene Sitzung wiederherstellt. 78 Hub-Tests, Typprüfung, Lint und Build
-bestanden. Die Versandwarteschlange im Hub und die Freischaltung der
-Projekt-Empfänger stehen aus.
+widerrufene Sitzung wiederherstellt. Der Hub speichert die Zustellung
+atomar mit dem lokalen Widerruf und wiederholt sie bei Ausfällen mit
+dem ursprünglichen Zeitpunkt. Sprachwelten prüft den Widerruf auch
+für bisherige Übergangssitzungen. Lokal bestanden 79 Hub-Tests und
+228 Sprachwelten-Tests, Typprüfung, Lint und Build. Die Freischaltung im
+öffentlichen Testbetrieb und die Empfänger der übrigen Projekte stehen aus.
 
 ## Worlds Hub: Abmeldung auf allen Geräten
 
@@ -58,9 +61,13 @@ bestand mit 74 Tests, Build, Audit und Live-Prüfung. Eine echte anonyme
 Anfrage an den zentralen Anbieter erreichte die Hub-Loginseite mit
 dem neuen Client und der exakten Rücksprungadresse.
 
-Die Sprachwelten-Testadresse wartet auf den freigegebenen Worker-Zugang
-und Cloudflare-Anmeldung. Der Callback mit einer zentralen Benutzersitzung,
-die Rücknahme des Test-Releases und die produktive Kontoübernahme stehen aus.
+Die Sprachwelten-Testadresse ist per GitHub **43123199731** veröffentlicht.
+Nach dem ausdrücklich genehmigten Anheben der QA-Aktivzeitgrenze auf vier
+Stunden ist die getrennte Datenbank wieder erreichbar. Cloudflare hat den
+Worker bei geschlossener Testadresse von `e5ab43fa` auf `f9aa6fbb` und
+zurück geschaltet. Die Live-Prüfung nach der Wiederherstellung bestand.
+Die persönliche Einwilligung lief ab, bevor der Rückweg geprüft werden
+konnte. Produktive Kontoübernahmen stehen aus.
 
 ## Sprachwelten: bisherige Sitzungen nach der Verknüpfung begrenzen
 

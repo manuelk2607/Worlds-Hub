@@ -30,6 +30,21 @@ subject. Existing sessions for other accounts remain valid. Provider failure
 returns partial completion and preserves the browser's native session for a
 retry. The feature flag and migration are pending hosted QA.
 
+For connected projects, migration 0006 stores pending deliveries atomically
+with the Hub revocation. Configure `WORLDS_SESSION_EVENT_CLIENT_IDS` as an
+explicit JSON list of registered clients and `WORLDS_SESSION_EVENT_PRIVATE_JWK`
+as an Ed25519 private JWK secret (`kid`, `kty`, `crv`, `x`, `d`). Each
+recipient pins only the public fields. Delivery uses the exact HTTPS host of
+the registered callback and a separate CAEP route. Signed event data contains
+the central issuer, subject and revocation time. No password, email, session
+cookie or provider token is forwarded.
+
+A recipient acknowledges only a committed update. The Hub retries pending
+deliveries hourly for up to 24 hours using the same cutoff. Delayed
+acknowledgements cannot erase a newer queued action. The interface reports
+pending acknowledgements explicitly. The delivery key, client list and
+database migrations have not been enabled on the live Hub.
+
 The native SDK Admin namespace supports targeted session revocation and user
 removal in the actual isolated QA branch; see `NATIVE-ADMIN-QA.md`. Its temporary
 administrator could manage all identities in that branch, so a runtime gateway

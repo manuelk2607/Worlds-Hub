@@ -9,7 +9,7 @@ if(identityRoot){
  function show(mode:string){forms.forEach(form=>{form.hidden=form.dataset.identityForm!==mode;});root.querySelectorAll<HTMLButtonElement>('.identity-tabs button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.identityAction===mode)));clearStatus(message);}
  async function api(path:string,body?:Record<string,unknown>){
   const response=await fetch('/api/identity/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json','x-worlds-identity-csrf':csrf}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
-  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
+  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
   if(!response.ok)throw new Error(data.code??data.error??String(response.status));return data;
  }
  function navigate(url:string){const target=new URL(url,location.origin);if(target.protocol!=='https:')throw new Error('UNSAFE_REDIRECT');location.assign(target.href);}
@@ -71,17 +71,19 @@ if(identityRoot){
   }catch(error){showError(error);}finally{pending(false);}
  });
  root.querySelector('[data-identity-continue]')?.addEventListener('click',async()=>{if(busy)return;pending(true);status(message,'status.continuing');try{await continueOAuth();}catch(error){showError(error);}finally{pending(false);}});
- root.querySelector('[data-identity-device-sign-out]')?.addEventListener('click',async()=>{
-  if(busy||!window.confirm(text('identity.signOutDevicesConfirm')))return;
+ const deviceSignOut=root.querySelector<HTMLButtonElement>('[data-identity-device-sign-out]');
+ deviceSignOut?.addEventListener('click',async()=>{
+  if(busy||!window.confirm(text(deviceSignOut.dataset.identityDeviceSignOut==='projects'?'identity.signOutWorldsDevicesConfirm':'identity.signOutDevicesConfirm')))return;
   pending(true);status(message,'status.waiting');
   try{
-   await api('revoke-sessions',{});
+   const result=await api('revoke-sessions',{});
    currentUser=undefined;root.dataset.verified='false';
    const sessionPanel=root.querySelector<HTMLElement>('[data-identity-session]');
    const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
    if(sessionPanel)sessionPanel.hidden=true;
    if(anonymous)anonymous.hidden=false;
-   show('login');status(message,'status.signedOutDevices');
+   show('login');
+   status(message,result.projectSessionsEnded===undefined?'status.signedOutDevices':result.projectSessionsEnded?'status.signedOutWorldsDevices':'status.projectSignOutPending');
    root.querySelector<HTMLInputElement>('[data-identity-form="login"] input')?.focus();
   }catch(error){showError(error);}finally{pending(false);}
  });

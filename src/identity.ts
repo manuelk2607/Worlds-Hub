@@ -5,9 +5,10 @@ import {requestLocale,t} from './i18n/core.ts';
 import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
 import {passwordPolicyError} from './identity-policy.ts';
 import {revokeHubSessions} from './hub-session-revocation.ts';
+import {deliverProjectRevocations,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
-export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean }
-export interface IdentityEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string }
+export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; projectSessionEvents?:ProjectSessionEvents }
+export interface IdentityEnv extends ProjectSessionEventEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string }
 const CSRF_COOKIE='__Host-worlds-identity-csrf';
 const quiet=resolveNeonAuthLogging({logLevel:'silent'});
 const endpoints:Record<string,string>={
@@ -24,7 +25,9 @@ export function identityConfig(env:IdentityEnv):IdentityConfig|null {
     if(origin.protocol!=='https:'||origin.origin!==env.SITE_ORIGIN||issuer.protocol!=='https:'||issuer.username||issuer.password||issuer.search||issuer.hash)return null;
     const clients=JSON.parse(env.IDENTITY_CLIENTS??'[]') as IdentityClient[];
     if(!Array.isArray(clients)||clients.some(c=>typeof c.clientId!=='string'||!c.clientId||typeof c.name!=='string'||!c.name||!Array.isArray(c.redirects)||!c.redirects.length||typeof c.resource!=='string'||new URL(c.resource).protocol!=='https:'||c.redirects.some(r=>{const u=new URL(r);return u.protocol!=='https:'||!!u.username||!!u.password||!!u.hash||!!u.search;})))return null;
-    return {origin:origin.origin,baseUrl:issuer.href.replace(/\/$/,''),cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,deviceSignOutEnabled:env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true'};
+    const baseUrl=issuer.href.replace(/\/$/,''),deviceSignOutEnabled=env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='true';
+    const projectSessionEvents=deviceSignOutEnabled?projectSessionEventConfig(env,origin.origin,baseUrl,clients,env.AUTH_DB):undefined;
+    return {origin:origin.origin,baseUrl,cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,deviceSignOutEnabled,projectSessionEvents};
   }catch{return null;}
 }
 export function identityCsrf(request:Request){const previous=readCookie(request,CSRF_COOKIE);const value=previous&&/^[A-Za-z0-9_-]{32,128}$/.test(previous)?previous:token();return {value,setCookie:cookie(CSRF_COOKIE,value,3600)};}
@@ -130,13 +133,15 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   if(path==='revoke-sessions'&&account){
     // Commit local revocation before ending the verified native session so
     // a transient local storage failure can be retried from the same browser.
-    try{await revokeHubSessions(config.db,config.baseUrl,account.id);}
+    const projects=config.projectSessionEvents;
+    try{await revokeHubSessions(config.db,config.baseUrl,account.id,Date.now(),projects);}
     catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
     try{
       const provider=await requestProvider(request,config,path,{});
       const result=provider.ok?await provider.json() as {status?:unknown}|null:null;
       if(result?.status!==true)return json({error:'DEVICE_SIGN_OUT_PARTIAL'},503);
-      const response=json({success:true});
+      const projectSessionsEnded=projects?await deliverProjectRevocations(projects,account.id).catch(()=>false):undefined;
+      const response=json({success:true,...(projectSessionsEnded===undefined?{}:{projectSessionsEnded})});
       for(const value of provider.headers.getSetCookie())response.headers.append('set-cookie',value);
       for(const name of [NEON_AUTH_SESSION_COOKIE_NAME,NEON_AUTH_SESSION_DATA_COOKIE_NAME,SESSION_COOKIE])response.headers.append('set-cookie',cookie(name,'',0));
       return response;

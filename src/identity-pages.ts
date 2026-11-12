@@ -4,7 +4,7 @@ import {t,type Locale,type MessageKey} from './i18n/core.ts';
 import {link,translated as tr,translatedAttribute as ta} from './i18n/html.ts';
 import {NEW_PASSWORD_MIN_LENGTH,PASSWORD_MAX_LENGTH} from './identity-policy.ts';
 
-export function identityPage(path:string,rawQuery:string,csrf:string,config:Pick<IdentityConfig,'origin'|'clients'|'deviceSignOutEnabled'>,locale:Locale='de'){
+export function identityPage(path:string,rawQuery:string,csrf:string,config:Pick<IdentityConfig,'origin'|'clients'|'deviceSignOutEnabled'|'projectSessionEvents'>,locale:Locale='de'){
  const query=new URLSearchParams(rawQuery),oauth=query.has('client_id'),client=oauth?authorizationClient(rawQuery,config):null;
  if(oauth&&!client)return {status:400,title:t(locale,'identity.invalidTitle'),titleKey:'identity.invalidTitle' as MessageKey,body:`<div class="wrap content-page"><h1>${tr(locale,'identity.invalidHeading')}</h1><p>${tr(locale,'identity.invalidBody')}</p><a class="button" ${link(locale,'account')}>${tr(locale,'common.toAccount')}</a></div>`};
  const consent=path==='/identity/consent';
@@ -26,7 +26,7 @@ export function identityPage(path:string,rawQuery:string,csrf:string,config:Pick
   input('identity.newPassword','newPassword','password','new-password',newPasswordAttributes)+
   input('identity.confirmPassword','confirmation','password','new-password',newPasswordAttributes),
   'identity.savePassword'):'';
- const deviceSignOut=config.deviceSignOutEnabled?`<button data-identity-device-sign-out data-identity-verified-action disabled>${tr(locale,'identity.signOutDevices')}</button>`:'';
+ const deviceSignOut=config.deviceSignOutEnabled?`<button data-identity-device-sign-out="${config.projectSessionEvents?'projects':'hub'}" data-identity-verified-action disabled>${tr(locale,config.projectSessionEvents?'identity.signOutWorldsDevices':'identity.signOutDevices')}</button>`:'';
  const accountTools=accountPage?`<button data-identity-action="change-password" data-identity-verified-action disabled>${tr(locale,'identity.changePassword')}</button><button data-identity-export data-identity-verified-action disabled>${tr(locale,'identity.exportData')}</button>${deviceSignOut}`:'';
  const intro=client?tr(locale,'identity.introClient',{name:client.name}):tr(locale,'identity.intro');
  const anonymous=`<div data-identity-anonymous hidden><nav class="identity-tabs" ${ta(locale,'aria-label','identity.tabsLabel')}><button data-identity-action="login" aria-pressed="true">${tr(locale,'identity.signIn')}</button><button data-identity-action="signup" aria-pressed="false">${tr(locale,'identity.register')}</button></nav>${fields}<div class="identity-help"><button data-identity-action="forgot">${tr(locale,'identity.forgotTitle')}</button><button data-identity-action="verify">${tr(locale,'identity.verifyTitle')}</button><button data-identity-action="send-code">${tr(locale,'identity.sendTitle')}</button></div></div>`;
