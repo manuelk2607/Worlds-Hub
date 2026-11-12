@@ -1,10 +1,12 @@
 import {importJWK, jwtVerify} from 'jose';
 import {boundedBody} from '../packages/auth/oidc.ts';
+import {migrationReceiptType} from '../packages/auth/migration-receipts.ts';
+import {sessionEventPublicKey} from '../packages/auth/session-revocation.ts';
 import {projects, type Project} from './projects.ts';
 
 type ProjectId = Project['id'];
 type ReceiptState = 'confirmed' | 'revoked';
-type ProjectKey = {kid:string; kty:'OKP'; crv:'Ed25519'; x:string};
+type ProjectKey = NonNullable<ReturnType<typeof sessionEventPublicKey>>;
 export type MigrationStatus = Partial<Record<ProjectId, ReceiptState>>;
 export interface MigrationConfig {
   origin:string;
@@ -23,11 +25,9 @@ export function migrationConfig(env:MigrationEnv,origin:string,issuer:string|und
     const keys:MigrationConfig['keys']={};
     for(const [id,raw] of Object.entries(value)){
       const project=projects.find(project=>project.id===id&&project.url);
-      if(!project||!raw||typeof raw!=='object'||Object.keys(raw).some(k=>!['kid','kty','crv','x'].includes(k)))return null;
-      const key=raw as Partial<ProjectKey>;
-      if(key.kty!=='OKP'||key.crv!=='Ed25519'||typeof key.kid!=='string'||!/^[A-Za-z0-9_-]{1,64}$/.test(key.kid)||
-         typeof key.x!=='string'||!/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/.test(key.x))return null;
-      keys[project.id]={kid:key.kid,kty:key.kty,crv:key.crv,x:key.x};
+      const key=sessionEventPublicKey(JSON.stringify(raw));
+      if(!project||!key)return null;
+      keys[project.id]=key;
     }
     const publicKeys=Object.values(keys).map(key=>key.x);
     return publicKeys.length&&new Set(publicKeys).size===publicKeys.length?{origin,identityIssuer:issuer,keys,db}:null;
@@ -53,7 +53,7 @@ export async function receiveMigrationReceipt(request:Request,config:MigrationCo
   try{
     const raw=await boundedBody(request,4096);
     verified=await jwtVerify(raw,await importJWK(pinned,'EdDSA'),{
-      algorithms:['EdDSA'],typ:'worlds-migration-receipt+jwt',issuer:new URL(project.url).origin,
+      algorithms:['EdDSA'],typ:migrationReceiptType,issuer:new URL(project.url).origin,
       audience:config.origin+url.pathname,maxTokenAge:'5m',clockTolerance:5,
       requiredClaims:['sub','iat','exp']
     });

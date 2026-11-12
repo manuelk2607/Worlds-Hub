@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {test} from 'node:test';
-import {exportJWK,generateKeyPair,SignJWT} from 'jose';
+import {decodeJwt,exportJWK,generateKeyPair,SignJWT} from 'jose';
+import {migrationReceiptSender} from '../packages/auth/migration-receipts.ts';
 import {migrationConfig,readMigrationStatus,receiveMigrationReceipt} from '../src/migration-receipts.ts';
 import {account} from '../src/pages.ts';
 import {sqliteD1} from './sqlite-helper.ts';
@@ -53,5 +54,44 @@ test('signed project receipts survive retries and out-of-order delivery without 
     const page=account({issuer,sub:subject,expires:Date.now()+60000,csrf:'test'},true,'en',undefined,true,status);
     assert.match(page,/Link revoked/);
     assert.doesNotMatch(page,new RegExp(reference+'|'+subject));
+  }finally{db.close();}
+});
+
+test('the shared sender retries a committed receipt and reports conflicts using the Hub response',async t=>{
+  const {db,binding}=await sqliteD1();
+  try{
+    db.exec(await readFile('migrations/0004_migration_receipts.sql','utf8'));
+    const pair=await generateKeyPair('EdDSA',{extractable:true});
+    const kid='sprach-receipt';
+    const key={kid,...await exportJWK(pair.publicKey)};
+    const config=migrationConfig({MIGRATION_RECEIPTS_ENABLED:'true',MIGRATION_RECEIPT_KEYS:JSON.stringify({sprachwelten:key})},hub,issuer,binding)!;
+    assert.ok(config);
+    const settings={project:'sprachwelten',origin:'https://sprachwelten.maki26.workers.dev',identityIssuer:issuer,
+      url:hub+'/api/migrations/receipts/sprachwelten',kid,privateJwk:JSON.stringify(await exportJWK(pair.privateKey))};
+    await assert.rejects(migrationReceiptSender({...settings,url:settings.url+'?extra=1'}));
+    await assert.rejects(migrationReceiptSender({...settings,privateJwk:JSON.stringify(key)}),/signing key/);
+    const send=await migrationReceiptSender(settings);
+    const receipt={subject,localAccountId:'private-profile-id',revision:1,state:'confirmed' as const};
+    let loseAcknowledgement=true;
+    t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+      assert.equal(String(input),settings.url);
+      assert.equal(init?.redirect,'error');
+      const payload=decodeJwt(String(init?.body));
+      assert.doesNotMatch(JSON.stringify(payload),/private-profile-id|@/);
+      assert.equal(payload.sub,subject);
+      const response=await receiveMigrationReceipt(new Request(String(input),init as RequestInit),config);
+      if(loseAcknowledgement){
+        loseAcknowledgement=false;
+        throw new Error('Fixture: connection closed after commit');
+      }
+      return response;
+    });
+    await assert.rejects(send(receipt),/unavailable/);
+    assert.deepEqual(await readMigrationStatus(config,subject),{sprachwelten:'confirmed'});
+    assert.equal(await send(receipt),'acknowledged');
+    assert.equal(await send({...receipt,localAccountId:'other-private-profile-id',revision:2}),'conflict');
+    assert.equal(await send({...receipt,state:'revoked',revision:3}),'acknowledged');
+    assert.equal(await send(receipt),'acknowledged');
+    assert.deepEqual(await readMigrationStatus(config,subject),{sprachwelten:'revoked'});
   }finally{db.close();}
 });

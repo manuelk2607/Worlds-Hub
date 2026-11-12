@@ -134,3 +134,8 @@ und `revoked_through` in Millisekunden.
 
 [OpenID CAEP](https://openid.net/specs/openid-caep-1_0-final.html) ·
 [IETF SET-Zustellung](https://www.rfc-editor.org/rfc/rfc8935.html)
+
+Version 0.1.6 ergänzt `./migration-receipts` für signierte Nachweise
+abgeschlossener Kontoübernahmen. Projektadapter lesen bestätigte Änderungen
+aus ihrem Audit, behandeln Fehler als wiederholbar und speichern gemeldete
+Konflikte zur Prüfung. Der Nachweis enthält einen Hash der lokalen Referenz.
