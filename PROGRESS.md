@@ -24,9 +24,31 @@ für bisherige Übergangssitzungen. Lokal bestanden 79 Hub-Tests und
 bestätigte `b8ac298`. Sprachwelten-Integration **43127214009** bestätigte
 `178e1ee` mit Migration 030 und einem signierten Testereignis gegen
 echtes QA-Postgres. Alte Sitzungen beider Geräte endeten im Projekt,
-Anbieterdatensätze und spätere Anmeldung wurden geprüft. Die
-Freischaltung im öffentlichen Testbetrieb und die Empfänger der übrigen
-Projekte stehen aus.
+Anbieterdatensätze und spätere Anmeldung wurden geprüft.
+
+Die übrigen drei Empfänger sind auf ihren SSO-Branches vorbereitet.
+Music-Worlds widerruft verknüpfte Gast-Tokens und zentrale Sitzungen.
+GitHub **43129764079** für `366f65b` bestand 87 Prüfungen gegen getrenntes
+QA-Postgres. IT-Worlds prüft bisherige Native-Sitzungen beim Zugriff auf
+Projektfunktionen anhand ihres ursprünglichen Erstellungszeitpunkts.
+Die eingeschränkte Datenbankrolle kann die Kontentabelle des Anbieters
+weiterhin nicht lesen. Chromium DE (320 px) und WebKit EN (1280 px) zeigen
+nach einem signierten Widerruf im simulierten Kontenablauf den Worlds-
+Anmeldelink. Der Grenzfall einer Native-Sitzung aus derselben Sekunde ist
+in `7111029` abgedeckt. GitHub **43130443435** bestand alle sieben Jobs.
+Slop Urself sperrt beide bisherigen Zugangsnachweise
+des verknüpften Profils und erhält dessen eigenständige HF-Verbindung.
+GitHub **43129737924** für `ce0d313` bestand mit PostgreSQL 17, Chromium
+und WebKit. Lokale Tests, Typprüfung und Builds der drei Empfänger sind
+bestanden.
+
+Nächster Schritt ist die gemeinsame Abnahme von Hub und Sprachwelten
+mit aktiver Signaturprüfung in der Testumgebung. Dafür müssen die Hub-
+Migrationen 0005/0006, die Sprachwelten-Migration 030 und ein passendes
+Schlüsselpaar bereitstehen. Der Hub erhält den privaten Schlüssel als
+Secret und adressiert zunächst nur den Sprachwelten-Testclient. Für
+einen Rollback nach Aktivierung muss die Rückfallversion den bereits
+gespeicherten Widerruf weiterhin beachten.
 
 ## Worlds Hub: Abmeldung auf allen Geräten
 
@@ -46,8 +68,7 @@ Die Oberfläche unterscheidet bestätigte und teilweise Abmeldungen.
 bestanden. GitHub **43122373505** bestätigte den Build und die Tests für
 `848ee3e`. Chromium DE und WebKit EN bestanden die Abbruch- und
 Bestätigungsprüfung bei 320 px mit synthetischer Anbieterantwort. Die neue
-Aktion bleibt bis zur Abnahme deaktiviert. Die Zustellung des Widerrufs an
-alle vier Projekte steht aus.
+Aktion bleibt bis zur gehosteten Abnahme deaktiviert.
 
 ## Sprachwelten: öffentliche Testadresse vorbereitet
 
