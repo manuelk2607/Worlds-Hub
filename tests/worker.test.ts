@@ -55,27 +55,31 @@ test('scheduled pilot deliveries stay within the authorized account, test audien
   const endpoint=(target:string)=>target+'/auth/events/session-revoked';
   const {privateKey}=await generateKeyPair('EdDSA',{extractable:true});
   const pilot={subject,expiresAt:now+60_000};
+  const sent:string[]=[];
+  const recipient=(target:string)=>({async fetch(input:RequestInfo|URL,init?:RequestInit){
+   assert.equal(String(input),endpoint(target));
+   sent.push(String(input));
+   assert.deepEqual(decodeJwt(String(init?.body)).sub_id,{format:'iss_sub',iss:issuer,sub:subject});
+   return new Response(null,{status:202});
+  }});
   const env={AUTH_DB:binding,SITE_ORIGIN:origin,AUTH_ENABLED:'true',OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',
    OIDC_ID_TOKEN_ALG:'EdDSA',IDENTITY_ENABLED:'true',IDENTITY_AUTH_URL:issuer,IDENTITY_COOKIE_SECRET:'test-only-cookie-secret-of-32-characters',
    IDENTITY_CLIENTS:JSON.stringify(clients),IDENTITY_DEVICE_SIGN_OUT_ENABLED:'pilot',
-   IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify(pilot),WORLDS_SESSION_EVENT_PRIVATE_JWK:JSON.stringify({kid:'fixture',...await exportJWK(privateKey)})};
+   IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify(pilot),WORLDS_SESSION_EVENT_PRIVATE_JWK:JSON.stringify({kid:'fixture',...await exportJWK(privateKey)}),
+   SPRACHWELTEN_SESSION_EVENTS:recipient(targets[0]),SLOP_URSELF_SESSION_EVENTS:recipient(targets[1])};
   const insert=db.prepare('INSERT INTO project_session_revocation_delivery VALUES (?,?,?,?,?,?,?)');
   for(const [recipient,owner,id] of [
-   [targets[0],subject,'eligible'],[targets[1],'different-account','foreign-account'],
+   [targets[0],subject,'eligible-language'],[targets[1],subject,'eligible-slop'],[targets[1],'different-account','foreign-account'],
    ['https://sprachwelten.maki26.workers.dev',subject,'foreign-recipient'],
   ]){
    insert.run(endpoint(recipient),issuer,owner,id,now-1000,now+60_000,now-1000);
   }
-  const sent:string[]=[];
-  t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
-   sent.push(String(input));
-   assert.deepEqual(decodeJwt(String(init?.body)).sub_id,{format:'iss_sub',iss:issuer,sub:subject});
-   return new Response(null,{status:202});
-  });
+  const publicFetch=t.mock.method(globalThis,'fetch',async()=>new Response(null,{status:500}));
   await worker.scheduled({}, {...env,IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify({...pilot,expiresAt:now-1})});
   assert.equal(sent.length,0);
   await worker.scheduled({},env);
-  assert.deepEqual(sent,[endpoint(targets[0])]);
+  assert.deepEqual(sent.sort(),targets.map(endpoint).sort());
+  assert.equal(publicFetch.mock.callCount(),0);
   assert.deepEqual(db.prepare('SELECT event_id FROM project_session_revocation_delivery ORDER BY event_id').all().map(row=>row.event_id),
    ['foreign-account','foreign-recipient']);
  }finally{db.close();}

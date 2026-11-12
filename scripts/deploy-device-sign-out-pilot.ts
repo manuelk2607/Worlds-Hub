@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {createPrivateKey,createPublicKey} from 'node:crypto';
-import {mkdtempSync,rmSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
+import {basename,join} from 'node:path';
+import ts from 'typescript';
 import {sessionEventPublicKey} from '../packages/auth/session-revocation.ts';
 import {parseDeviceSignOutPilot} from '../src/identity.ts';
+import {pilotSessionServices} from '../src/project-session-events.ts';
 
 const args=process.argv.slice(2);
 const dryRun=args.length===1&&args[0]==='--dry-run';
@@ -27,19 +29,24 @@ try{
   throw new Error('The pilot signing key must be a matching Ed25519 JWK');
 }
 const temporary=mkdtempSync(join(tmpdir(),'worlds-hub-pilot-'));
+const configFile=`.${basename(temporary)}.json`;
 try{
+  const config=ts.parseConfigFileTextToJson('wrangler.jsonc',readFileSync('wrangler.jsonc','utf8'));
+  assert.ok(!config.error&&config.config.name==='worlds-hub','Invalid Hub configuration');
+  writeFileSync(configFile,JSON.stringify({...config.config,services:pilotSessionServices}),{mode:0o600,flag:'wx'});
   const file=join(temporary,'secrets.json');
   writeFileSync(file,JSON.stringify({
     IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify(pilot),
     WORLDS_SESSION_EVENT_PRIVATE_JWK:rawKey,
   }),{mode:0o600});
   const result=spawnSync(process.execPath,[
-    'node_modules/wrangler/bin/wrangler.js','deploy','--name','worlds-hub',
+    'node_modules/wrangler/bin/wrangler.js','deploy','--config',configFile,'--name','worlds-hub',
     '--var','IDENTITY_DEVICE_SIGN_OUT_ENABLED:pilot','--secrets-file',file,
     ...(dryRun?['--dry-run']:[]),
   ],{stdio:'inherit'});
   if(result.error)throw result.error;
   process.exitCode=result.status??1;
 }finally{
+  rmSync(configFile,{force:true});
   rmSync(temporary,{recursive:true,force:true});
 }

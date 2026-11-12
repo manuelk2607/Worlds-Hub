@@ -5,12 +5,12 @@ import {requestLocale,t} from './i18n/core.ts';
 import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
 import {passwordPolicyError} from './identity-policy.ts';
 import {revokeHubSessions} from './hub-session-revocation.ts';
-import {deliverProjectRevocations,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
+import {bindPilotSessionRecipients,deliverProjectRevocations,pilotSessionOrigin,pilotSessionServices,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface DeviceSignOutPilot { subject:string; expiresAt:number }
 export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; deviceSignOutPilot?:DeviceSignOutPilot; projectSessionEvents?:ProjectSessionEvents }
 export interface IdentityEnv extends ProjectSessionEventEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string; IDENTITY_DEVICE_SIGN_OUT_PILOT?:string }
-const pilotOrigins=['https://sprachwelten-worlds-pilot.maki26.workers.dev','https://slopurself-worlds-pilot.maki26.workers.dev'];
+const pilotOrigins=pilotSessionServices.map(({service})=>pilotSessionOrigin(service));
 const CSRF_COOKIE='__Host-worlds-identity-csrf';
 const quiet=resolveNeonAuthLogging({logLevel:'silent'});
 const endpoints:Record<string,string>={
@@ -44,6 +44,7 @@ export function identityConfig(env:IdentityEnv):IdentityConfig|null {
     const eventSettings=pilot?{...env,WORLDS_SESSION_EVENT_CLIENT_IDS:JSON.stringify(pilotClients.map(client=>client.clientId))}:env;
     const projectSessionEvents=globalSignOut||(pilot&&pilotClients.length===pilotOrigins.length)
       ?projectSessionEventConfig(eventSettings,origin.origin,baseUrl,pilot?pilotClients:clients,env.AUTH_DB):undefined;
+    if(pilot&&projectSessionEvents)bindPilotSessionRecipients(projectSessionEvents,env);
     const deviceSignOutPilot=projectSessionEvents?pilot:undefined;
     return {origin:origin.origin,baseUrl,cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,
       deviceSignOutEnabled:globalSignOut||!!deviceSignOutPilot,deviceSignOutPilot,projectSessionEvents};

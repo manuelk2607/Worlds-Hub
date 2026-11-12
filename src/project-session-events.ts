@@ -5,7 +5,17 @@ import {
 } from '../packages/auth/session-revocation.ts';
 import type { IdentityClient } from './identity.ts';
 
-export interface ProjectSessionEventEnv {
+export const pilotSessionServices = [
+  { binding:'SPRACHWELTEN_SESSION_EVENTS', service:'sprachwelten-worlds-pilot' },
+  { binding:'SLOP_URSELF_SESSION_EVENTS', service:'slopurself-worlds-pilot' },
+] as const;
+
+export const pilotSessionOrigin = (service: (typeof pilotSessionServices)[number]['service']) =>
+  `https://${service}.maki26.workers.dev`;
+
+type PilotSessionBindings = Partial<Record<(typeof pilotSessionServices)[number]['binding'], Pick<Fetcher, 'fetch'>>>;
+
+export interface ProjectSessionEventEnv extends PilotSessionBindings {
   WORLDS_SESSION_EVENT_CLIENT_IDS?: string;
   WORLDS_SESSION_EVENT_PRIVATE_JWK?: string;
 }
@@ -16,6 +26,16 @@ export interface ProjectSessionEvents {
   identityIssuer: string;
   jwk: NonNullable<ReturnType<typeof sessionEventPublicKey>> & { d: string };
   db: D1Database;
+  pilotRecipients?: ReadonlyMap<string, Pick<Fetcher, 'fetch'>>;
+}
+
+export function bindPilotSessionRecipients(config: ProjectSessionEvents, env: PilotSessionBindings) {
+  const recipients = new Map<string, Pick<Fetcher, 'fetch'>>();
+  for (const { binding, service } of pilotSessionServices) {
+    const recipient = env[binding];
+    if (recipient) recipients.set(pilotSessionOrigin(service) + sessionRevocationPath, recipient);
+  }
+  if (recipients.size) config.pilotRecipients = recipients;
 }
 
 interface Delivery {
@@ -84,23 +104,32 @@ export async function deliverProjectRevocations(
   const privateKey = await importJWK(config.jwk,'EdDSA');
   if (!(privateKey instanceof CryptoKey)) throw new Error('Invalid session event key');
   const resultsByRecipient = await Promise.all(results.map(async row => {
+    const recipient = config.pilotRecipients?.get(row.audience);
+    if (config.pilotRecipients && !recipient) return false;
     try {
       const signed = await signSessionRevocation({
         eventId: row.event_id, identityIssuer: row.identity_issuer,
         subject: row.subject, revokedThrough: row.revoked_through,
       }, config.signer, row.audience, { kid: config.jwk.kid, privateKey }, now);
-      const response = await fetch(row.audience, {
+      const request: RequestInit = {
         method:'POST', redirect:'error', signal:AbortSignal.timeout(5000),
         headers:{ 'content-type':sessionEventContentType, accept:'application/json' },
         body:signed,
-      });
-      await response.body?.cancel();
-      if (response.status !== 202) return false;
+      };
+      const response = recipient ? await recipient.fetch(row.audience, request) : await fetch(row.audience, request);
+      await response.body?.cancel().catch(() => {});
+      if (response.status !== 202) {
+        console.warn('Project sign-out delivery rejected', new URL(row.audience).hostname, response.status);
+        return false;
+      }
       // A delayed acknowledgement must never delete a newly queued event.
       await config.db.prepare('DELETE FROM project_session_revocation_delivery WHERE event_id=?')
         .bind(row.event_id).run();
       return true;
-    } catch { return false; }
+    } catch {
+      console.warn('Project sign-out delivery failed', new URL(row.audience).hostname);
+      return false;
+    }
   }));
   if (subject===undefined) return resultsByRecipient.every(Boolean);
   // A scheduled delivery may already have claimed some rows. Count those as
