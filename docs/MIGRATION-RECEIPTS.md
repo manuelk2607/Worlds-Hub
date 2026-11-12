@@ -12,8 +12,11 @@ Set `MIGRATION_RECEIPTS_ENABLED=true` there and configure
 `MIGRATION_RECEIPT_KEYS` as a JSON object keyed by project slug. Each value
 contains the project's Ed25519 public JWK fields `kid`, `kty`, `crv` and
 `x`. Use separate keys per project and test environment. The private key is
-stored as a secret in the sending project. Slop's pilot sender rejects the
-production Hub hostname.
+stored as a secret in the sending project. The Slop Urself and Sprachwelten
+pilot senders reject the production Hub hostname. Both use the sender from
+`@worlds-hub/auth` 0.1.6. Sprachwelten marks only verified links to existing
+profiles for delivery, including their later revocation. Newly created
+profiles are excluded from migration reporting.
 
 The producer sends a short-lived EdDSA JWT to
 `POST /api/migrations/receipts/<project>` as `application/jwt`. The protected

@@ -5,12 +5,47 @@ Stand: 2026-11-12 (Europe/Stockholm)
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
 Offen sind insbesondere Kontolöschung und Datenschutzfunktionen am
-zentralen Konto, zentrale Nachweise über den Migrationsstand und die reale
-Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
+zentralen Konto, Migrationsnachweise aus allen vier Welten und die
+kontrollierte produktive Kontoübernahme.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
-## Hub-Schema veröffentlicht und geprüft
+## Abmeldung in beiden Testwelten bestätigt
+
+Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
+aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
+Der Hub hatte beide Nachrichten gespeichert. Die Cloudflare-Laufzeit
+verwarf jedoch `redirect: 'error'` vor dem Versand. Der Testnutzer sah
+die Slop-Sitzung deshalb nach der ersten Abmeldung weiter.
+
+Die befristete Testversion verwendet zwei direkte Cloudflare-Verbindungen
+zu den festgelegten Testworkern. Umleitungen werden nicht verfolgt. Nur
+HTTP 202 bestätigt die Zustellung. 82 Tests, Typprüfung, Lint, Build und
+der echte lokale Worker-Test mit beiden Verbindungen bestanden. Release
+**43198484206** veröffentlichte `484946f` als Worker-Version
+`c35032e4-1e43-48a1-aab5-ea3a3c1c1b67`. Beim geplanten Versuch um
+11:17 MEZ quittierten beide Empfänger den ursprünglichen Widerruf. D1
+zeigte null offene Nachrichten. Beide Testdatenbanken speicherten exakt
+denselben ursprünglichen Zeitpunkt und enthielten keine alte aktive
+Sitzung des Kontos. Der erste Versuch hatte somit eine Zustellverzögerung.
+
+Hub auf `e8f88655-6ae0-4b39-b5e3-6eb0595c7b45` zurückgesetzt und 100 %
+Traffic bestätigt. Der Live-Test für Anmeldung, DE/EN und SEO bestand.
+Die temporäre Abmelderoute liefert wieder HTTP 404. Beide GitHub-Secrets
+und der lokale temporäre private Schlüssel wurden entfernt.
+
+## Migrationsnachweise für Sprachwelten und Slop Urself
+
+Der veröffentlichte Paketstand `@worlds-hub/auth` 0.1.6 enthält den
+gemeinsamen signierten Sender. Sprachwelten `d3a3410` erfasst bestätigte
+Altprofil-Zuordnungen und Rücknahmen. 229 Tests, Typprüfung, Lint, Build
+und echte isolierte PostgreSQL-/Auth-Integration **43197868358** bestanden.
+Slop Urself `d4122e7` verwendet denselben Sender. **43197870625**
+bestand mit 179 Tests, PostgreSQL, Chromium und WebKit. Der Versand
+aus diesen beiden Projekten ist ausschließlich für isolierte Hub-Ziele
+vorbereitet. Die Live-Testworker erhielten dafür keine Migration.
+
+## Hub-Schema und Vorbereitung
 
 Für die gemeinsame Live-Abnahme ist eine befristete Abmeldeaktion für
 die verifizierte Identität aus beiden Tests vorbereitet. Sie prüft bei
@@ -26,21 +61,16 @@ für dieselbe Identität. Die geprüfte Version `a48f1b3` ist über
 **43194230778** als Worker-Version `e8f88655-6ae0-4b39-b5e3-6eb0595c7b45`
 veröffentlicht. Die öffentliche Abmelderoute antwortet mit HTTP 404.
 Beide Testempfänger antworteten auf unsignierte Ereignisse mit HTTP 400.
-Die zeitlich begrenzte Aktivierung für das einzelne Testkonto wartet
-auf ausdrückliche Freigabe. Nach der Aktivierung zuerst eine aktive
-Slop-Testsitzung herstellen, dann die Abmeldung im Hub bestätigen und
-beide gespeicherten Widerrufsgrenzen prüfen. Anschließend den hier
-genannten inaktiven Stand wiederherstellen.
 
-Worlds Hub `29f3caa` läuft als Worker-Version
+Worlds Hub `29f3caa` lief zuvor als Worker-Version
 `ddde7014-06bd-4ba7-ab4b-632218f4011b`. GitHub **43132137632** bestand
 einschließlich Live-Prüfung für Anmeldung, DE/EN, SEO und Schutz privater Seiten.
 Nach ausdrücklicher Freigabe wurden die Migrationen 0005/0006 über die
 D1-Konsole auf `worlds-hub-auth` angewendet. Vorher wurde ein
 Cloudflare-Time-Travel-Wiederherstellungspunkt erfasst. Die Schemaabfrage
 bestätigte zwei Tabellen, drei Indizes und den Trigger. Beide neuen Tabellen
-waren leer. Der Hub-Live-Test bestand danach erneut. Die öffentliche
-Abmelderoute ist bis zur gemeinsamen Abnahme deaktiviert (HTTP 404).
+waren vor dem gemeinsamen Test leer. Der Hub-Live-Test bestand danach
+erneut. Die öffentliche Abmelderoute ist deaktiviert (HTTP 404).
 
 Sprachwelten `a6978c2` läuft im Test als Worker-Version
 `b5d5df5b-8b10-4885-9453-8745907781c6`. Integration und Veröffentlichung
