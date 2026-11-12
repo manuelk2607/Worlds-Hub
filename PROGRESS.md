@@ -31,8 +31,24 @@ Versand aus dem lokal ausgeführten Hub mit simuliertem Anmeldedienst und
 den Verlust des Zugriffs auf private Vokabelhefte.
 Beim Wiederanlauf am 12.11. lieferte Neon HTTP 402. Das QA-Projekt
 `polished-wind-59150518` hatte 14.616 der erlaubten 14.400 monatlichen
-Aktivsekunden verbraucht. Dadurch antwortete die öffentliche Testanmeldung
-mit HTTP 503. Die gemeinsame Browserabnahme steht aus.
+Aktivsekunden verbraucht. Nach ausdrücklicher Freigabe wurde das Limit auf
+21.600 Sekunden erhöht. Die Live-Prüfung bestand erneut mit
+Chromium DE (320 px), WebKit EN (1280 px), exaktem PKCE-Callback und
+hostgebundenem Cookie. Der Nutzer bestätigte die tatsächliche Rückkehr
+vom Hub nach Sprachwelten. Der QA-Zweig `br-quiet-flower-ba6xcxlr`
+enthielt danach eine aktive Worlds-Sitzung für eine Identität. Diese
+Sitzung hatte noch keine Projektzuordnung. Der signierte Widerruf
+gegen dieselbe veröffentlichte Testversion bestand separat mit
+synthetischen Profilen und simuliertem zentralen Anmeldedienst.
+
+Slop Urself `1a89485` bestand Chromium und WebKit in **43190980122**.
+Release **43192117425** installierte die Widerrufstabelle im isolierten
+Zweig `br-sparkling-firefly-b1pssf1o` und veröffentlichte den Empfänger
+als aktive Version `c024fc41-f994-48e3-ad6f-dd367812c6c6`.
+Die Live-Prüfung mit zwei künstlichen Profilen bestätigte die Sperre
+der bisherigen passwortlosen lokalen und der zentralen Sitzung nach
+signierter Hub-Zustellung. Die neuere Sitzung, das Kontrollprofil und
+die Zuordnung blieben nutzbar. Die Testdaten wurden entfernt.
 
 ## Projektübergreifende Zustellung vorbereitet
 
