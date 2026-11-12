@@ -40,6 +40,7 @@ Der veröffentlichte Paketstand `@worlds-hub/auth` 0.1.6 enthält den
 gemeinsamen signierten Sender. Sprachwelten `d3a3410` erfasst bestätigte
 Altprofil-Zuordnungen und Rücknahmen. 229 Tests, Typprüfung, Lint, Build
 und echte isolierte PostgreSQL-/Auth-Integration **43197868358** bestanden.
+Die Browser- und Paketprüfung **43197869483** bestand ebenfalls.
 Slop Urself `d4122e7` verwendet denselben Sender. **43197870625**
 bestand mit 179 Tests, PostgreSQL, Chromium und WebKit. Der Versand
 aus diesen beiden Projekten ist ausschließlich für isolierte Hub-Ziele
