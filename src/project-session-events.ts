@@ -112,7 +112,8 @@ export async function deliverProjectRevocations(
         subject: row.subject, revokedThrough: row.revoked_through,
       }, config.signer, row.audience, { kid: config.jwk.kid, privateKey }, now);
       const request: RequestInit = {
-        method:'POST', redirect:'error', signal:AbortSignal.timeout(5000),
+        // Workers supports manual redirects. Only a direct 202 acknowledges delivery.
+        method:'POST', redirect:'manual', signal:AbortSignal.timeout(5000),
         headers:{ 'content-type':sessionEventContentType, accept:'application/json' },
         body:signed,
       };

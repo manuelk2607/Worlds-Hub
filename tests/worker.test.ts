@@ -58,6 +58,7 @@ test('scheduled pilot deliveries stay within the authorized account, test audien
   const sent:string[]=[];
   const recipient=(target:string)=>({async fetch(input:RequestInfo|URL,init?:RequestInit){
    assert.equal(String(input),endpoint(target));
+   assert.equal(init?.redirect,'manual');
    sent.push(String(input));
    assert.deepEqual(decodeJwt(String(init?.body)).sub_id,{format:'iss_sub',iss:issuer,sub:subject});
    return new Response(null,{status:202});

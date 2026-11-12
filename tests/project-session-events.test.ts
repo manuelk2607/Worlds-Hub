@@ -51,10 +51,10 @@ test('queued delivery verifies end to end and retries only unacknowledged projec
     let activeNow=now,outage=true,delayAck=false,calls=0;
     t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
       calls++;
-      assert.equal(init?.redirect,'error');
+      assert.equal(init?.redirect,'manual');
       const audience=String(input);
       assert.ok(config.audiences.includes(audience));
-      if(outage&&audience===config.audiences[1])return new Response(null,{status:503});
+      if(outage&&audience===config.audiences[1])return Response.redirect('https://unexpected.example',307);
       return receiveSessionRevocation(new Request(audience,init),{signer:origin,audience,identityIssuer:issuer,key},async event=>{
         events.push(event);
         await projectStore.applySessionRevocation(event);
