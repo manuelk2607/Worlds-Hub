@@ -20,8 +20,13 @@ widerrufene Sitzung wiederherstellt. Der Hub speichert die Zustellung
 atomar mit dem lokalen Widerruf und wiederholt sie bei Ausfällen mit
 dem ursprünglichen Zeitpunkt. Sprachwelten prüft den Widerruf auch
 für bisherige Übergangssitzungen. Lokal bestanden 79 Hub-Tests und
-228 Sprachwelten-Tests, Typprüfung, Lint und Build. Die Freischaltung im
-öffentlichen Testbetrieb und die Empfänger der übrigen Projekte stehen aus.
+228 Sprachwelten-Tests, Typprüfung, Lint und Build. Hub-CI **43127213320**
+bestätigte `b8ac298`. Sprachwelten-Integration **43127214009** bestätigte
+`178e1ee` mit Migration 030 und einem signierten Testereignis gegen
+echtes QA-Postgres. Alte Sitzungen beider Geräte endeten im Projekt,
+Anbieterdatensätze und spätere Anmeldung wurden geprüft. Die
+Freischaltung im öffentlichen Testbetrieb und die Empfänger der übrigen
+Projekte stehen aus.
 
 ## Worlds Hub: Abmeldung auf allen Geräten
 
