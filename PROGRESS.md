@@ -10,6 +10,30 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Hub-Schema veröffentlicht und geprüft
+
+Worlds Hub `29f3caa` läuft als Worker-Version
+`ddde7014-06bd-4ba7-ab4b-632218f4011b`. GitHub **43132137632** bestand
+einschließlich Live-Prüfung für Anmeldung, DE/EN, SEO und Schutz privater Seiten.
+Nach ausdrücklicher Freigabe wurden die Migrationen 0005/0006 über die
+D1-Konsole auf `worlds-hub-auth` angewendet. Vorher wurde ein
+Cloudflare-Time-Travel-Wiederherstellungspunkt erfasst. Die Schemaabfrage
+bestätigte zwei Tabellen, drei Indizes und den Trigger. Beide neuen Tabellen
+waren leer. Der Hub-Live-Test bestand danach erneut. Die öffentliche
+Abmelderoute ist bis zur gemeinsamen Abnahme deaktiviert (HTTP 404).
+
+Sprachwelten `a6978c2` läuft im Test als Worker-Version
+`b5d5df5b-8b10-4885-9453-8745907781c6`. Integration und Veröffentlichung
+**43131710625** bestätigten die präzise Widerrufssekunde gegen die befristete
+Neon-Datenbank. Die vollständige CI **43131645816** bestand.
+Der frühere Test gegen den öffentlichen Worker bestätigte den signierten
+Versand aus dem lokal ausgeführten Hub mit simuliertem Anmeldedienst und
+den Verlust des Zugriffs auf private Vokabelhefte.
+Beim Wiederanlauf am 12.11. lieferte Neon HTTP 402. Das QA-Projekt
+`polished-wind-59150518` hatte 14.616 der erlaubten 14.400 monatlichen
+Aktivsekunden verbraucht. Dadurch antwortete die öffentliche Testanmeldung
+mit HTTP 503. Die gemeinsame Browserabnahme steht aus.
+
 ## Projektübergreifende Zustellung vorbereitet
 
 Das Auth-Paket 0.1.5 signiert und prüft Sitzungswiderrufe mit getrenntem
@@ -42,13 +66,11 @@ GitHub **43129737924** für `ce0d313` bestand mit PostgreSQL 17, Chromium
 und WebKit. Lokale Tests, Typprüfung und Builds der drei Empfänger sind
 bestanden.
 
-Nächster Schritt ist die gemeinsame Abnahme von Hub und Sprachwelten
-mit aktiver Signaturprüfung in der Testumgebung. Dafür müssen die Hub-
-Migrationen 0005/0006, die Sprachwelten-Migration 030 und ein passendes
-Schlüsselpaar bereitstehen. Der Hub erhält den privaten Schlüssel als
-Secret und adressiert zunächst nur den Sprachwelten-Testclient. Für
-einen Rollback nach Aktivierung muss die Rückfallversion den bereits
-gespeicherten Widerruf weiterhin beachten.
+Nächster Schritt ist die gemeinsame Abnahme mit einem erreichbaren
+isolierten Empfänger. Dafür erhält der Hub einen privaten Schlüssel als
+Secret und adressiert zunächst nur den ausgewählten Testclient. Für einen
+Rollback nach Aktivierung muss die Rückfallversion den bereits gespeicherten
+Widerruf weiterhin beachten.
 
 ## Worlds Hub: Abmeldung auf allen Geräten
 
