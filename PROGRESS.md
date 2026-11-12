@@ -10,6 +10,16 @@ Abnahme eines vollständigen Konto- und Logout-Ablaufs in einem Pilotprojekt.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Projektübergreifende Zustellung vorbereitet
+
+Das Auth-Paket 0.1.5 signiert und prüft Sitzungswiderrufe mit getrenntem
+Hub-Schlüssel, genauer Empfängeradresse und festem Identitätsaussteller.
+Ein Postgres-Empfänger bestätigt erst nach Commit. Die Datenbank bewahrt
+spätere Anmeldungen und verhindert, dass ein verspäteter Callback eine
+widerrufene Sitzung wiederherstellt. 78 Hub-Tests, Typprüfung, Lint und Build
+bestanden. Die Versandwarteschlange im Hub und die Freischaltung der
+Projekt-Empfänger stehen aus.
+
 ## Worlds Hub: Abmeldung auf allen Geräten
 
 Ein normaler Nutzer konnte über die offizielle eigene Neon-Auth-Abmeldung

@@ -122,3 +122,15 @@ Hub-Wurzel gesetzte Tag `auth-v0.1.2` wird nicht als Paketquelle verwendet und
 nicht nachträglich umgeschrieben. Version 0.1.3 ist die korrigierte
 Paketveröffentlichung des identischen Linkstarts. Vor der Verwendung stets
 Paketname, Version, Exporte und Inhalt des markierten Commits prüfen.
+
+Version 0.1.5 ergänzt `./session-revocation` für serverseitige
+Sitzungswiderrufe. Der Empfänger erwartet die genaue HTTPS-Empfängeradresse,
+den gepinnten Ed25519-Schlüssel des Hubs und die Identität des zentralen
+Anbieters. Der Vorgang wird erst nach dem Datenbank-Commit mit 202 quittiert.
+Ein verspäteter oder wiederholter Widerruf erhält später authentifizierte
+Sitzungen. Apps nutzen die Datenbankoption erst nach Anlage von
+`worlds_session_revocations` mit `(issuer, subject)` als Primärschlüssel
+und `revoked_through` in Millisekunden.
+
+[OpenID CAEP](https://openid.net/specs/openid-caep-1_0-final.html) ·
+[IETF SET-Zustellung](https://www.rfc-editor.org/rfc/rfc8935.html)
