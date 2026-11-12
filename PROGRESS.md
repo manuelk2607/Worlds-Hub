@@ -22,7 +22,15 @@ Konto. Lokal bestanden 81 Tests, Typprüfung, Lint, Build und Wrangler-
 Probelauf. Chromium DE (320 px) und WebKit EN (1280 px) bestätigten
 die Sichtbarkeit und die Abbruchaktion. Live-Abgleich: eine aktive
 Sprachwelten-Testsitzung und eine bestehende Slop-Testprofilzuordnung
-für dieselbe Identität. Der Live-Testmodus erfordert eigene Freigabe.
+für dieselbe Identität. Die geprüfte Version `a48f1b3` ist über
+**43194230778** als Worker-Version `e8f88655-6ae0-4b39-b5e3-6eb0595c7b45`
+veröffentlicht. Die öffentliche Abmelderoute antwortet mit HTTP 404.
+Beide Testempfänger antworteten auf unsignierte Ereignisse mit HTTP 400.
+Die zeitlich begrenzte Aktivierung für das einzelne Testkonto wartet
+auf ausdrückliche Freigabe. Nach der Aktivierung zuerst eine aktive
+Slop-Testsitzung herstellen, dann die Abmeldung im Hub bestätigen und
+beide gespeicherten Widerrufsgrenzen prüfen. Anschließend den hier
+genannten inaktiven Stand wiederherstellen.
 
 Worlds Hub `29f3caa` läuft als Worker-Version
 `ddde7014-06bd-4ba7-ab4b-632218f4011b`. GitHub **43132137632** bestand
