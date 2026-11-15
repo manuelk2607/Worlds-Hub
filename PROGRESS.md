@@ -21,6 +21,11 @@ per Prüfsumme überein. Die bestehende Anmeldung bleibt für Altkonten
 verfügbar. Die Kontozuordnung und der zentrale Widerruf stehen noch aus.
 [IT-Worlds-Fortschritt](https://github.com/manuelk2607/IT-Worlds/blob/2065f13/PROGRESS.md)
 
+Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
+„Lernen“ in Sprachwelten und „Dein bisheriges Musikprofil“ in Music-Worlds.
+In beiden Datenbanken lag eine aktive Worlds-Sitzung vor. In Music-Worlds
+steht die Verknüpfung des erkannten bisherigen Gastprofils noch aus.
+
 ## Landingpage
 
 Die DE/EN-Projektübersicht zeigt alle vier Kacheln direkt unter der
