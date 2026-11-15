@@ -14,8 +14,10 @@ lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
 Die DE/EN-Projektübersicht zeigt alle vier Kacheln direkt unter der
 Überschrift. Filterleiste, Filterlogik und Ergebniszähler wurden entfernt.
-82 Tests, Build und lokale Browserprüfung in Chromium (1440 px) und
-WebKit (390 px) für Deutsch und Englisch bestanden.
+82 Tests und Build bestanden. Chromium (1440 px) und WebKit (390 px)
+bestätigten beide Sprachen lokal und nach Veröffentlichung. Live seit
+15.11.2026 als Worker-Version `66b18803-8a90-43cc-83dc-c7d4edd34de8`
+aus Commit `c69a46a`, GitHub-Lauf **43697991731**.
 
 ## Abmeldung in beiden Testwelten bestätigt
 
