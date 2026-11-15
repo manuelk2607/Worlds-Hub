@@ -23,8 +23,17 @@ verfügbar. Die Kontozuordnung und der zentrale Widerruf stehen noch aus.
 
 Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
 „Lernen“ in Sprachwelten und „Dein bisheriges Musikprofil“ in Music-Worlds.
-In beiden Datenbanken lag eine aktive Worlds-Sitzung vor. In Music-Worlds
-steht die Verknüpfung des erkannten bisherigen Gastprofils noch aus.
+Ein Datenbankabgleich bestätigte dieselbe aktive zentrale Identität in
+Sprachwelten, Music-Worlds und IT-Worlds. Sprachwelten verwendete ein
+Worlds-Profil. In Music-Worlds steht die Verknüpfung des erkannten
+bisherigen Gastprofils noch aus.
+
+Slop Urself: Die Profilerstellung für bestätigte Worlds-Konten und der
+direkte Worlds-Anmeldelink sind mit `2e5a65a` bereit. [GitHub CI](https://github.com/manuelk2607/Slop_Urself/actions/runs/43766307425)
+bestand in Chromium, WebKit und PostgreSQL. Die Freigabeprüfung stoppte
+den Upload vor Ausführung, da nur die Übernahme des bestehenden Profils
+Manuel ausdrücklich autorisiert war. Worker `e2e6566b-53d3-4f1d-a368-84c1fd5e6812`
+lief weiterhin mit 100 % Traffic. Die zusätzliche Freigabe ist angefragt.
 
 ## Landingpage
 
