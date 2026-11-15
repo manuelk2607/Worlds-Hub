@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-12 (Europe/Stockholm)
+Stand: 2026-11-15 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -9,6 +9,17 @@ zentralen Konto, Migrationsnachweise aus allen vier Welten und die
 kontrollierte produktive Kontoübernahme.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
+
+## IT-Worlds produktiv angebunden
+
+Der Worlds-Login ist auf IT-Worlds live, Worker
+`db925d3d-0b15-4412-b0f0-fd4be9e902b7`. Reale Anmeldung, Rücksprung und
+Wiederanmeldung nach lokaler Abmeldung ohne erneutes Passwort sind bestätigt.
+Migrationen 003–007 wurden mit bereiter Neon-Sicherung eingespielt. Die zwei
+Altkonten und 17 Lernfortschrittszeilen stimmten vor und nach dem Eingriff
+per Prüfsumme überein. Die bestehende Anmeldung bleibt für Altkonten
+verfügbar. Die Kontozuordnung und der zentrale Widerruf stehen noch aus.
+[IT-Worlds-Fortschritt](https://github.com/manuelk2607/IT-Worlds/blob/2065f13/PROGRESS.md)
 
 ## Landingpage
 
