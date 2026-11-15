@@ -10,6 +10,13 @@ kontrollierte produktive Kontoübernahme.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Landingpage
+
+Die DE/EN-Projektübersicht zeigt alle vier Kacheln direkt unter der
+Überschrift. Filterleiste, Filterlogik und Ergebniszähler wurden entfernt.
+82 Tests, Build und lokale Browserprüfung in Chromium (1440 px) und
+WebKit (390 px) für Deutsch und Englisch bestanden.
+
 ## Abmeldung in beiden Testwelten bestätigt
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf

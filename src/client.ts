@@ -9,14 +9,6 @@ try{root.dataset.theme=localStorage.getItem('worlds-theme')??(matchMedia('(prefe
 updateThemeButton();
 themeButton?.addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('worlds-theme',root.dataset.theme);}catch{/* Theme works without storage. */}updateThemeButton();});
 document.addEventListener('worlds:locale',updateThemeButton);
-const filters=[...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
-const cards=[...document.querySelectorAll<HTMLElement>('[data-interests]')];
-const interest:Record<string,string>={play:'spielen',learn:'lernen',create:'kreativ'};
-let activeFilter='all';
-function applyFilter(){for(const card of cards)card.hidden=activeFilter!=='all'&&!card.dataset.interests?.split(' ').includes(interest[activeFilter]??activeFilter);const count=document.querySelector<HTMLElement>('[data-count]');if(count)status(count,'filter.count',{count:cards.filter(card=>!card.hidden).length,total:cards.length});}
-for(const button of filters)button.addEventListener('click',()=>{activeFilter=button.dataset.filter??'all';filters.forEach(candidate=>candidate.setAttribute('aria-pressed',String(candidate===button)));applyFilter();});
-document.addEventListener('worlds:locale',()=>{if(activeFilter!=='all')applyFilter();});
-
 const loginForms=document.querySelectorAll<HTMLFormElement>('[data-auth-login]');
 const logoutForms=document.querySelectorAll<HTMLFormElement>('[data-auth-logout]');
 function localizeAuthActions(){

@@ -16,7 +16,7 @@ Worker und Browserlogik sind TypeScript; esbuild bündelt alle Assets in einen E
 
 ## Struktur
 
-- `src/`: HTML vom Server, zugängliche Navigation, Themenwechsel und Interessenfilter.
+- `src/`: HTML vom Server, zugängliche Navigation, Themenwechsel und Projektübersicht.
 - `packages/auth/`: OIDC Code/PKCE, serverseitige Sessions, CSRF, Logout und Linking-Vertrag.
 - `migrations/0001_auth.sql`: ausschließlich neue Hub-D1-Sessiontabellen.
 - `tests/`: signierter Test-OIDC-Anbieter, zwei isolierte RPs, echtes SQLite und HTTP-/SEO-Tests.

@@ -26,12 +26,10 @@ test('localized route pairs retain German addresses and provide exact English eq
  for(const id of Object.keys(routes) as (keyof typeof routes)[])for(const locale of locales)assert.equal(matchRoute(route(id,locale))?.id,id);
  assert.equal(matchRoute('/auth/callback'),null);assert.equal(matchRoute('/identity/login'),null);
 });
-test('formatting localizes numbers and dates without translating supplied content',()=>{
+test('formatting localizes dates without translating supplied content',()=>{
  assert.equal(t('en','account.greeting',{name:'Guten Morgen'}),'Hello, Guten Morgen.');
  assert.equal(t('en','account.greeting',{name:{key:'common.explorer'}}),'Hello, Explorer.');
  assert.equal(t('en','account.greeting',{name:'common.explorer'}),'Hello, common.explorer.');
- assert.equal(t('de','filter.count',{count:1000,total:2000}),'1.000 von 2.000 Welten');
- assert.equal(t('en','filter.count',{count:1000,total:2000}),'1,000 of 2,000 worlds');
  const timestamp=Date.UTC(2026,10,4,14,5);
  assert.notEqual(dateTime(timestamp,'de','UTC'),dateTime(timestamp,'en','UTC'));
  assert.equal(dateTime('invalid','en'),'—');
