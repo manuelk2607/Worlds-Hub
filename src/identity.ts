@@ -5,11 +5,12 @@ import {requestLocale,t} from './i18n/core.ts';
 import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
 import {passwordPolicyError} from './identity-policy.ts';
 import {revokeHubSessions} from './hub-session-revocation.ts';
+import {identityDeletionConfig,processAccountDeletion,requestAccountDeletion,type IdentityDeletion,type IdentityDeletionEnv} from './identity-deletion.ts';
 import {bindPilotSessionRecipients,deliverProjectRevocations,pilotSessionOrigin,pilotSessionServices,productionProjectSessionEventConfig,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface DeviceSignOutPilot { subject:string; expiresAt:number }
-export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; deviceSignOutPilot?:DeviceSignOutPilot; projectSessionEvents?:ProjectSessionEvents }
-export interface IdentityEnv extends ProjectSessionEventEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string; IDENTITY_DEVICE_SIGN_OUT_PILOT?:string }
+export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; deviceSignOutPilot?:DeviceSignOutPilot; projectSessionEvents?:ProjectSessionEvents; deletion?:IdentityDeletion }
+export interface IdentityEnv extends ProjectSessionEventEnv,IdentityDeletionEnv { IDENTITY_ENABLED?:string; SITE_ORIGIN?:string; IDENTITY_AUTH_URL?:string; IDENTITY_COOKIE_SECRET?:string; IDENTITY_CLIENTS?:string; AUTH_DB?:D1Database; IDENTITY_DEVICE_SIGN_OUT_ENABLED?:string; IDENTITY_DEVICE_SIGN_OUT_PILOT?:string }
 const pilotOrigins=pilotSessionServices.map(({service})=>pilotSessionOrigin(service));
 const CSRF_COOKIE='__Host-worlds-identity-csrf';
 const quiet=resolveNeonAuthLogging({logLevel:'silent'});
@@ -17,7 +18,7 @@ const endpoints:Record<string,string>={
   'get-session':'GET','sign-in/email':'POST','sign-up/email':'POST','sign-out':'POST',
   'email-otp/send-verification-otp':'POST','email-otp/verify-email':'POST',
   'request-password-reset':'POST','reset-password':'POST','update-user':'POST',
-  'change-password':'POST','export':'POST','revoke-sessions':'POST',
+  'change-password':'POST','export':'POST','revoke-sessions':'POST','delete-account':'POST',
   'oauth2/continue':'POST','oauth2/consent':'POST'
 };
 export function parseDeviceSignOutPilot(raw:string|undefined,now=Date.now()):DeviceSignOutPilot|undefined {
@@ -49,7 +50,8 @@ export function identityConfig(env:IdentityEnv):IdentityConfig|null {
     if(pilot&&projectSessionEvents)bindPilotSessionRecipients(projectSessionEvents,env);
     const deviceSignOutPilot=projectSessionEvents?pilot:undefined;
     return {origin:origin.origin,baseUrl,cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,
-      deviceSignOutEnabled:!!projectSessionEvents,deviceSignOutPilot,projectSessionEvents};
+      deviceSignOutEnabled:!!projectSessionEvents,deviceSignOutPilot,projectSessionEvents,
+      deletion:identityDeletionConfig(env,baseUrl,env.IDENTITY_COOKIE_SECRET,env.AUTH_DB,projectSessionEvents)};
   }catch{return null;}
 }
 export function identityCsrf(request:Request){const previous=readCookie(request,CSRF_COOKIE);const value=previous&&/^[A-Za-z0-9_-]{32,128}$/.test(previous)?previous:token();return {value,setCookie:cookie(CSRF_COOKIE,value,3600)};}
@@ -106,6 +108,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   if(url.origin!==config.origin)return json({error:'INVALID_HOST'},421);
   if(!Object.hasOwn(endpoints,path))return json({error:'NOT_FOUND'},404);
   if(path==='revoke-sessions'&&!config.deviceSignOutEnabled)return json({error:'NOT_FOUND'},404);
+  if(path==='delete-account'&&!config.deletion)return json({error:'NOT_FOUND'},404);
   if(endpoints[path]!==request.method)return json({error:'METHOD_NOT_ALLOWED'},405);
   let data:Record<string,unknown>|undefined,oauthQuery:string|undefined;
   if(request.method==='POST'){
@@ -113,6 +116,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
     const csrf=readCookie(request,CSRF_COOKIE);if(!csrf||request.headers.get('x-worlds-identity-csrf')!==csrf)return json({error:'INVALID_CSRF'},403);
     if(request.headers.get('content-type')?.split(';')[0]!=='application/json')return json({error:'JSON_REQUIRED'},415);
     let raw:string;try{raw=await boundedBody(request,12288);data=JSON.parse(raw) as Record<string,unknown>;if(!data||typeof data!=='object'||Array.isArray(data))throw new Error();}catch{return json({error:'INVALID_BODY'},400);}
+    if(path==='delete-account'&&(data.confirmed!==true||Object.keys(data).some(key=>!['confirmed','password'].includes(key))))return json({error:'INVALID_FIELDS'},400);
     if(typeof data.oauth_query==='string'){oauthQuery=data.oauth_query;if(!authorizationClient(oauthQuery,config))return json({error:'UNTRUSTED_AUTHORIZATION_REQUEST'},400);}
     if(path.startsWith('oauth2/')&&!oauthQuery)return json({error:'SIGNED_AUTHORIZATION_REQUEST_REQUIRED'},400);
     const fields:Record<string,string[]>={
@@ -127,6 +131,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
     }
     const passwordFields:Record<string,{name:string;isNew:boolean}[]>={
       'sign-in/email':[{name:'password',isNew:false}],
+      'delete-account':[{name:'password',isNew:false}],
       'sign-up/email':[{name:'password',isNew:true}],
       'reset-password':[{name:'newPassword',isNew:true}],
       'change-password':[{name:'currentPassword',isNew:false},{name:'newPassword',isNew:true}]
@@ -148,9 +153,28 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   }
   try{if(!await limitIdentity(request,path,config))return json({error:'RATE_LIMITED',message:t(requestLocale(request),'error.rateLimited')},429);}catch{return json({error:'RATE_LIMIT_UNAVAILABLE'},503);}
   let account:Awaited<ReturnType<typeof verifiedAccount>>=null;
-  if(path==='change-password'||path==='export'||path==='revoke-sessions'){
-    try{account=await verifiedAccount(request,config,path==='revoke-sessions');}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+  if(path==='change-password'||path==='export'||path==='revoke-sessions'||path==='delete-account'){
+    try{account=await verifiedAccount(request,config,path==='revoke-sessions'||path==='delete-account');}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
     if(!account)return json({error:'SIGN_IN_REQUIRED'},401);
+  }
+  if(path==='delete-account'&&account&&config.deletion){
+    const deletion=config.deletion;
+    if(account.id===deletion.adminSubject)return json({error:'NOT_FOUND'},404);
+    try{
+      const proof=await requestProvider(request,config,'verify-password',{password:data?.password},true);
+      const result=await proof.json() as {status?:unknown;code?:unknown}|null;
+      if(proof.status===429)return json({error:'RATE_LIMITED'},429);
+      if(result?.code==='INVALID_PASSWORD'||(proof.ok&&result?.status===false))return json({error:'INVALID_PASSWORD'},401);
+      if(!proof.ok||result?.status!==true)return json({error:'IDENTITY_UNAVAILABLE'},503);
+      await requestAccountDeletion(deletion,account.id);
+    }catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+    try{
+      if(!await processAccountDeletion(deletion,Date.now(),account.id))return json({pending:true},202);
+    }catch{return json({pending:true},202);}
+    const projectSessionsEnded=await deliverProjectRevocations(deletion.projects,account.id).catch(()=>false);
+    const response=json({success:true,projectSessionsEnded});
+    for(const name of [NEON_AUTH_SESSION_COOKIE_NAME,NEON_AUTH_SESSION_DATA_COOKIE_NAME,SESSION_COOKIE])response.headers.append('set-cookie',cookie(name,'',0));
+    return response;
   }
   if(path==='revoke-sessions'&&account){
     const pilot=config.deviceSignOutPilot;

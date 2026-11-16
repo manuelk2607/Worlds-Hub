@@ -10,7 +10,7 @@ if(identityRoot){
  function show(mode:string){forms.forEach(form=>{form.hidden=form.dataset.identityForm!==mode;});root.querySelectorAll<HTMLButtonElement>('.identity-tabs button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.identityAction===mode)));clearStatus(message);}
  async function api(path:string,body?:Record<string,unknown>){
   const response=await fetch('/api/identity/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json','x-worlds-identity-csrf':csrf}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
-  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;deviceSignOutAllowed?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
+  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;pending?:boolean;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;deviceSignOutAllowed?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
   if(!response.ok)throw new Error(data.code??data.error??String(response.status));return data;
  }
  function navigate(url:string){const target=new URL(url,location.origin);if(target.protocol!=='https:')throw new Error('UNSAFE_REDIRECT');location.assign(target.href);}
@@ -31,6 +31,15 @@ if(identityRoot){
   renderUser();pending(busy);return data;
  }
  function pending(value:boolean){busy=value;root.setAttribute('aria-busy',String(value));root.querySelectorAll<HTMLButtonElement>('button').forEach(button=>button.disabled=value||(button.matches('[data-identity-continue],[data-identity-verified-action]')&&root.dataset.verified!=='true'));}
+ function showSignedOut(){
+  currentUser=undefined;root.dataset.verified='false';
+  const sessionPanel=root.querySelector<HTMLElement>('[data-identity-session]');
+  const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
+  if(sessionPanel)sessionPanel.hidden=true;
+  if(anonymous)anonymous.hidden=false;
+  show('login');
+  root.querySelector<HTMLInputElement>('[data-identity-form="login"] input')?.focus();
+ }
  async function continueOAuth(){const next=await api('oauth2/continue',{selected:true,oauth_query:rawQuery});if(!next.url)throw new Error('CONTINUE_FAILED');navigate(next.url);}
  function showError(error:unknown){const code=error instanceof Error?error.message:error;status(message,code==='UNSAFE_REDIRECT'?'error.unsafeRedirect':code==='CONTINUE_FAILED'?'error.continueFailed':errorKey(code));}
  for(const button of root.querySelectorAll<HTMLButtonElement>('[data-identity-action]'))button.addEventListener('click',()=>show(button.dataset.identityAction!));
@@ -47,10 +56,12 @@ if(identityRoot){
   event.preventDefault();if(busy)return;const fields=Object.fromEntries(new FormData(form)) as Record<string,string>;
   const action=form.dataset.identityForm!;
   if(action==='change-password'&&fields.newPassword!==fields.confirmation){status(message,'error.passwordMismatch');return;}
+  if(action==='delete-account'&&(root.dataset.verified!=='true'||!window.confirm(text('identity.deleteAccountConfirm')))){form.reset();return;}
   pending(true);status(message,'status.waiting');
   try{
-   const paths:Record<string,string>={login:'sign-in/email',signup:'sign-up/email',verify:'email-otp/verify-email','send-code':'email-otp/send-verification-otp',forgot:'request-password-reset',reset:'reset-password',update:'update-user','change-password':'change-password'};const body:Record<string,unknown>={...fields};
+   const paths:Record<string,string>={login:'sign-in/email',signup:'sign-up/email',verify:'email-otp/verify-email','send-code':'email-otp/send-verification-otp',forgot:'request-password-reset',reset:'reset-password',update:'update-user','change-password':'change-password','delete-account':'delete-account'};const body:Record<string,unknown>={...fields};
    if(action==='change-password')delete body.confirmation;
+   if(action==='delete-account')body.confirmed=true;
    if(action==='login'&&oauth)body.oauth_query=rawQuery;if(action==='send-code')body.type='email-verification';if(action==='reset'){body.token=params.get('token');if(!body.token)throw new Error('RESET_INCOMPLETE');}
    const data=await api(paths[action],body);form.reset();if(data.url){navigate(data.url);return;}
    if(action==='signup'){show('verify');const verifyEmail=root.querySelector<HTMLInputElement>('[data-identity-form=verify] input[name=email]');if(verifyEmail)verifyEmail.value=fields.email;status(message,'status.signupDone');}
@@ -58,9 +69,17 @@ if(identityRoot){
    else if(action==='forgot')status(message,'status.recoverySent');
    else if(action==='reset'){history.replaceState(null,'','/identity/login');show('login');status(message,'status.passwordSaved');}
    else if(action==='change-password'){form.hidden=true;status(message,data.hubSessionsRevoked?'status.passwordChanged':'status.passwordChangedPartial');}
+   else if(action==='delete-account'){
+    form.hidden=true;
+    if(data.pending)status(message,'status.deletionPending');
+    else{
+     showSignedOut();
+     status(message,data.projectSessionsEnded?'status.accountDeleted':'status.accountDeletedProjectPending');
+    }
+   }
    else if(action==='verify'){show('login');status(message,'status.verifiedDone');}
    else{const session=await refresh();status(message,action==='update'?'status.nameSaved':'status.signedIn');if(oauth&&session.user?.emailVerified&&!freshSignInRequired)await continueOAuth();}
-  }catch(error){if(error instanceof Error&&error.message==='RESET_INCOMPLETE')status(message,'error.resetIncomplete');else showError(error);}finally{if(action==='change-password')form.reset();pending(false);}
+  }catch(error){if(error instanceof Error&&error.message==='RESET_INCOMPLETE')status(message,'error.resetIncomplete');else showError(error);}finally{if(action==='change-password'||action==='delete-account')form.reset();pending(false);}
  });
  root.querySelector('[data-identity-export]')?.addEventListener('click',async()=>{
   if(busy)return;
@@ -80,15 +99,9 @@ if(identityRoot){
   pending(true);status(message,'status.waiting');
   try{
    const result=await api('revoke-sessions',{});
-   currentUser=undefined;root.dataset.verified='false';
-   const sessionPanel=root.querySelector<HTMLElement>('[data-identity-session]');
-   const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
-   if(sessionPanel)sessionPanel.hidden=true;
-   if(anonymous)anonymous.hidden=false;
-   show('login');
+   showSignedOut();
    status(message,result.projectSessionsEnded===undefined?'status.signedOutDevices':result.projectSessionsEnded?
     scope==='pilot'?'status.signedOutPilotDevices':'status.signedOutWorldsDevices':'status.projectSignOutPending');
-   root.querySelector<HTMLInputElement>('[data-identity-form="login"] input')?.focus();
   }catch(error){showError(error);}finally{pending(false);}
  });
  root.querySelector('[data-identity-logout]')?.addEventListener('click',async()=>{if(busy)return;pending(true);try{await api('sign-out',{});location.assign('/identity/login');}catch(error){showError(error);}finally{pending(false);}});

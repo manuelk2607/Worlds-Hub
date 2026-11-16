@@ -33,6 +33,68 @@ test('D1 rate buckets are atomic, bounded and contain no raw IP or credentials',
 const fixtureUser={id:'central-1',email:'ada@example.test',name:'Ada',emailVerified:true};
 const providerSession=()=>Response.json({user:fixtureUser,session:{userId:fixtureUser.id,token:'provider-session-secret'}});
 
+test('self-deletion requires explicit confirmation and fresh password proof for the verified session',async t=>{
+ const f=await fixture();
+ t.after(()=>f.db.close());
+ for(const file of ['0003_user_preferences.sql','0004_migration_receipts.sql','0005_hub_session_revocations.sql','0006_project_session_revocation_delivery.sql','0007_identity_deletion.sql']){
+  f.db.exec(await readFile('migrations/'+file,'utf8'));
+ }
+ const {privateKey}=await generateKeyPair('EdDSA',{extractable:true});
+ const key=await exportJWK(privateKey);
+ const audience='https://world.example/auth/events/session-revoked';
+ const removed:string[]=[];
+ const deletion={
+  issuer:baseUrl,db:f.binding,adminSubject:'fixture-admin',
+  projects:{
+   identityIssuer:baseUrl,signer:origin,db:f.binding,audiences:[audience],
+   jwk:{kty:'OKP' as const,crv:'Ed25519' as const,kid:'fixture',x:key.x!,d:key.d!},
+   recipients:new Map([[audience,{fetch:async()=>new Response(null,{status:503})}]]),
+  },
+  async remove(subject:string){removed.push(subject);},
+ };
+ const config={...f.config,deletion};
+ let sessionMatches=false,calls=0;
+ t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+  const url=new URL(String(input));
+  calls++;
+  assert.match(new Headers(init?.headers).get('cookie')??'',/test-only-neon-cookie/);
+  if(url.pathname.endsWith('/get-session')){
+   assert.equal(url.searchParams.get('disableCookieCache'),'true');
+   assert.equal(url.searchParams.get('disableRefresh'),'true');
+   return sessionMatches?providerSession():Response.json({user:fixtureUser,session:{userId:'other'}});
+  }
+  assert.ok(url.pathname.endsWith('/verify-password'));
+  const {password}=JSON.parse(String(init?.body)) as {password:string};
+  return password==='fixture-current-password'
+   ?Response.json({status:true,token:'private-token'},{headers:{'set-cookie':'test-unrelated=secret'}})
+   :Response.json({code:'INVALID_PASSWORD'},{status:400});
+ });
+ const request=(body:Record<string,unknown>,extra:Record<string,string>={})=>f.request('delete-account',body,extra);
+ const confirmed={confirmed:true,password:'fixture-current-password'};
+ assert.equal((await identityProxy(request(confirmed),f.config)).status,404);
+ assert.equal((await identityProxy(request(confirmed,{origin:'https://foreign.test'}),config)).status,403);
+ assert.equal((await identityProxy(request(confirmed,{'x-worlds-identity-csrf':'wrong'}),config)).status,403);
+ assert.equal((await identityProxy(request({...confirmed,userId:'other'}),config)).status,400);
+ assert.equal((await identityProxy(request({...confirmed,confirmed:'true'}),config)).status,400);
+ assert.equal(calls,0);
+ assert.equal((await identityProxy(request(confirmed),config)).status,401);
+ sessionMatches=true;
+ const wrong=await identityProxy(request({...confirmed,password:'incorrect'}),config);
+ assert.deepEqual(await wrong.json(),{error:'INVALID_PASSWORD'});
+ assert.equal(f.db.prepare('SELECT count(*) AS total FROM identity_deletion_jobs').get()?.total,0);
+ assert.deepEqual(removed,[]);
+ const response=await identityProxy(request(confirmed),config);
+ assert.deepEqual(await response.json(),{success:true,projectSessionsEnded:false});
+ assert.deepEqual(removed,[fixtureUser.id]);
+ assert.ok(response.headers.getSetCookie().some(cookie=>cookie.startsWith('__Host-worlds-session=;')));
+ assert.doesNotMatch(response.headers.get('set-cookie')??'',/test-unrelated|private-token/);
+ assert.equal(f.db.prepare('SELECT count(*) AS total FROM project_session_revocation_delivery').get()?.total,1);
+ assert.match(identityPage('/identity/account','',f.csrf.value,config,'de').body,/Worlds-Konto löschen/);
+ assert.match(identityPage('/identity/account','',f.csrf.value,config,'en').body,/Delete Worlds account/);
+ assert.doesNotMatch(identityPage('/identity/login','',f.csrf.value,config).body,/delete-account/);
+ assert.doesNotMatch(identityPage('/identity/account','',f.csrf.value,f.config).body,/delete-account/);
+});
+
 test('signing out all devices uses only the verified account and fences in-flight Hub callbacks',async t=>{
  const f=await fixture();
  f.db.exec(await readFile('migrations/0005_hub_session_revocations.sql','utf8'));
