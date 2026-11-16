@@ -49,8 +49,7 @@ Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
 „Lernen“ in Sprachwelten und „Dein bisheriges Musikprofil“ in Music-Worlds.
 Ein Datenbankabgleich bestätigte dieselbe aktive zentrale Identität in
 Sprachwelten, Music-Worlds und IT-Worlds. Sprachwelten verwendete ein
-Worlds-Profil. In Music-Worlds steht die Verknüpfung des erkannten
-bisherigen Gastprofils noch aus.
+Worlds-Profil. Der spätere Abgleich des bisherigen Musikprofils steht unten.
 
 Slop Urself: Die freigegebene Profilerstellung für bestätigte Worlds-Konten
 ist mit `2e5a65a` live. Worker `0e3e6114-7a24-48ad-beee-991e8372168b`
@@ -89,10 +88,14 @@ Produktions-Callbacks, vier direkte Worker-Verbindungen und einen
 passenden Signaturschlüssel. Ein fehlender Bestandteil schließt die
 Abmeldeaktion. Der Hub verarbeitet Zustellungen in Gruppen von vier.
 83 Tests, Typprüfung, Lint, Build und beide Cloudflare-Trockenläufe
-bestanden. Die Produktionsoption bleibt bis zur Freigabe und zur
-Einrichtung des öffentlichen Prüfschlüssels in allen vier Projekten aus.
-Die produktiven Empfangsrouten antworteten auf einen unsignierten
-Prüfaufruf noch mit HTTP 404.
+bestanden. Die Veröffentlichung für Hub und vier Projekte ist freigegeben.
+Die Browser-Freigabe erreichte Wrangler nicht und die alternative
+Cloudflare-Gerätefreigabe ist abgelaufen. Es wurde kein Worker geändert.
+Nächster Schritt ist eine frische befristete Anmeldung. Danach die aktuelle
+Version jedes Workers festhalten, den öffentlichen Prüfschlüssel pro
+Projekt einsetzen und die Empfänger prüfen, bevor der Hub aktiviert wird.
+Vor der Hub-Aktivierung lautet der erwartete Status für einen
+unsignierten Aufruf nach der Schlüsseleinrichtung HTTP 400.
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
