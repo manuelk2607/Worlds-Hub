@@ -43,8 +43,10 @@ Music-Worlds: `c7936bb` ist für das ausdrücklich freigegebene Kontopaar
 live. Worker `759b3fdd-da23-4369-9667-302ae5bc8bc1`, 100 % Traffic.
 Die Neon-Sicherung `br-frosty-bar-b90srija` ist bereit. PostgreSQL,
 Browser DE/EN, GitHub CI und Live-Smoke bestanden. Zwei Musikprofile und
-16 Beiträge behielten ihre Prüfsummen. Die persönliche Bestätigung im
-bisherigen Browser steht aus. Die Datenbank enthält noch null Zuordnungen.
+16 Beiträge behielten ihre Prüfsummen. Der Kontoinhaber bestätigte den
+Ablauf im bisherigen Browser. Eine produktive Zuordnung verbindet die
+ursprüngliche Gastprofil-UUID mit derselben zentralen Identität wie in
+Slop Urself. Das zweite Musikprofil ist noch nicht zugeordnet.
 [GitHub CI](https://github.com/manuelk2607/Music-Worlds/actions/runs/43768076585)
 
 ## Landingpage
