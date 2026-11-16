@@ -39,11 +39,12 @@ bestätigen dieselbe Worlds-Identität. Beim späteren Abgleich lagen keine
 vier gleichzeitig aktiven Sitzungen vor.
 [GitHub CI](https://github.com/manuelk2607/Slop_Urself/actions/runs/43766307425)
 
-Music-Worlds: `c7936bb` begrenzt die vorbereitete Gastprofil-Übernahme auf
-ein vorgesehenes Kontopaar und verlangt beide Sitzungen sowie die
-persönliche Bestätigung. PostgreSQL, Browser DE/EN und GitHub CI bestanden.
-Der Aufbau nutzt die bereits produktiv installierte Migration 006.
-Die Autorisierung für die Öffnung des einzelnen Kontopaars steht aus.
+Music-Worlds: `c7936bb` ist für das ausdrücklich freigegebene Kontopaar
+live. Worker `759b3fdd-da23-4369-9667-302ae5bc8bc1`, 100 % Traffic.
+Die Neon-Sicherung `br-frosty-bar-b90srija` ist bereit. PostgreSQL,
+Browser DE/EN, GitHub CI und Live-Smoke bestanden. Zwei Musikprofile und
+16 Beiträge behielten ihre Prüfsummen. Die persönliche Bestätigung im
+bisherigen Browser steht aus. Die Datenbank enthält noch null Zuordnungen.
 [GitHub CI](https://github.com/manuelk2607/Music-Worlds/actions/runs/43768076585)
 
 ## Landingpage
