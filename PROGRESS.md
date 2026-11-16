@@ -21,6 +21,15 @@ per Prüfsumme überein. Die bestehende Anmeldung bleibt für Altkonten
 verfügbar. Die Kontozuordnung und der zentrale Widerruf stehen noch aus.
 [IT-Worlds-Fortschritt](https://github.com/manuelk2607/IT-Worlds/blob/2065f13/PROGRESS.md)
 
+Neue IT-Lernprofile sind mit `31c8bbb` lokal und in GitHub geprüft. Der
+erste produktive Lauf von Migration 008 rollte zurück, weil die drei
+Inhalts-Fremdschlüssel nach einer früheren Auth-Wiederherstellung fehlen.
+Die korrigierte Fassung berücksichtigt beide Datenbankstände. Sie lässt
+die 13 alten Fortschrittszeilen ohne aktuelle Identität erhalten und
+weist sie keinem Profil zu. Sicherung `br-red-lab-ba6t28re` ist bereit.
+Die Freigabeprüfung verlangte Zustimmung zur korrigierten Fassung.
+[GitHub Quality](https://github.com/manuelk2607/IT-Worlds/actions/runs/43960459900)
+
 Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
 „Lernen“ in Sprachwelten und „Dein bisheriges Musikprofil“ in Music-Worlds.
 Ein Datenbankabgleich bestätigte dieselbe aktive zentrale Identität in
