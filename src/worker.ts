@@ -6,6 +6,7 @@ import {projects} from './projects.ts';
 import {escapeHtml} from './html.ts';
 import {migrationConfig, readMigrationStatus, receiveMigrationReceipt, type MigrationEnv} from './migration-receipts.ts';
 import {pruneHubRevocations} from './hub-session-revocation.ts';
+import {identityDeletionConfig,processAccountDeletion,pruneCompletedAccountDeletions,type IdentityDeletionEnv} from './identity-deletion.ts';
 import {deliverProjectRevocations,pruneProjectRevocationDeliveries} from './project-session-events.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
 import {backchannelLogout,boundedBody,callback,logout,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
@@ -13,7 +14,7 @@ import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRoute
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
 
-export interface Env extends IdentityEnv,MigrationEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database}
+export interface Env extends IdentityEnv,MigrationEnv,IdentityDeletionEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database}
 export const DEFAULT_ORIGIN='https://worlds-hub.maki26.workers.dev';
 export function authConfig(env:Env):AuthConfig|null {
  if(env.AUTH_ENABLED!=='true'||!env.SITE_ORIGIN||!env.OIDC_ISSUER||!env.OIDC_CLIENT_ID||!env.AUTH_DB||!env.OIDC_ID_TOKEN_ALG)return null;
@@ -142,7 +143,13 @@ export default {
    if(expired)console.warn('Unconfirmed project sign-outs expired',expired);
   }
   if(projects&&authConfig(env)?.issuer===identity.baseUrl){
-   await deliverProjectRevocations(projects,identity.deviceSignOutPilot?.subject,now);
+   const deletion=identityDeletionConfig(env,identity.baseUrl,identity.cookieSecret,db,projects);
+   if(deletion){
+    try{await processAccountDeletion(deletion,now);}
+    catch{console.warn('Identity deletion job needs a retry');}
+    await pruneCompletedAccountDeletions(deletion,now);
+   }
+   await deliverProjectRevocations(projects,identity.deviceSignOutPilot?.subject);
   }
  }
 };

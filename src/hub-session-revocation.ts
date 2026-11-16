@@ -1,16 +1,20 @@
 import { queueProjectRevocation, type ProjectSessionEvents } from './project-session-events.ts';
 
 export async function revokeHubSessions(db: D1Database, issuer: string, subject: string, now = Date.now(), projects?: ProjectSessionEvents) {
+  await db.batch(revokeHubSessionStatements(db,issuer,subject,now,projects));
+}
+
+export function revokeHubSessionStatements(db: D1Database, issuer: string, subject: string, now: number, projects?: ProjectSessionEvents) {
   // OIDC auth_time has second precision. Treat the whole current second as
   // potentially predating the user's revocation request.
   const cutoff = Math.floor(now / 1000) * 1000;
-  await db.batch([
+  return [
     db.prepare(`INSERT INTO hub_session_revocations (issuer, subject, revoked_at)
       VALUES (?, ?, ?) ON CONFLICT(issuer, subject) DO UPDATE SET
       revoked_at = MAX(revoked_at, excluded.revoked_at)`).bind(issuer, subject, cutoff),
     db.prepare('DELETE FROM auth_sessions WHERE issuer = ? AND subject = ?').bind(issuer, subject),
     ...(projects ? queueProjectRevocation(projects,subject,cutoff) : []),
-  ]);
+  ];
 }
 
 export async function pruneHubRevocations(db: D1Database, now: number) {

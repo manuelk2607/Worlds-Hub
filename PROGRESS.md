@@ -10,6 +10,19 @@ kontrollierte produktive Kontoübernahme.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
 
+## Zentrale Kontolöschung vorbereitet
+
+Migration 0007 und der Hub-Hintergrundablauf sind lokal geprüft. Der Ablauf
+bestätigt die gezielte Löschung beim Anmeldedienst, räumt die Hub-Sitzungen,
+Spracheinstellung und Migrationsnachweise gemeinsam auf und schreibt vier
+Widerrufe in die Zustellwarteschlange. Der SQLite-Test deckt einen Ausfall
+nach erfolgreicher Löschung, den Wiederanlauf und ein unberührtes
+Kontrollkonto ab. 84 Tests, Typprüfung, Lint, Build und Artefaktprüfung
+bestanden. Es gibt noch keine öffentliche Löschaktion.
+Als Nächstes folgen der frische Eigentumsnachweis, die Bestätigung auf
+der Kontoseite und eine Abnahme mit einem synthetischen Konto. Migration
+und Laufzeitberechtigung sind produktiv offen.
+
 ## IT-Worlds produktiv angebunden
 
 Der Worlds-Login ist auf IT-Worlds live, Worker

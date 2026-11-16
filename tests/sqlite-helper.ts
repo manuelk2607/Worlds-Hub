@@ -4,7 +4,17 @@ export async function sqliteD1(){
   const db=new DatabaseSync(':memory:');
   db.exec(await readFile('migrations/0001_auth.sql','utf8'));
   const binding={
-    async batch(statements:{run:()=>Promise<unknown>}[]){return Promise.all(statements.map(s=>s.run()));},
+    async batch(statements:{run:()=>unknown}[]){
+      db.exec('BEGIN');
+      try{
+        const results=statements.map(statement=>statement.run());
+        db.exec('COMMIT');
+        return results;
+      }catch(error){
+        db.exec('ROLLBACK');
+        throw error;
+      }
+    },
     prepare(query:string){
       const statement=db.prepare(query);
       return {
@@ -12,7 +22,7 @@ export async function sqliteD1(){
           return {
             async first(){return statement.get(...values)??null;},
             async all(){return {results:statement.all(...values)};},
-            async run(){const result=statement.run(...values);return {meta:{changes:Number(result.changes)}};}
+            run(){const result=statement.run(...values);return {meta:{changes:Number(result.changes)}};}
           };
         }
       };
