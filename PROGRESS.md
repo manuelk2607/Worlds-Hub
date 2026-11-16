@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-15 (Europe/Stockholm)
+Stand: 2026-11-16 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -28,12 +28,23 @@ Sprachwelten, Music-Worlds und IT-Worlds. Sprachwelten verwendete ein
 Worlds-Profil. In Music-Worlds steht die Verknüpfung des erkannten
 bisherigen Gastprofils noch aus.
 
-Slop Urself: Die Profilerstellung für bestätigte Worlds-Konten und der
-direkte Worlds-Anmeldelink sind mit `2e5a65a` bereit. [GitHub CI](https://github.com/manuelk2607/Slop_Urself/actions/runs/43766307425)
-bestand in Chromium, WebKit und PostgreSQL. Die Freigabeprüfung stoppte
-den Upload vor Ausführung, da nur die Übernahme des bestehenden Profils
-Manuel ausdrücklich autorisiert war. Worker `e2e6566b-53d3-4f1d-a368-84c1fd5e6812`
-lief weiterhin mit 100 % Traffic. Die zusätzliche Freigabe ist angefragt.
+Slop Urself: Die freigegebene Profilerstellung für bestätigte Worlds-Konten
+ist mit `2e5a65a` live. Worker `0e3e6114-7a24-48ad-beee-991e8372168b`
+bedient 100 % des Traffics. Die bisherige lokale Neuregistrierung ist
+geschlossen. DE/EN-Live-Einstieg, Zugriffsschutz und persönliche
+Hugging-Face-Pflicht sind bestätigt. Der Kontoinhaber erreichte sein
+bisheriges Profil und die Lobby ohne erneutes Passwort. Daten und Zuordnung
+behielten ihre Prüfsummen. Die produktiven Slop- und Sprachwelten-Zuordnungen
+bestätigen dieselbe Worlds-Identität. Beim späteren Abgleich lagen keine
+vier gleichzeitig aktiven Sitzungen vor.
+[GitHub CI](https://github.com/manuelk2607/Slop_Urself/actions/runs/43766307425)
+
+Music-Worlds: `c7936bb` begrenzt die vorbereitete Gastprofil-Übernahme auf
+ein vorgesehenes Kontopaar und verlangt beide Sitzungen sowie die
+persönliche Bestätigung. PostgreSQL, Browser DE/EN und GitHub CI bestanden.
+Der Aufbau nutzt die bereits produktiv installierte Migration 006.
+Die Autorisierung für die Öffnung des einzelnen Kontopaars steht aus.
+[GitHub CI](https://github.com/manuelk2607/Music-Worlds/actions/runs/43768076585)
 
 ## Landingpage
 
