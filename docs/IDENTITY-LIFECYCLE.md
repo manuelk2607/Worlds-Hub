@@ -31,10 +31,10 @@ returns partial completion and preserves the browser's native session for a
 retry. The migrations are deployed and the general action awaits hosted QA.
 
 For connected projects, migration 0006 stores pending deliveries atomically
-with the Hub revocation. Configure `WORLDS_SESSION_EVENT_CLIENT_IDS` as an
-explicit JSON list of registered clients and `WORLDS_SESSION_EVENT_PRIVATE_JWK`
-as an Ed25519 private JWK secret (`kid`, `kty`, `crv`, `x`, `d`). Each
-recipient pins only the public fields. Delivery uses the exact HTTPS host of
+with the Hub revocation. Each deployment selects the registered recipients
+for its scope and supplies `WORLDS_SESSION_EVENT_PRIVATE_JWK` as an Ed25519
+private JWK secret (`kid`, `kty`, `crv`, `x`, `d`). Each recipient pins
+the public fields. Delivery uses the exact HTTPS host of
 the registered callback and a separate CAEP route. Signed event data contains
 the central issuer, subject and revocation time. No password, email, session
 cookie or provider token is forwarded.
@@ -164,3 +164,27 @@ Verwaltung. Nachkontrolle: null Konto-/Sitzungszeilen für die exakte Fixture-ID
 Dies beweist die konkrete native Ablehnung, nicht die Abwesenheit jedes denkbaren
 Anbieterwegs. Globale Projektabmeldung bleibt unbewiesen. Vollständiges Protokoll
 und Cleanup: `NATIVE-LOGOUT-QA.md`.
+## Produktionsabnahme für projektübergreifenden Widerruf
+
+Der öffentliche Einstieg ist standardmäßig geschlossen. Die
+Produktionsoption im bestehenden GitHub-Workflow erwartet die vier
+exakten Freigaben und Worker-Bindings für Music-Worlds, Sprachwelten,
+IT-Worlds und Slop Urself. Der private Ed25519-Schlüssel gehört in das
+Hub-Secret `WORLDS_SESSION_EVENT_PRODUCTION_PRIVATE_JWK`.
+Die vier Empfänger erhalten ausschließlich den passenden öffentlichen
+Schlüssel als `WORLDS_HUB_SESSION_EVENT_JWK`. Die Freigabeskripte prüfen
+das Schlüsselpaar und die vier Empfangsrouten vor Veröffentlichung.
+Der anonyme Test verlangt HTTP 400 für ein unsigniertes Ereignis.
+Er bestätigt die Aktivierung des Empfängers. Die echte Signatur und die
+Zuordnung zum angemeldeten Konto werden anschließend im Browser geprüft.
+
+Ein autorisierter Kontoinhaber bestätigt die zentrale Abmeldung und
+prüft danach den geschützten Zugriff in allen vier Projekten. Der Hub
+meldet eine noch ausstehende Zustellung. Die bisherige D1-Warteschlange
+wiederholt fehlende Zustellungen mit dem ursprünglichen Widerrufszeitpunkt.
+Gruppen von höchstens vier Empfängern lassen Verbindungsspielraum für
+D1-Bestätigungen im kostenlosen Workers-Tarif. Bei Fehler zuerst die
+bisherige Hub-Version wiederherstellen. Bereits bestätigte Abmeldungen
+behält das jeweilige Projekt bei. Solange die Aktivierung über die
+Workflow-Option erfolgt, wird sie bei weiteren aktiven Releases erneut
+ausgewählt. [Cloudflare Workers-Limits](https://developers.cloudflare.com/workers/platform/limits/)

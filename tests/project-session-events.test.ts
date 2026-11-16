@@ -8,8 +8,9 @@ import {
   receiveSessionRevocation, sessionEventPublicKey, sessionEventMaxDelay, type SessionRevocation,
 } from '../packages/auth/session-revocation.ts';
 import {
-  deliverProjectRevocations, projectSessionEventConfig, pruneProjectRevocationDeliveries,
+  deliverProjectRevocations, productionSessionServices, projectSessionEventConfig, pruneProjectRevocationDeliveries,
 } from '../src/project-session-events.ts';
+import {identityConfig, type IdentityEnv} from '../src/identity.ts';
 import { revokeHubSessions } from '../src/hub-session-revocation.ts';
 import { D1AuthStore } from '../packages/auth/store.ts';
 import { sqliteD1 } from './sqlite-helper.ts';
@@ -89,6 +90,74 @@ test('queued delivery verifies end to end and retries only unacknowledged projec
     assert.equal(await pruneProjectRevocationDeliveries(binding,activeNow+sessionEventMaxDelay+1000),2);
   } finally {
     await projectDb.close();
+    db.close();
+  }
+});
+
+test('global sign-out opens only with all four exact production receivers and delivers over their bindings', async t => {
+  const { db, binding } = await sqliteD1();
+  try {
+    for(const file of ['0005_hub_session_revocations.sql','0006_project_session_revocation_delivery.sql'])
+      db.exec(await readFile('migrations/'+file,'utf8'));
+    const producer='https://worlds-hub.maki26.workers.dev';
+    const expectedOrigins=productionSessionServices.map(({service})=>`https://${service}.maki26.workers.dev`);
+    const registered=expectedOrigins.map((target,i)=>({
+      clientId:`production-${i}`,name:`World ${i}`,redirects:[target+'/auth/callback'],resource:target+'/api',
+    }));
+    const pilot={clientId:'pilot',name:'Pilot',redirects:['https://slopurself-worlds-pilot.maki26.workers.dev/auth/callback'],resource:'https://slopurself-worlds-pilot.maki26.workers.dev/api'};
+    const pair=await generateKeyPair('EdDSA',{extractable:true}),kid='production-fixture';
+    const key=sessionEventPublicKey(JSON.stringify({kid,...await exportJWK(pair.publicKey)}))!;
+    const rawKey=JSON.stringify({kid,...await exportJWK(pair.privateKey)});
+    const received: string[]=[];
+    let concurrent=0,peak=0;
+    const settings: IdentityEnv={SITE_ORIGIN:producer,IDENTITY_ENABLED:'true',IDENTITY_AUTH_URL:issuer,
+      IDENTITY_COOKIE_SECRET:'synthetic-cookie-secret-long-enough',AUTH_DB:binding,
+      IDENTITY_DEVICE_SIGN_OUT_ENABLED:'true',WORLDS_SESSION_EVENT_PRIVATE_JWK:rawKey,
+      IDENTITY_CLIENTS:JSON.stringify([...registered,pilot]),
+      WORLDS_SESSION_EVENT_CLIENT_IDS:JSON.stringify([pilot.clientId])};
+    const outgoing=t.mock.method(globalThis,'fetch',async()=>new Response(null,{status:500}));
+    for(const [i,{binding:variable}] of productionSessionServices.entries()){
+      const audience=expectedOrigins[i]+'/auth/events/session-revoked';
+      settings[variable]={fetch:async(input,init)=>{
+        assert.equal(input,audience);
+        assert.equal(init?.redirect,'manual');
+        concurrent++;
+        peak=Math.max(peak,concurrent);
+        try{
+          return await receiveSessionRevocation(new Request(input,init),{signer:producer,audience,identityIssuer:issuer,key},async event=>{
+            assert.ok([subject,'other-fixture'].includes(event.subject));
+            received.push(audience);
+          },now);
+        }finally{concurrent--;}
+      }};
+    }
+    const firstBinding=productionSessionServices[0].binding;
+    for(const invalid of [
+      {...settings,[firstBinding]:undefined},
+      {...settings,WORLDS_SESSION_EVENT_PRIVATE_JWK:undefined},
+      {...settings,SITE_ORIGIN:'https://preview.example'},
+      {...settings,IDENTITY_CLIENTS:JSON.stringify(registered.slice(1))},
+      {...settings,IDENTITY_CLIENTS:JSON.stringify([...registered,{...registered[0],clientId:'duplicate'}])},
+      {...settings,IDENTITY_DEVICE_SIGN_OUT_ENABLED:'false'},
+    ]){
+      const config=identityConfig(invalid);
+      assert.equal(config?.deviceSignOutEnabled,false);
+      assert.equal(config?.projectSessionEvents,undefined);
+    }
+    const selected=identityConfig(settings);
+    assert.equal(selected?.deviceSignOutEnabled,true);
+    assert.ok(selected.projectSessionEvents);
+    await revokeHubSessions(binding,issuer,subject,now,selected.projectSessionEvents);
+    assert.equal(await deliverProjectRevocations(selected.projectSessionEvents,subject,now),true);
+    assert.deepEqual(received.sort(),expectedOrigins.map(target=>target+'/auth/events/session-revoked').sort());
+    await revokeHubSessions(binding,issuer,subject,now,selected.projectSessionEvents);
+    await revokeHubSessions(binding,issuer,'other-fixture',now,selected.projectSessionEvents);
+    assert.equal(await deliverProjectRevocations(selected.projectSessionEvents,undefined,now),true);
+    assert.equal(received.length,12);
+    assert.equal(peak,4);
+    assert.equal(outgoing.mock.callCount(),0);
+    assert.deepEqual(db.prepare('SELECT 1 FROM project_session_revocation_delivery').all(),[]);
+  } finally {
     db.close();
   }
 });

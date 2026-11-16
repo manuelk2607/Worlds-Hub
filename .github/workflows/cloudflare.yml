@@ -16,6 +16,10 @@ on:
         description: Temporarily enable device sign-out for the configured test identity and test workers
         type: boolean
         default: false
+      device_sign_out_production:
+        description: Enable sign-out across the four existing production Workers
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -44,12 +48,14 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing repository secret CLOUDFLARE_API_TOKEN'; exit 1; }
-      - name: Validate pilot deployment selection
-        if: inputs.device_sign_out_pilot
+      - name: Validate sign-out deployment selection
+        if: inputs.device_sign_out_pilot || inputs.device_sign_out_production
         env:
           DEPLOY: ${{ inputs.deploy }}
           INITIALIZE_IDENTITY_SECRET: ${{ inputs.initialize_identity_secret }}
-        run: test "$DEPLOY" = true && test "$INITIALIZE_IDENTITY_SECRET" = false && test "$GITHUB_REF" = refs/heads/main
+          PILOT: ${{ inputs.device_sign_out_pilot }}
+          PRODUCTION: ${{ inputs.device_sign_out_production }}
+        run: test "$DEPLOY" = true && test "$INITIALIZE_IDENTITY_SECRET" = false && test "$PILOT" != "$PRODUCTION" && test "$GITHUB_REF" = refs/heads/main
       - name: Initialize identity secret only when explicitly requested
         if: inputs.deploy && inputs.initialize_identity_secret
         env:
@@ -57,7 +63,7 @@ jobs:
           INITIALIZE_IDENTITY_SECRET: 'true'
         run: node --experimental-strip-types scripts/init-identity-secret.ts
       - name: Deploy only the checked Worlds Hub Worker
-        if: inputs.deploy && !inputs.device_sign_out_pilot
+        if: inputs.deploy && !inputs.device_sign_out_pilot && !inputs.device_sign_out_production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run deploy:cloudflare
@@ -67,9 +73,16 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           IDENTITY_DEVICE_SIGN_OUT_PILOT: ${{ secrets.IDENTITY_DEVICE_SIGN_OUT_PILOT }}
           WORLDS_SESSION_EVENT_PRIVATE_JWK: ${{ secrets.WORLDS_SESSION_EVENT_PRIVATE_JWK }}
-        run: node --experimental-strip-types scripts/deploy-device-sign-out-pilot.ts
+        run: node --experimental-strip-types scripts/deploy-device-sign-out.ts
+      - name: Deploy Worlds Hub sign-out for the four production Workers
+        if: inputs.deploy && inputs.device_sign_out_production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WORLDS_SESSION_EVENT_PRIVATE_JWK: ${{ secrets.WORLDS_SESSION_EVENT_PRODUCTION_PRIVATE_JWK }}
+        run: node --experimental-strip-types scripts/deploy-device-sign-out.ts --production
       - name: Verify production
         if: inputs.deploy
         env:
           EXPECT_DEVICE_SIGN_OUT_PILOT: ${{ inputs.device_sign_out_pilot }}
+          EXPECT_DEVICE_SIGN_OUT_PRODUCTION: ${{ inputs.device_sign_out_production }}
         run: npm run smoke

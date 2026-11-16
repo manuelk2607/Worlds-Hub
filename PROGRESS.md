@@ -69,6 +69,16 @@ aus Commit `c69a46a`, GitHub-Lauf **43697991731**.
 
 ## Abmeldung in beiden Testwelten bestätigt
 
+Die separat geprüfte Produktionsoption erfordert alle vier registrierten
+Produktions-Callbacks, vier direkte Worker-Verbindungen und einen
+passenden Signaturschlüssel. Ein fehlender Bestandteil schließt die
+Abmeldeaktion. Der Hub verarbeitet Zustellungen in Gruppen von vier.
+83 Tests, Typprüfung, Lint, Build und beide Cloudflare-Trockenläufe
+bestanden. Die Produktionsoption bleibt bis zur Freigabe und zur
+Einrichtung des öffentlichen Prüfschlüssels in allen vier Projekten aus.
+Die produktiven Empfangsrouten antworteten auf einen unsignierten
+Prüfaufruf noch mit HTTP 404.
+
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
 Der Hub hatte beide Nachrichten gespeichert. Die Cloudflare-Laufzeit

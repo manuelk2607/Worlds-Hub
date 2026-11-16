@@ -30,6 +30,7 @@ for(const path of ['/identity/login?ui_locales=en','/api/identity/get-session'])
 const jsonStart=await fetch(origin+'/auth/login',{method:'POST',headers:{origin,accept:'application/json'},redirect:'manual'});assert.equal(jsonStart.status,200);assert.equal(new URL((await jsonStart.json() as {url:string}).url).searchParams.get('code_challenge_method'),'S256');assert.match(jsonStart.headers.get('set-cookie')!,/HttpOnly/);
 const identityMutation=await fetch(origin+'/api/identity/sign-out',{method:'POST',headers:{origin,'content-type':'application/json'},body:'{}',redirect:'manual'});assert.equal(identityMutation.status,403);
 const expectPilot=process.env.EXPECT_DEVICE_SIGN_OUT_PILOT==='true';
+const expectProduction=process.env.EXPECT_DEVICE_SIGN_OUT_PRODUCTION==='true';
 let accountCsrfCookie='';
 for(const language of ['de','en']){
  const settings=await fetch(origin+'/identity/account?ui_locales='+language,{redirect:'manual'});
@@ -40,8 +41,8 @@ for(const language of ['de','en']){
  assert.ok(body.includes('<html lang="'+language+'"'));
  assert.match(body,/data-identity-form="change-password"/);
  assert.match(body,/data-identity-export/);
- if(expectPilot){
-  assert.match(body,/data-identity-device-sign-out="pilot"[^>]+hidden/);
+ if(expectPilot||expectProduction){
+  assert.match(body,expectPilot?/data-identity-device-sign-out="pilot"[^>]+hidden/:/data-identity-device-sign-out="projects"[^>]+disabled/);
   accountCsrfCookie=settings.headers.getSetCookie().find(value=>value.startsWith('__Host-worlds-identity-csrf='))?.split(';')[0]??'';
   assert.ok(accountCsrfCookie);
  }else assert.doesNotMatch(body,/data-identity-device-sign-out/);
@@ -51,7 +52,7 @@ const deviceSignOut=await fetch(origin+'/api/identity/revoke-sessions',{
   cookie:accountCsrfCookie,'x-worlds-identity-csrf':accountCsrfCookie.split('=')[1],
  }:{})},body:'{}',
 });
-assert.equal(deviceSignOut.status,expectPilot?401:404);
+assert.equal(deviceSignOut.status,expectPilot||expectProduction?401:404);
 for(const path of ['change-password','export']){
  const response=await fetch(origin+'/api/identity/'+path,{method:'POST',headers:{origin,'content-type':'application/json'},body:'{}'});
  assert.equal(response.status,403);

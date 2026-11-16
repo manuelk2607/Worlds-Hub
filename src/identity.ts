@@ -5,7 +5,7 @@ import {requestLocale,t} from './i18n/core.ts';
 import {readMigrationStatus,type MigrationConfig} from './migration-receipts.ts';
 import {passwordPolicyError} from './identity-policy.ts';
 import {revokeHubSessions} from './hub-session-revocation.ts';
-import {bindPilotSessionRecipients,deliverProjectRevocations,pilotSessionOrigin,pilotSessionServices,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
+import {bindPilotSessionRecipients,deliverProjectRevocations,pilotSessionOrigin,pilotSessionServices,productionProjectSessionEventConfig,projectSessionEventConfig,type ProjectSessionEventEnv,type ProjectSessionEvents} from './project-session-events.ts';
 export interface IdentityClient { clientId:string; name:string; redirects:string[]; resource:string }
 export interface DeviceSignOutPilot { subject:string; expiresAt:number }
 export interface IdentityConfig { origin:string; baseUrl:string; cookieSecret:string; clients:IdentityClient[]; db:D1Database; deviceSignOutEnabled?:boolean; deviceSignOutPilot?:DeviceSignOutPilot; projectSessionEvents?:ProjectSessionEvents }
@@ -42,12 +42,14 @@ export function identityConfig(env:IdentityEnv):IdentityConfig|null {
       client.redirects.length===1&&client.redirects[0]===target+'/auth/callback'&&client.resource===target+'/api'
     )).filter((client):client is IdentityClient=>!!client):[];
     const eventSettings=pilot?{...env,WORLDS_SESSION_EVENT_CLIENT_IDS:JSON.stringify(pilotClients.map(client=>client.clientId))}:env;
-    const projectSessionEvents=globalSignOut||(pilot&&pilotClients.length===pilotOrigins.length)
-      ?projectSessionEventConfig(eventSettings,origin.origin,baseUrl,pilot?pilotClients:clients,env.AUTH_DB):undefined;
+    const projectSessionEvents=globalSignOut
+      ?productionProjectSessionEventConfig(env,origin.origin,baseUrl,clients,env.AUTH_DB)
+      :pilot&&pilotClients.length===pilotOrigins.length
+       ?projectSessionEventConfig(eventSettings,origin.origin,baseUrl,pilotClients,env.AUTH_DB):undefined;
     if(pilot&&projectSessionEvents)bindPilotSessionRecipients(projectSessionEvents,env);
     const deviceSignOutPilot=projectSessionEvents?pilot:undefined;
     return {origin:origin.origin,baseUrl,cookieSecret:env.IDENTITY_COOKIE_SECRET,clients,db:env.AUTH_DB,
-      deviceSignOutEnabled:globalSignOut||!!deviceSignOutPilot,deviceSignOutPilot,projectSessionEvents};
+      deviceSignOutEnabled:!!projectSessionEvents,deviceSignOutPilot,projectSessionEvents};
   }catch{return null;}
 }
 export function identityCsrf(request:Request){const previous=readCookie(request,CSRF_COOKIE);const value=previous&&/^[A-Za-z0-9_-]{32,128}$/.test(previous)?previous:token();return {value,setCookie:cookie(CSRF_COOKIE,value,3600)};}

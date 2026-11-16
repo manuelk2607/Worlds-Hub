@@ -10,12 +10,20 @@ export const pilotSessionServices = [
   { binding:'SLOP_URSELF_SESSION_EVENTS', service:'slopurself-worlds-pilot' },
 ] as const;
 
+export const productionSessionServices = [
+  { binding:'MUSIC_WORLDS_PRODUCTION_SESSION_EVENTS', service:'music-worlds' },
+  { binding:'SPRACHWELTEN_PRODUCTION_SESSION_EVENTS', service:'sprachwelten' },
+  { binding:'IT_WORLDS_PRODUCTION_SESSION_EVENTS', service:'it-worlds' },
+  { binding:'SLOP_URSELF_PRODUCTION_SESSION_EVENTS', service:'slopurself' },
+] as const;
+
+type SessionService = (typeof pilotSessionServices | typeof productionSessionServices)[number];
+type SessionBindings = Partial<Record<SessionService['binding'], Pick<Fetcher, 'fetch'>>>;
+const sessionServiceOrigin = (service: SessionService['service']) => `https://${service}.maki26.workers.dev`;
 export const pilotSessionOrigin = (service: (typeof pilotSessionServices)[number]['service']) =>
-  `https://${service}.maki26.workers.dev`;
+  sessionServiceOrigin(service);
 
-type PilotSessionBindings = Partial<Record<(typeof pilotSessionServices)[number]['binding'], Pick<Fetcher, 'fetch'>>>;
-
-export interface ProjectSessionEventEnv extends PilotSessionBindings {
+export interface ProjectSessionEventEnv extends SessionBindings {
   WORLDS_SESSION_EVENT_CLIENT_IDS?: string;
   WORLDS_SESSION_EVENT_PRIVATE_JWK?: string;
 }
@@ -26,16 +34,42 @@ export interface ProjectSessionEvents {
   identityIssuer: string;
   jwk: NonNullable<ReturnType<typeof sessionEventPublicKey>> & { d: string };
   db: D1Database;
-  pilotRecipients?: ReadonlyMap<string, Pick<Fetcher, 'fetch'>>;
+  recipients?: ReadonlyMap<string, Pick<Fetcher, 'fetch'>>;
 }
 
-export function bindPilotSessionRecipients(config: ProjectSessionEvents, env: PilotSessionBindings) {
+function boundSessionRecipients(services: readonly SessionService[], env: SessionBindings) {
   const recipients = new Map<string, Pick<Fetcher, 'fetch'>>();
-  for (const { binding, service } of pilotSessionServices) {
+  for (const { binding, service } of services) {
     const recipient = env[binding];
-    if (recipient) recipients.set(pilotSessionOrigin(service) + sessionRevocationPath, recipient);
+    if (recipient && typeof recipient.fetch === 'function') recipients.set(sessionServiceOrigin(service) + sessionRevocationPath, recipient);
   }
-  if (recipients.size) config.pilotRecipients = recipients;
+  return recipients;
+}
+
+export function bindPilotSessionRecipients(config: ProjectSessionEvents, env: SessionBindings) {
+  const recipients = boundSessionRecipients(pilotSessionServices, env);
+  if (recipients.size) config.recipients = recipients;
+}
+
+export function productionProjectSessionEventConfig(
+  env: ProjectSessionEventEnv, origin: string, identityIssuer: string, clients: IdentityClient[], db: D1Database,
+) {
+  if (origin !== 'https://worlds-hub.maki26.workers.dev') return;
+  const recipients = boundSessionRecipients(productionSessionServices, env);
+  if (recipients.size !== productionSessionServices.length) return;
+  const selected: IdentityClient[] = [];
+  for (const {service} of productionSessionServices) {
+    const target = sessionServiceOrigin(service);
+    const registered = clients.filter(client =>
+      client.redirects.length===1 && client.redirects[0]===target+'/auth/callback' && client.resource===target+'/api');
+    if (registered.length!==1) return;
+    selected.push(registered[0]);
+  }
+  const config = projectSessionEventConfig({
+    ...env, WORLDS_SESSION_EVENT_CLIENT_IDS:JSON.stringify(selected.map(client=>client.clientId)),
+  }, origin, identityIssuer, selected, db);
+  if (config) config.recipients = recipients;
+  return config;
 }
 
 interface Delivery {
@@ -101,11 +135,12 @@ export async function deliverProjectRevocations(
       ORDER BY next_attempt,expires_at LIMIT 20
     ) RETURNING audience,identity_issuer,subject,event_id,revoked_through
   `).bind(now+60_000, ...scopedValues, now).all<Delivery>();
+  if (subject===undefined && results.length===0) return true;
   const privateKey = await importJWK(config.jwk,'EdDSA');
   if (!(privateKey instanceof CryptoKey)) throw new Error('Invalid session event key');
-  const resultsByRecipient = await Promise.all(results.map(async row => {
-    const recipient = config.pilotRecipients?.get(row.audience);
-    if (config.pilotRecipients && !recipient) return false;
+  const deliver = async (row: Delivery) => {
+    const recipient = config.recipients?.get(row.audience);
+    if (config.recipients && !recipient) return false;
     try {
       const signed = await signSessionRevocation({
         eventId: row.event_id, identityIssuer: row.identity_issuer,
@@ -131,8 +166,14 @@ export async function deliverProjectRevocations(
       console.warn('Project sign-out delivery failed', new URL(row.audience).hostname);
       return false;
     }
-  }));
-  if (subject===undefined) return resultsByRecipient.every(Boolean);
+  };
+  let delivered = true;
+  // Leave headroom for the database acknowledgements on Workers Free.
+  for(let offset=0;offset<results.length;offset+=4){
+    const batch=await Promise.all(results.slice(offset,offset+4).map(deliver));
+    delivered=batch.every(Boolean)&&delivered;
+  }
+  if (subject===undefined) return delivered;
   // A scheduled delivery may already have claimed some rows. Count those as
   // pending until their acknowledgement is committed.
   const pending = await config.db.prepare(`
