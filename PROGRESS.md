@@ -137,8 +137,10 @@ Integrationstest lief wegen Neon-Kontingent HTTP 402 noch nicht bis zur
 Anmeldeprüfung. Der Commit ist veröffentlicht im Repository.
 [GitHub-Prüfung vor Wiederherstellung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44109711026)
 Die [erneute CI-Prüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44168624466)
-endete vor dem Datenbanktest im Abhängigkeitsaudit (`GHSA-fc5q-39xc-vjpf`,
-`picomatch`). Kein Music-Quellcode-Deployment aus diesem Lauf.
+endete vor dem Datenbanktest im Abhängigkeitsaudit wegen `picomatch`
+aus der Lint-Werkzeugkette. Die [Meldung](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
+nennt keine korrigierte Version; npm liefert aktuell höchstens 4.0.7.
+Die Prüfung bleibt aktiv. Kein Music-Quellcode-Deployment aus diesem Lauf.
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
