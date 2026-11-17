@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-16 (Europe/Stockholm)
+Stand: 2026-11-17 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -89,13 +89,22 @@ passenden Signaturschlüssel. Ein fehlender Bestandteil schließt die
 Abmeldeaktion. Der Hub verarbeitet Zustellungen in Gruppen von vier.
 83 Tests, Typprüfung, Lint, Build und beide Cloudflare-Trockenläufe
 bestanden. Die Veröffentlichung für Hub und vier Projekte ist freigegeben.
-Die Browser-Freigabe erreichte Wrangler nicht und die alternative
-Cloudflare-Gerätefreigabe ist abgelaufen. Es wurde kein Worker geändert.
-Nächster Schritt ist eine frische befristete Anmeldung. Danach die aktuelle
-Version jedes Workers festhalten, den öffentlichen Prüfschlüssel pro
-Projekt einsetzen und die Empfänger prüfen, bevor der Hub aktiviert wird.
-Vor der Hub-Aktivierung lautet der erwartete Status für einen
-unsignierten Aufruf nach der Schlüsseleinrichtung HTTP 400.
+Die Gerätefreigabe gelang am 17.11. Die Veröffentlichung stoppte beim ersten Empfänger
+Music-Worlds. Die Empfangsprüfung mit neuem Schlüssel wurde auch nach
+getrenntem Staging und Deployment nicht bestätigt. Die Rücknahme ist
+verifiziert: Version `759b3fdd-da23-4369-9667-302ae5bc8bc1` läuft zu 100 %
+(Deployment `192ac9cd-e270-4e81-bb23-71e388c27f10`). Die übrigen drei
+Projekt-Worker und der Hub wurden nicht geändert. Es wurde kein privater
+Hub-Schlüssel hinterlegt und kein Konto abgemeldet. Die befristete Wrangler-
+Anmeldung wurde beendet. Die nächste Prüfung
+soll zuerst den tatsächlichen HTTP-Status und die Bindungen der
+Music-Worlds-Version erfassen. Das Ziel wird auf Nutzerwunsch pausiert.
+
+Music-Worlds `1e371e2` verlangt bei neuen Profilen die zentrale
+Anmeldung. Die 23 lokalen Tests und der Build sind grün. Der gehostete
+Integrationstest lief wegen Neon-Kontingent HTTP 402 noch nicht bis zur
+Anmeldeprüfung. Der Commit ist veröffentlicht im Repository.
+[GitHub-Prüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44109711026)
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
