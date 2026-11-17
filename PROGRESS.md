@@ -33,7 +33,7 @@ Wiederanmeldung nach lokaler Abmeldung ohne erneutes Passwort sind bestätigt.
 Migrationen 003–007 wurden mit bereiter Neon-Sicherung eingespielt. Die zwei
 Altkonten und 17 Lernfortschrittszeilen stimmten vor und nach dem Eingriff
 per Prüfsumme überein. Die bestehende Anmeldung bleibt für Altkonten
-verfügbar. Die Übernahme bisheriger IT-Konten steht noch aus. Der zentrale
+verfügbar. Ein bisheriges IT-Konto ist inzwischen übernommen. Der zentrale
 Widerruf ist produktiv bestätigt (siehe Abmeldung unten).
 [IT-Worlds-Fortschritt](https://github.com/manuelk2607/IT-Worlds/blob/2065f13/PROGRESS.md)
 
@@ -61,7 +61,12 @@ Lernfortschritten freigegeben. `54fa77d` ist als Worker-Version
 `b2ef4a0c-faca-46ee-bdd4-bd16f60c82c2` live; Rücknahme `aa30a5b2`.
 Frische Sicherung `br-rough-pine-ba27cunb`, keine weitere Migration.
 GitHub Quality, DE/EN-Kontovorschau im lokalen Browser und Live-Schutz
-bestanden. Die Zuordnung wartet auf die persönliche Bestätigung.
+bestanden. Der Kontoinhaber bestätigte beide Konten im Browser. Die
+Datenbank verifiziert eine aktive Worlds-Sitzung, genau eine Zuordnung
+zur bisherigen IT-Profil-ID derselben zentralen Identität wie in
+Music-Worlds und Slop Urself, einen Audit-Eintrag und drei unveränderte
+Lernfortschritte. Insgesamt blieben 17 Fortschrittszeilen erhalten.
+Das zweite IT-Altprofil benötigt weiterhin einen Eigentumsnachweis.
 
 Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
 „Lernen“ in Sprachwelten und „Dein bisheriges Musikprofil“ in Music-Worlds.
