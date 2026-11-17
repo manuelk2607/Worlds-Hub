@@ -175,8 +175,16 @@ Die vier Empfänger erhalten ausschließlich den passenden öffentlichen
 Schlüssel als `WORLDS_HUB_SESSION_EVENT_JWK`. Die Freigabeskripte prüfen
 das Schlüsselpaar und die vier Empfangsrouten vor Veröffentlichung.
 Der anonyme Test verlangt HTTP 400 für ein unsigniertes Ereignis.
-Er bestätigt die Aktivierung des Empfängers. Die echte Signatur und die
-Zuordnung zum angemeldeten Konto werden anschließend im Browser geprüft.
+Er bestätigt die Aktivierung des Empfängers, erreicht aber dessen
+Datenbank nicht. Vor dem ersten Upload den Live-Katalog von Music-Worlds
+und die Erreichbarkeit der Widerrufstabellen prüfen. Bei Neon HTTP 402
+oder einem ausgefallenen Katalog keine Empfänger veröffentlichen.
+Vor Aktivierung im Hub muss jeder Empfänger ein signiertes Ereignis für
+eine nicht existierende Testidentität nach dem Speichern mit HTTP 202
+bestätigen. Fehlerstatus je Empfänger und Prüfphase vor der Rücknahme
+erfassen; HTTP 503 nach gültiger Signatur weist auf eine fehlgeschlagene
+Speicherung hin. Die Zuordnung zu einem real angemeldeten Konto wird
+anschließend im Browser geprüft.
 
 Ein autorisierter Kontoinhaber bestätigt die zentrale Abmeldung und
 prüft danach den geschützten Zugriff in allen vier Projekten. Der Hub

@@ -96,9 +96,18 @@ verifiziert: Version `759b3fdd-da23-4369-9667-302ae5bc8bc1` läuft zu 100 %
 (Deployment `192ac9cd-e270-4e81-bb23-71e388c27f10`). Die übrigen drei
 Projekt-Worker und der Hub wurden nicht geändert. Es wurde kein privater
 Hub-Schlüssel hinterlegt und kein Konto abgemeldet. Die befristete Wrangler-
-Anmeldung wurde beendet. Die nächste Prüfung
-soll zuerst den tatsächlichen HTTP-Status und die Bindungen der
-Music-Worlds-Version erfassen. Das Ziel wird auf Nutzerwunsch pausiert.
+Anmeldung wurde beendet.
+
+Nach Wiederaufnahme: Neon blockierte Music-Worlds bei 7.262 von 7.200
+Rechensekunden (SQL: HTTP 402, Live-Katalog: HTTP 500). Das genehmigte
+projektspezifische Limit liegt jetzt bei 100 CU-Stunden im kostenlosen
+Tarif. Live-Katalog wieder HTTP 200; die Widerrufstabelle, der Trigger für
+Gast-Sitzungen und die Schreibrechte der Worker-Rolle sind produktiv
+bestätigt. Der gebaute Worker lieferte lokal HTTP 400 für unsignierte
+Nachrichten, HTTP 503 bei simuliertem Neon 402 und HTTP 202 nach simulierter
+Speicherung. Der HTTP-Status des früheren signierten Live-Versuchs ist
+nicht protokolliert. Nächster Schritt: mit befristetem Cloudflare-Zugang
+die Empfänger einzeln freigeben und vor der Hub-Freigabe signiert prüfen.
 
 Music-Worlds `1e371e2` verlangt bei neuen Profilen die zentrale
 Anmeldung. Die 23 lokalen Tests und der Build sind grün. Der gehostete
