@@ -124,17 +124,21 @@ existierende Testidentität (HTTP 202). Versionen bei jeweils 100 % Traffic:
 Hub aus `016ffa2`: 85 Tests, Typprüfung, Lint, Build, Audit und
 Produktions-Smoke bestanden.
 [GitHub-Freigabe](https://github.com/manuelk2607/Worlds-Hub/actions/runs/44168123138)
-Der gemeinsame Browser-Test mit einer tatsächlich in allen vier Projekten
-angemeldeten Identität steht noch aus. Bis dahin gilt der technische
-Versandnachweis nicht als vollständige Nutzerabnahme.
+Browser-Abnahme bestanden: Der Kontoinhaber war in allen vier Projekten
+angemeldet und bestätigte nach dem Neuladen, überall abgemeldet zu sein,
+ausdrücklich auch in Slop Urself. Alle vier Produktionsdatenbanken
+enthielten genau einen neuen nichtsynthetischen Widerruf mit demselben
+Zeitpunkt (17.11.2026, 21:22:32 MEZ) und keine aktive Worlds-Sitzung für
+die betreffende Identität.
 
 Music-Worlds `1e371e2` verlangt bei neuen Profilen die zentrale
 Anmeldung. Die 23 lokalen Tests und der Build sind grün. Der gehostete
 Integrationstest lief wegen Neon-Kontingent HTTP 402 noch nicht bis zur
 Anmeldeprüfung. Der Commit ist veröffentlicht im Repository.
 [GitHub-Prüfung vor Wiederherstellung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44109711026)
-Die [erneute Integrationsprüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44168624466)
-nutzt dieselbe Testdatenbank und veröffentlicht nichts.
+Die [erneute CI-Prüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44168624466)
+endete vor dem Datenbanktest im Abhängigkeitsaudit (`GHSA-fc5q-39xc-vjpf`,
+`picomatch`). Kein Music-Quellcode-Deployment aus diesem Lauf.
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
