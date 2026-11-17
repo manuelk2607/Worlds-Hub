@@ -106,14 +106,35 @@ Gast-Sitzungen und die Schreibrechte der Worker-Rolle sind produktiv
 bestätigt. Der gebaute Worker lieferte lokal HTTP 400 für unsignierte
 Nachrichten, HTTP 503 bei simuliertem Neon 402 und HTTP 202 nach simulierter
 Speicherung. Der HTTP-Status des früheren signierten Live-Versuchs ist
-nicht protokolliert. Nächster Schritt: mit befristetem Cloudflare-Zugang
-die Empfänger einzeln freigeben und vor der Hub-Freigabe signiert prüfen.
+nicht protokolliert.
+
+**Projektübergreifende Abmeldung produktiv freigeschaltet.** Vor dem
+Hub-Deployment wiesen alle vier Empfänger unsignierte Nachrichten mit
+HTTP 400 ab und speicherten ein signiertes Ereignis für eine nicht
+existierende Testidentität (HTTP 202). Versionen bei jeweils 100 % Traffic:
+
+| Worker | Neue Version | Rücknahmeversion |
+| --- | --- | --- |
+| Worlds Hub | `024ad424-2702-468b-93d0-03a62ebc96de` | `66b18803-8a90-43cc-83dc-c7d4edd34de8` |
+| Music-Worlds | `33431568-a564-4cb5-8dce-5329bc30693c` | `759b3fdd-da23-4369-9667-302ae5bc8bc1` |
+| Sprachwelten | `50558258-6d52-4b34-9c58-7430870bd823` | `1cbcf695-c943-47c4-8a92-393147d7c1af` |
+| IT-Worlds | `acb62c46-94bb-41e1-8abd-7391e10f51b2` | `db925d3d-0b15-4412-b0f0-fd4be9e902b7` |
+| Slop Urself | `5ca81c49-c8d4-4d5a-ab94-c22ccbe84772` | `0e3e6114-7a24-48ad-beee-991e8372168b` |
+
+Hub aus `016ffa2`: 85 Tests, Typprüfung, Lint, Build, Audit und
+Produktions-Smoke bestanden.
+[GitHub-Freigabe](https://github.com/manuelk2607/Worlds-Hub/actions/runs/44168123138)
+Der gemeinsame Browser-Test mit einer tatsächlich in allen vier Projekten
+angemeldeten Identität steht noch aus. Bis dahin gilt der technische
+Versandnachweis nicht als vollständige Nutzerabnahme.
 
 Music-Worlds `1e371e2` verlangt bei neuen Profilen die zentrale
 Anmeldung. Die 23 lokalen Tests und der Build sind grün. Der gehostete
 Integrationstest lief wegen Neon-Kontingent HTTP 402 noch nicht bis zur
 Anmeldeprüfung. Der Commit ist veröffentlicht im Repository.
-[GitHub-Prüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44109711026)
+[GitHub-Prüfung vor Wiederherstellung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44109711026)
+Die [erneute Integrationsprüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44168624466)
+nutzt dieselbe Testdatenbank und veröffentlicht nichts.
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
