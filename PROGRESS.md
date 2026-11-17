@@ -33,7 +33,8 @@ Wiederanmeldung nach lokaler Abmeldung ohne erneutes Passwort sind bestätigt.
 Migrationen 003–007 wurden mit bereiter Neon-Sicherung eingespielt. Die zwei
 Altkonten und 17 Lernfortschrittszeilen stimmten vor und nach dem Eingriff
 per Prüfsumme überein. Die bestehende Anmeldung bleibt für Altkonten
-verfügbar. Die Kontozuordnung und der zentrale Widerruf stehen noch aus.
+verfügbar. Die Übernahme bisheriger IT-Konten steht noch aus. Der zentrale
+Widerruf ist produktiv bestätigt (siehe Abmeldung unten).
 [IT-Worlds-Fortschritt](https://github.com/manuelk2607/IT-Worlds/blob/2065f13/PROGRESS.md)
 
 Neue IT-Lernprofile sind mit `31c8bbb` lokal und in GitHub geprüft. Der
@@ -41,8 +42,18 @@ erste produktive Lauf von Migration 008 rollte zurück, weil die drei
 Inhalts-Fremdschlüssel nach einer früheren Auth-Wiederherstellung fehlen.
 Die korrigierte Fassung berücksichtigt beide Datenbankstände. Sie lässt
 die 13 alten Fortschrittszeilen ohne aktuelle Identität erhalten und
-weist sie keinem Profil zu. Sicherung `br-red-lab-ba6t28re` ist bereit.
-Die Freigabeprüfung verlangte Zustimmung zur korrigierten Fassung.
+weist sie keinem Profil zu. Nach ausdrücklicher Zustimmung wurde die
+korrigierte Migration am 17.11. in einer Transaktion angewendet. Frische
+Neon-Sicherung: `br-lively-forest-ba8hp4o5` (ohne Compute). Prüfsummen
+bestätigen unveränderte zwei Altkonten, zwei Provider-Zuordnungen und
+17 Lernfortschritte. Es entstand keine Worlds-Kontoverknüpfung.
+
+**Neue IT-Lernprofile über Worlds sind produktiv freigeschaltet.**
+Worker `aa30a5b2-9eaf-41a1-a895-0db596a19e40` läuft zu 100 %.
+DE/EN-Konto, PKCE, Profilschutz, geschlossene Verknüpfung, Abmelde-Empfänger
+und Live-SEO bestanden. Eine echte Profilanlage mit einem angemeldeten
+Produktionskonto wurde nicht ausgelöst. Rücknahme auf `acb62c46`
+erhält die bereits aktive zentrale Abmeldung.
 [GitHub Quality](https://github.com/manuelk2607/IT-Worlds/actions/runs/43960459900)
 
 Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
