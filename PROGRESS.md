@@ -56,6 +56,13 @@ Produktionskonto wurde nicht ausgelöst. Rücknahme auf `acb62c46`
 erhält die bereits aktive zentrale Abmeldung.
 [GitHub Quality](https://github.com/manuelk2607/IT-Worlds/actions/runs/43960459900)
 
+Die Übernahme ist für genau ein nachgewiesenes IT-Altprofil mit drei
+Lernfortschritten freigegeben. `54fa77d` ist als Worker-Version
+`b2ef4a0c-faca-46ee-bdd4-bd16f60c82c2` live; Rücknahme `aa30a5b2`.
+Frische Sicherung `br-rough-pine-ba27cunb`, keine weitere Migration.
+GitHub Quality, DE/EN-Kontovorschau im lokalen Browser und Live-Schutz
+bestanden. Die Zuordnung wartet auf die persönliche Bestätigung.
+
 Der Kontoinhaber bestätigte auch die produktiven Worlds-Rücksprünge zu
 „Lernen“ in Sprachwelten und „Dein bisheriges Musikprofil“ in Music-Worlds.
 Ein Datenbankabgleich bestätigte dieselbe aktive zentrale Identität in
