@@ -131,16 +131,17 @@ enthielten genau einen neuen nichtsynthetischen Widerruf mit demselben
 Zeitpunkt (17.11.2026, 21:22:32 MEZ) und keine aktive Worlds-Sitzung für
 die betreffende Identität.
 
-Music-Worlds `1e371e2` verlangt bei neuen Profilen die zentrale
-Anmeldung. Die 23 lokalen Tests und der Build sind grün. Der gehostete
-Integrationstest lief wegen Neon-Kontingent HTTP 402 noch nicht bis zur
-Anmeldeprüfung. Der Commit ist veröffentlicht im Repository.
-[GitHub-Prüfung vor Wiederherstellung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44109711026)
-Die [erneute CI-Prüfung](https://github.com/manuelk2607/Music-Worlds/actions/runs/44168624466)
-endete vor dem Datenbanktest im Abhängigkeitsaudit wegen `picomatch`
-aus der Lint-Werkzeugkette. Die [Meldung](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
-nennt keine korrigierte Version; npm liefert aktuell höchstens 4.0.7.
-Die Prüfung bleibt aktiv. Kein Music-Quellcode-Deployment aus diesem Lauf.
+Music-Worlds verlangt bei neuen Profilen jetzt produktiv die Worlds-Anmeldung.
+Der betroffene `picomatch`-Zweig der Lint-Werkzeuge wurde ersetzt; die
+Regeln sind unverändert und der vollständige Audit meldete null Befunde.
+`76eb5da` läuft als Worker-Version `5af39fb2-c8fb-4465-b22e-ea98a7520892`
+mit Rücknahmeversion `33431568-a564-4cb5-8dce-5329bc30693c`. 23 Tests,
+87 Datenbankprüfungen, der separate Worlds-Test und der Live-Smoke waren
+grün. Die Live-Prüfung bestätigte die Sperre anonymer Neuanlagen und den
+weiterhin aktiven Empfänger für projektübergreifende Abmeldung. Zwei
+Profile, 16 Beiträge, null Ergebnisse und die bestehende Kontozuordnung
+behielten ihre Prüfsummen. Das zweite Altprofil ist weiterhin unverknüpft.
+[GitHub-Freigabe](https://github.com/manuelk2607/Music-Worlds/actions/runs/44170781249)
 
 Das bestätigte Testkonto löste am 12.11. um 11:02:39 MEZ den Hub-Widerruf
 aus. Slop Urself Test hatte unmittelbar davor eine aktive Worlds-Sitzung.
