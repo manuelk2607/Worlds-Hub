@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-17 (Europe/Stockholm)
+Stand: 2026-11-22 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -9,6 +9,19 @@ zentralen Konto, Migrationsnachweise aus allen vier Welten und die
 kontrollierte produktive Kontoübernahme.
 Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
 lokale IDs und Berechtigungen beim Übergang zu erhalten.
+
+## Sprachwelten-Altprofil produktiv übernommen
+
+Für das bestätigte Kontopaar wurde nur die Zuordnung zum leeren Profil nach
+bereit bestätigter Neon-Sicherung und transaktionaler Prüfung gelöst.
+Der Kontoinhaber bestätigte die Übernahme im Browser und sieht seine
+Beiträge wieder. Dieselbe zentrale Identität wie bei IT-Worlds verwendet
+jetzt die ursprüngliche, verifizierte Sprachwelten-Konto-ID. Produktiv
+bestätigt sind eine aktive Worlds-Sitzung, ein Übernahme-Audit, 80 erhaltene
+Beiträge und eine erhaltene Adminrolle. Die geprüften Projekttabellen
+behielten ihre Prüfsummen. Das leere Profil wurde unverknüpft erhalten.
+Zwei weitere Sprachwelten-Altkonten benötigen einen Eigentumsnachweis.
+Der zentral gespeicherte Migrationsnachweis bleibt offen.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 
