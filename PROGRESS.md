@@ -64,6 +64,18 @@ Der Erstversand war ein Einzellauf. Eine weitere automatische Zustellung
 wurde live noch nicht beobachtet. IT-Worlds und Music-Worlds fehlen beim
 zentralen Nachweis.
 
+## IT-Worlds-Nachweis mit GitHub geprüft
+
+Der produktive Nur-Lese-Abgleich bestätigt genau eine vorhandene
+Altprofilübernahme. Der IT-Worlds-Stand `7d0c93c` enthält Migration 009,
+den signierten Sender und den vorgesehenen täglichen Versand.
+[GitHub](https://github.com/manuelk2607/IT-Worlds/actions/runs/45266022475)
+bestand einschließlich PostgreSQL 18. Lokale Prüfung der eingeschränkten
+Datenbankrolle, des signierten Versands, Build und Kontoseite DE/EN
+bestanden. Die Produktion verwendet weiterhin den bestehenden Stand.
+Offen: Wiederherstellungspunkt, Migration 009, projektspezifischer
+Schlüssel und Upload mit einem gültigen IT-Worlds-Zugang.
+
 ## Zentrale Kontolöschung lokal umgesetzt
 
 Die Kontoseite verlangt die ausdrückliche Bestätigung und das aktuelle
