@@ -6,7 +6,7 @@ project IDs. The items below do not authorize a production cutover.
 | Capability | Evidence | Remaining acceptance |
 | --- | --- | --- |
 | Registration, email verification, Hub login | User-confirmed OTP, real Hub and Slop pilot callbacks; Hub sign-in after Slop returned directly to the greeting without another password, code or consent | Slop QA ownership/link and local logout/automatic SSO return passed for the owner-reviewed existing profile; production accounts and other relying parties remain open |
-| Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
+| Password change | Native QA API preserves the subject, rejects the old password and revokes a second session. The Hub reuses the project sign-out queue after a successful change. Signed delivery, retry, and fresh sign-in UI were tested locally. | Authenticated end-to-end verification against all four production receivers |
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
 | Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation remains open. After QA restoration, the same reset-revocation option was enabled in the primary pilot; all other settings are unchanged |
 | Self-deletion | `delete-user` previously returned 404 for a signed-in QA account. The separately approved SDK `admin.removeUser` removed its synthetic target and invalidated its session. As of 2026-11-23, the production issuer's OpenAPI lists `delete-user`, `change-email` and `verify-password`. The Hub requires fresh password proof and confirmation. SQLite covers retry, four queued revocations and suppression of late signed receipts after job cleanup. Chromium DE and WebKit EN passed with simulated API responses. | Authenticated acceptance with a synthetic account, delivery to all four worlds, restricted runtime operation and deployment of migrations 0007 and 0008 |
@@ -17,6 +17,14 @@ project IDs. The items below do not authorize a production cutover.
 The OpenAPI listing by itself does not establish that a provider option is
 enabled. [Neon's Admin documentation](https://neon.com/docs/auth/guides/plugins/admin)
 requires an admin role for Admin APIs.
+The managed [user management guide](https://neon.com/docs/auth/guides/user-management)
+documents password changes and currently lists email address changes as unsupported.
+
+After a successful password change, the production Hub revokes existing Hub
+sessions and atomically queues signed revocations for the four worlds. The
+browser starts a fresh central sign-in with the new password so that a
+replacement session from the same revocation second cannot reestablish
+older project access. The UI reports any outstanding project acknowledgement.
 
 Apply D1 migrations 0007 and 0008 before turning on
 `MIGRATION_RECEIPT_ERASURE_ENABLED`. Verify receipt acceptance for other

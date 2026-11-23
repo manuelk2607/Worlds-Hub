@@ -21,12 +21,13 @@ export function identityPage(path:string,rawQuery:string,csrf:string,config:Pick
   form('forgot','identity.forgotTitle',email,'identity.forgotButton')+
   form('reset','identity.resetTitle',input('identity.newPassword','newPassword','password','new-password',newPasswordAttributes),'identity.resetButton');
  const update=form('update','identity.updateTitle',input('identity.displayName','name','text','name','maxlength="80" required'),'identity.updateButton');
+ const signOutScope=config.deviceSignOutPilot?'pilot':config.projectSessionEvents?'projects':'hub';
  const changePassword=accountPage?form('change-password','identity.changePassword',
+  (config.deviceSignOutEnabled&&signOutScope==='projects'?`<p>${tr(locale,'identity.passwordChangeWorldsNote')}</p>`:'')+
   input('identity.currentPassword','currentPassword','password','current-password',`maxlength="${PASSWORD_MAX_LENGTH}" required`)+
   input('identity.newPassword','newPassword','password','new-password',newPasswordAttributes)+
   input('identity.confirmPassword','confirmation','password','new-password',newPasswordAttributes),
   'identity.savePassword'):'';
- const signOutScope=config.deviceSignOutPilot?'pilot':config.projectSessionEvents?'projects':'hub';
  const signOutLabel=signOutScope==='pilot'?'identity.signOutPilotDevices':signOutScope==='projects'?'identity.signOutWorldsDevices':'identity.signOutDevices';
  const deviceSignOut=config.deviceSignOutEnabled?`<button data-identity-device-sign-out="${signOutScope}" data-identity-verified-action disabled${signOutScope==='pilot'?' hidden':''}>${tr(locale,signOutLabel)}</button>`:'';
  const deletionAction=accountPage&&config.deletion?`<button data-identity-action="delete-account" data-identity-verified-action disabled>${tr(locale,'identity.deleteAccount')}</button>`:'';

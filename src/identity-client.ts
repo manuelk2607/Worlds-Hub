@@ -68,7 +68,15 @@ if(identityRoot){
    else if(action==='send-code')status(message,'status.codeSent');
    else if(action==='forgot')status(message,'status.recoverySent');
    else if(action==='reset'){history.replaceState(null,'','/identity/login');show('login');status(message,'status.passwordSaved');}
-   else if(action==='change-password'){form.hidden=true;status(message,data.hubSessionsRevoked?'status.passwordChanged':'status.passwordChangedPartial');}
+   else if(action==='change-password'){
+    form.hidden=true;
+    if(!data.hubSessionsRevoked)status(message,'status.passwordChangedPartial');
+    else if(data.projectSessionsEnded===undefined)status(message,'status.passwordChanged');
+    else{
+     showSignedOut();
+     status(message,data.projectSessionsEnded?'status.passwordChangedWorlds':'status.passwordChangedWorldsPending');
+    }
+   }
    else if(action==='delete-account'){
     form.hidden=true;
     if(data.pending)status(message,'status.deletionPending');

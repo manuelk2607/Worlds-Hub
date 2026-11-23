@@ -6,6 +6,8 @@ import {identityConfig,identityCsrf,authorizationClient,identityProxy,limitIdent
 import {identityPage} from '../src/identity-pages.ts';
 import {sqliteD1} from './sqlite-helper.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
+import {receiveSessionRevocation,sessionEventPublicKey,sessionRevocationPath} from '../packages/auth/session-revocation.ts';
+import {deliverProjectRevocations,productionSessionServices} from '../src/project-session-events.ts';
 const origin='https://worlds-hub.maki26.workers.dev',baseUrl='https://central.neonauth.test/worlds/auth';
 const client={clientId:'hub-pilot',name:'Worlds Hub',redirects:[origin+'/auth/callback'],resource:origin+'/api'};
 const rawQuery=new URLSearchParams({client_id:client.clientId,redirect_uri:client.redirects[0],scope:'openid profile email',resource:client.resource,response_type:'code',state:'test-state',nonce:'test-nonce',code_challenge_method:'S256',code_challenge:'test-challenge'}).toString()+'&sig=signed%2Bquery%3D&exp=9999999999';
@@ -268,6 +270,7 @@ test('password change rechecks the central session, forces provider revocation a
   const url=new URL(String(input));
   if(url.pathname.endsWith('/get-session')){
    assert.equal(url.searchParams.get('disableCookieCache'),'true');
+   assert.equal(url.searchParams.get('disableRefresh'),'true');
    return providerSession();
   }
   assert.equal(String(input),baseUrl+'/change-password');
@@ -290,6 +293,73 @@ test('password change rechecks the central session, forces provider revocation a
   assert.ok(await store.getSession('other'));
   assert.ok(await store.getSession('foreign'));
  }finally{f.db.close();}
+});
+
+test('a verified password change fences older callbacks and queues signed revocation for the four production worlds',async t=>{
+ const f=await fixture();
+ t.after(()=>f.db.close());
+ for(const name of ['0005_hub_session_revocations','0006_project_session_revocation_delivery']){
+  f.db.exec(await readFile('migrations/'+name+'.sql','utf8'));
+ }
+ const {privateKey,publicKey}=await generateKeyPair('EdDSA',{extractable:true});
+ const kid='password-change-fixture';
+ const key=sessionEventPublicKey(JSON.stringify({kid,...await exportJWK(publicKey)}))!;
+ const clients=productionSessionServices.map(({service})=>{
+  const target=`https://${service}.maki26.workers.dev`;
+  return {clientId:service,name:service,redirects:[target+'/auth/callback'],resource:target+'/api'};
+ });
+ const delivered:string[]=[];
+ const retry:{at?:number}={};
+ const recipients=Object.fromEntries(productionSessionServices.map(({service,binding})=>[binding,{
+  async fetch(url:string,init:RequestInit){
+   assert.equal(url,`https://${service}.maki26.workers.dev${sessionRevocationPath}`);
+   if(service==='slopurself'&&retry.at===undefined)return new Response(null,{status:503});
+   return receiveSessionRevocation(new Request(url,init),{signer:origin,identityIssuer:baseUrl,audience:url,key},async event=>{
+    assert.equal(event.subject,fixtureUser.id);
+    delivered.push(service);
+   },retry.at);
+  },
+ }]));
+ const config=identityConfig({IDENTITY_ENABLED:'true',SITE_ORIGIN:origin,IDENTITY_AUTH_URL:baseUrl,
+  AUTH_DB:f.binding,IDENTITY_COOKIE_SECRET:f.config.cookieSecret,IDENTITY_CLIENTS:JSON.stringify([client,...clients]),
+  IDENTITY_DEVICE_SIGN_OUT_ENABLED:'true',WORLDS_SESSION_EVENT_PRIVATE_JWK:JSON.stringify({kid,...await exportJWK(privateKey)}),...recipients})!;
+ assert.match(identityPage('/identity/account','',f.csrf.value,config,'de').body,/enden deine Sitzungen/);
+ assert.match(identityPage('/identity/account','',f.csrf.value,config,'en').body,/ends your sessions/);
+ const store=new D1AuthStore(f.binding),expires=Date.now()+60_000;
+ const subjectSession={issuer:baseUrl,sub:fixtureUser.id,expires,csrf:'fixture'};
+ await store.putSession('self',subjectSession);
+ await store.putSession('control',{...subjectSession,sub:'control-fixture'});
+ let changedUser='control-fixture';
+ t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL)=>{
+  const url=new URL(String(input));
+  if(url.pathname.endsWith('/get-session'))return providerSession();
+  assert.equal(url.href,baseUrl+'/change-password');
+  return Response.json({user:{id:changedUser},token:'new-provider-session-secret'},
+   {headers:{'set-cookie':'__Secure-neon-auth.session_token=new-provider-session-secret; Path=/; HttpOnly; Secure'}});
+ });
+ const change=()=>identityProxy(f.request('change-password',{currentPassword:'old-only-fixture',newPassword:'new-only-fixture'}),config);
+ assert.equal((await change()).status,502);
+ assert.ok(await store.getSession('self'));
+ assert.deepEqual(delivered,[]);
+
+ changedUser=fixtureUser.id;
+ const response=await change();
+ assert.deepEqual(await response.json(),{success:true,hubSessionsRevoked:true,projectSessionsEnded:false});
+ assert.doesNotMatch(response.headers.getSetCookie().join(';'),/new-provider-session-secret/);
+ assert.ok(response.headers.getSetCookie().some(value=>/^__Secure-neon-auth\.session_token=;.*Max-Age=0/.test(value)));
+ assert.deepEqual(delivered.sort(),['it-worlds','music-worlds','sprachwelten']);
+ assert.equal(await store.getSession('self'),null);
+ assert.ok(await store.getSession('control'));
+ const stamp=f.db.prepare('SELECT revoked_at FROM hub_session_revocations WHERE subject=?').get(fixtureUser.id)!;
+ const cutoff=Number(stamp.revoked_at);
+ await assert.rejects(store.putSession('late',{...subjectSession,authenticatedAt:cutoff}),/predates sign-out/);
+ await store.putSession('new',{...subjectSession,authenticatedAt:cutoff+1000});
+ const pending=f.db.prepare('SELECT subject,next_attempt FROM project_session_revocation_delivery').all();
+ assert.deepEqual(pending.map(row=>row.subject),[fixtureUser.id]);
+ retry.at=Number(pending[0].next_attempt);
+ assert.equal(await deliverProjectRevocations(config.projectSessionEvents!,fixtureUser.id,retry.at),true);
+ assert.deepEqual(delivered.sort(),['it-worlds','music-worlds','slopurself','sprachwelten']);
+ assert.ok(await store.getSession('new'));
 });
 
 test('identity export contains only the authenticated profile, preference and migration states',async t=>{

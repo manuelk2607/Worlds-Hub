@@ -154,7 +154,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
   try{if(!await limitIdentity(request,path,config))return json({error:'RATE_LIMITED',message:t(requestLocale(request),'error.rateLimited')},429);}catch{return json({error:'RATE_LIMIT_UNAVAILABLE'},503);}
   let account:Awaited<ReturnType<typeof verifiedAccount>>=null;
   if(path==='change-password'||path==='export'||path==='revoke-sessions'||path==='delete-account'){
-    try{account=await verifiedAccount(request,config,path==='revoke-sessions'||path==='delete-account');}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
+    try{account=await verifiedAccount(request,config,path!=='export');}catch{return json({error:'IDENTITY_UNAVAILABLE'},503);}
     if(!account)return json({error:'SIGN_IN_REQUIRED'},401);
   }
   if(path==='delete-account'&&account&&config.deletion){
@@ -217,10 +217,22 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
     }
     const changedUser=body.user as {id?:unknown}|undefined;
     if(changedUser?.id!==account.id)return json({error:'IDENTITY_UNAVAILABLE'},502);
+    const projects=config.deviceSignOutEnabled&&!config.deviceSignOutPilot?config.projectSessionEvents:undefined;
     let hubSessionsRevoked=true;
-    try{await new D1AuthStore(config.db).revokeIdentity(config.baseUrl,account.id);}
+    try{
+      if(projects)await revokeHubSessions(config.db,config.baseUrl,account.id,Date.now(),projects);
+      else await new D1AuthStore(config.db).revokeIdentity(config.baseUrl,account.id);
+    }
     catch{hubSessionsRevoked=false;}
-    return new Response(JSON.stringify({success:true,hubSessionsRevoked}),{status:response.status,headers});
+    const projectSessionsEnded=hubSessionsRevoked&&projects
+      ?await deliverProjectRevocations(projects,account.id).catch(()=>false):undefined;
+    if(projectSessionsEnded!==undefined){
+      // A replacement provider session can share the revocation second, so
+      // require a fresh sign-in before it can establish new project sessions.
+      headers.delete('set-cookie');
+      for(const name of [NEON_AUTH_SESSION_COOKIE_NAME,NEON_AUTH_SESSION_DATA_COOKIE_NAME,SESSION_COOKIE])headers.append('set-cookie',cookie(name,'',0));
+    }
+    return new Response(JSON.stringify({success:true,hubSessionsRevoked,projectSessionsEnded}),{status:response.status,headers});
   }
   // Do not expose raw session tokens or set-auth-token/set-auth-jwt headers from the managed API.
   const result:Record<string,unknown>={};

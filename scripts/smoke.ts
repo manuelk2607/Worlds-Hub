@@ -40,6 +40,7 @@ for(const language of ['de','en']){
  const body=await settings.text();
  assert.ok(body.includes('<html lang="'+language+'"'));
  assert.match(body,/data-identity-form="change-password"/);
+ assert.equal(body.includes('data-i18n="identity.passwordChangeWorldsNote"'),expectProduction);
  assert.match(body,/data-identity-export/);
  if(expectPilot||expectProduction){
   assert.match(body,expectPilot?/data-identity-device-sign-out="pilot"[^>]+hidden/:/data-identity-device-sign-out="projects"[^>]+disabled/);
@@ -53,6 +54,15 @@ const deviceSignOut=await fetch(origin+'/api/identity/revoke-sessions',{
  }:{})},body:'{}',
 });
 assert.equal(deviceSignOut.status,expectPilot||expectProduction?401:404);
+if(expectProduction){
+ const passwordChange=await fetch(origin+'/api/identity/change-password',{
+  method:'POST',headers:{origin,'content-type':'application/json',cookie:accountCsrfCookie,
+   'x-worlds-identity-csrf':accountCsrfCookie.split('=')[1]},
+  body:JSON.stringify({currentPassword:'anonymous-fixture',newPassword:'anonymous-fixture-new'}),
+ });
+ assert.equal(passwordChange.status,401);
+ assert.deepEqual(await passwordChange.json(),{error:'SIGN_IN_REQUIRED'});
+}
 for(const path of ['change-password','export']){
  const response=await fetch(origin+'/api/identity/'+path,{method:'POST',headers:{origin,'content-type':'application/json'},body:'{}'});
  assert.equal(response.status,403);

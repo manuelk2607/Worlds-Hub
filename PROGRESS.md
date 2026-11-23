@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-23 (Europe/Stockholm)
+Stand: 2026-11-24 (Europe/Helsinki)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -97,6 +97,18 @@ ohne Konflikt. Musikprofile, Beiträge, Ergebnisse und die ursprüngliche
 Zuordnung stimmen per Prüfsumme überein. Die persönliche Kontoansicht und
 eine automatische Zustellung sind noch nicht beobachtet. IT-Worlds bleibt
 der einzige ausstehende produktive Migrationsnachweis.
+
+## Passwortänderung beendet Worlds-Sitzungen
+
+Nach bestätigter Passwortänderung verwendet der Hub die bestehende
+projektübergreifende Abmeldung. Alte Rücksprünge werden abgefangen, und
+nicht erreichbare Empfänger bleiben für einen erneuten Versand vorgemerkt.
+Die Kontoseite führt zu einer frischen Anmeldung mit dem neuen Passwort.
+DE/EN melden vollständige oder ausstehende Zustellung getrennt.
+86 Tests, Typprüfung, Lint und Build bestanden. Chromium DE bei 1440 px
+und WebKit EN bei 320 px bestanden mit simulierten Antworten. Eine echte
+Passwortänderung mit offenen Sitzungen in allen vier Welten ist noch nicht
+abgenommen. Der separate Passwort-Reset beendet Anmeldesitzungen bei Neon.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 
