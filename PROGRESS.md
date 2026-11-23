@@ -48,13 +48,21 @@ DE/EN, PKCE, Übernahmeschutz und Abmelde-Empfänger bestanden live.
 Der erste Nachweis wurde per Einzellauf zugestellt. Ein weiterer
 automatischer Zustelllauf steht aus.
 
-## Slop-Urself-Nachweise – für Produktion freigegeben
+## Slop-Urself-Nachweis im Hub bestätigt
 
 Eigener öffentlicher Slop-Prüfschlüssel ergänzt. Der vorhandene
 Sprachwelten-Schlüssel und die D1-Tabelle bleiben in Verwendung. Der
 Slop-Sender meldet nur die exakte, nachgewiesene Übernahme eines Altprofils
-oder deren Rücknahme. Ein Nachweis wartet. Rücknahme: Hub `13e9b934`,
-Slop `5ca81c49`. Veröffentlichung und Live-Zustellung folgen.
+oder deren Rücknahme. Hub `92243e10` läuft zu 100 %, einschließlich der
+bestehenden Abmeldung ([GitHub](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45263056059)).
+Der Erstversand bestätigte genau einen Nachweis, Revision 1, ohne Konflikt.
+Der Kontoinhaber sieht „Zuordnung bestätigt“. Rücknahme: Hub `13e9b934`,
+Slop `5ca81c49`. Slop-Worker `ae3e169a-b868-4f59-bed8-ae61779a715a`
+läuft zu 100 % mit täglichem Versand. GitHub mit PostgreSQL 17, Chromium
+und WebKit sowie Live-Prüfungen für PKCE, Abmeldung und HF-Pflicht bestanden.
+Der Erstversand war ein Einzellauf. Eine weitere automatische Zustellung
+wurde live noch nicht beobachtet. IT-Worlds und Music-Worlds fehlen beim
+zentralen Nachweis.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 
