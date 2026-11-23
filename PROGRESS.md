@@ -106,7 +106,12 @@ nicht erreichbare Empfänger bleiben für einen erneuten Versand vorgemerkt.
 Die Kontoseite führt zu einer frischen Anmeldung mit dem neuen Passwort.
 DE/EN melden vollständige oder ausstehende Zustellung getrennt.
 86 Tests, Typprüfung, Lint und Build bestanden. Chromium DE bei 1440 px
-und WebKit EN bei 320 px bestanden mit simulierten Antworten. Eine echte
+und WebKit EN bei 320 px bestanden mit simulierten Antworten.
+`434f398` ist produktiv als Worker `13f07ec7-fbf4-41e4-bbb8-c94620749208`.
+[GitHub und Live-Prüfung](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45276942714)
+bestanden, einschließlich vier erreichbarer Abmeldeempfänger, DE/EN und
+abgewiesener anonymer Passwortänderung. Rücknahme auf `cc6b011e` erhält
+die bereits aktive projektübergreifende Abmeldung. Eine echte
 Passwortänderung mit offenen Sitzungen in allen vier Welten ist noch nicht
 abgenommen. Der separate Passwort-Reset beendet Anmeldesitzungen bei Neon.
 
