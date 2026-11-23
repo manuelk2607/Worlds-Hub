@@ -46,8 +46,15 @@ als Worker `4b62fb37-27a4-496d-8b7a-48f25d12a7d6` zu 100 %.
 bestand nach dem Next.js-Patch mit 234 Tests und 190 Browserfällen.
 DE/EN, PKCE, Übernahmeschutz und Abmelde-Empfänger bestanden live.
 Der erste Nachweis wurde per Einzellauf zugestellt. Ein weiterer
-automatischer Zustelllauf steht aus. Die drei anderen Welten senden noch
-keine produktiven Nachweise.
+automatischer Zustelllauf steht aus.
+
+## Slop-Urself-Nachweise – für Produktion freigegeben
+
+Eigener öffentlicher Slop-Prüfschlüssel ergänzt. Der vorhandene
+Sprachwelten-Schlüssel und die D1-Tabelle bleiben in Verwendung. Der
+Slop-Sender meldet nur die exakte, nachgewiesene Übernahme eines Altprofils
+oder deren Rücknahme. Ein Nachweis wartet. Rücknahme: Hub `13e9b934`,
+Slop `5ca81c49`. Veröffentlichung und Live-Zustellung folgen.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 
