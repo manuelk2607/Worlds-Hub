@@ -21,9 +21,9 @@ bestätigt sind eine aktive Worlds-Sitzung, ein Übernahme-Audit, 80 erhaltene
 Beiträge und eine erhaltene Adminrolle. Die geprüften Projekttabellen
 behielten ihre Prüfsummen. Das leere Profil wurde unverknüpft erhalten.
 Zwei weitere Sprachwelten-Altkonten benötigen einen Eigentumsnachweis.
-Der zentral gespeicherte Migrationsnachweis bleibt bis zur Live-Zustellung offen.
+Der zentrale Migrationsnachweis ist jetzt gespeichert und im Konto sichtbar.
 
-## Zentrale Sprachwelten-Nachweise – Produktionsfreigabe läuft
+## Zentrale Sprachwelten-Nachweise – Hub produktiv bestätigt
 
 Nach ausdrücklicher Freigabe wurde vor der Schemaänderung der D1-
 Wiederherstellungspunkt `00000203-00000000-0000512c-33510807ef61b74ec79bc04b1912fee5`
@@ -32,7 +32,22 @@ angewendet. Die Hub-Konfiguration akzeptiert ausschließlich den
 öffentlichen Sprachwelten-Prüfschlüssel. Der private Schlüssel gehört in
 den bestehenden Sprachwelten-Worker. Rücknahmeversionen: Hub `024ad424`,
 Sprachwelten `50558258`. Lokaler signierter Empfang, Wiederholung,
-Konfliktbehandlung und private Statusanzeige geprüft. Live-Zustellung folgt.
+Konfliktbehandlung und private Statusanzeige geprüft.
+
+Hub-Release `df2430c` ist als Worker `13e9b934-7723-481a-a4da-51389fa2d716`
+zu 100 % live ([GitHub](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45190639296)).
+Die produktive Abmeldung blieb aktiv. Nur Sprachwelten-Nachweise werden
+angenommen. Der kontrollierte Erstversand bestätigte genau einen bestehenden
+Nachweis, Revision 2, ohne Konflikt. Sprachwelten-Audit und D1 stimmen
+überein. Der Kontoinhaber bestätigte „Zuordnung bestätigt“ auf der Hub-
+Kontoseite. Sprachwelten `51a1395` läuft mit aktivem automatischem Versand
+als Worker `4b62fb37-27a4-496d-8b7a-48f25d12a7d6` zu 100 %.
+[GitHub](https://github.com/manuelk2607/Sprachwelten/actions/runs/45190637262)
+bestand nach dem Next.js-Patch mit 234 Tests und 190 Browserfällen.
+DE/EN, PKCE, Übernahmeschutz und Abmelde-Empfänger bestanden live.
+Der erste Nachweis wurde per Einzellauf zugestellt. Ein weiterer
+automatischer Zustelllauf steht aus. Die drei anderen Welten senden noch
+keine produktiven Nachweise.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 
