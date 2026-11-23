@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-22 (Europe/Stockholm)
+Stand: 2026-11-23 (Europe/Stockholm)
 
 Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
 sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
@@ -21,7 +21,18 @@ bestätigt sind eine aktive Worlds-Sitzung, ein Übernahme-Audit, 80 erhaltene
 Beiträge und eine erhaltene Adminrolle. Die geprüften Projekttabellen
 behielten ihre Prüfsummen. Das leere Profil wurde unverknüpft erhalten.
 Zwei weitere Sprachwelten-Altkonten benötigen einen Eigentumsnachweis.
-Der zentral gespeicherte Migrationsnachweis bleibt offen.
+Der zentral gespeicherte Migrationsnachweis bleibt bis zur Live-Zustellung offen.
+
+## Zentrale Sprachwelten-Nachweise – Produktionsfreigabe läuft
+
+Nach ausdrücklicher Freigabe wurde vor der Schemaänderung der D1-
+Wiederherstellungspunkt `00000203-00000000-0000512c-33510807ef61b74ec79bc04b1912fee5`
+festgehalten. Die Nachweistabelle fehlte. Nur Migration 0004 wurde
+angewendet. Die Hub-Konfiguration akzeptiert ausschließlich den
+öffentlichen Sprachwelten-Prüfschlüssel. Der private Schlüssel gehört in
+den bestehenden Sprachwelten-Worker. Rücknahmeversionen: Hub `024ad424`,
+Sprachwelten `50558258`. Lokaler signierter Empfang, Wiederholung,
+Konfliktbehandlung und private Statusanzeige geprüft. Live-Zustellung folgt.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 

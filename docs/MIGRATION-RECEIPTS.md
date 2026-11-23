@@ -43,3 +43,23 @@ historical profile still owns its data. Deliver the resulting `revoked`
 receipt with a higher audit revision. Disabling receipt delivery leaves the
 project mapping intact. The Hub account page and identity export expose
 only the authenticated user's reported states.
+
+## Sprachwelten production release
+
+1. Verify the Hub D1 Time Travel recovery point and the production schema.
+   Apply only the additive migration `0004_migration_receipts.sql` if its
+   table and index are absent. Keep the previous Hub Worker version for rollback.
+2. Generate a dedicated Ed25519 pair for Sprachwelten and store the private
+   JWK only in the existing Sprachwelten Worker secret
+   `WORLDS_MIGRATION_RECEIPT_PRIVATE_JWK`. Pin only `kid`, `kty`, `crv`,
+   and `x` under `sprachwelten` in the Hub's `MIGRATION_RECEIPT_KEYS`
+   variable and set `MIGRATION_RECEIPTS_ENABLED=true`. Publish the Hub with
+   `device_sign_out_production=true` to retain the existing four-project
+   sign-out, then publish Sprachwelten with its existing production bindings.
+3. Verify the enabled route rejects an invalid signature with HTTP 401.
+   Check that an actual pending audit record is acknowledged in Sprachwelten
+   and present in Hub D1 with the same revision and state. Check that the
+   authenticated account page shows the status and an anonymous request
+   cannot access it. Inspect counts and states without exporting identifiers.
+4. To stop delivery, restore the prior Worker versions. Keep the source
+   association and audit intact. Pending source records remain retryable.
