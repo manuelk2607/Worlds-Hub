@@ -36,7 +36,7 @@ const providerSession=()=>Response.json({user:fixtureUser,session:{userId:fixtur
 test('self-deletion requires explicit confirmation and fresh password proof for the verified session',async t=>{
  const f=await fixture();
  t.after(()=>f.db.close());
- for(const file of ['0003_user_preferences.sql','0004_migration_receipts.sql','0005_hub_session_revocations.sql','0006_project_session_revocation_delivery.sql','0007_identity_deletion.sql']){
+ for(const file of ['0003_user_preferences.sql','0004_migration_receipts.sql','0005_hub_session_revocations.sql','0006_project_session_revocation_delivery.sql','0007_identity_deletion.sql','0008_identity_receipt_erasure.sql']){
   f.db.exec(await readFile('migrations/'+file,'utf8'));
  }
  const {privateKey}=await generateKeyPair('EdDSA',{extractable:true});
@@ -302,7 +302,7 @@ test('identity export contains only the authenticated profile, preference and mi
  const receipt=f.db.prepare('INSERT INTO migration_receipts VALUES (?,?,?,?,?,?,?)');
  receipt.run('slop-urself',baseUrl,fixtureUser.id,'a'.repeat(64),1,'confirmed',1);
  receipt.run('it-worlds',baseUrl,'other-user','b'.repeat(64),1,'revoked',1);
- const migration={origin,identityIssuer:baseUrl,db:f.binding,keys:{}};
+ const migration={origin,identityIssuer:baseUrl,db:f.binding,keys:{},erasureEnabled:false};
  let signedIn=false;
  t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL)=>{
   assert.ok(new URL(String(input)).pathname.endsWith('/get-session'));

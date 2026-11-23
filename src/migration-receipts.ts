@@ -2,6 +2,7 @@ import {importJWK, jwtVerify} from 'jose';
 import {boundedBody} from '../packages/auth/oidc.ts';
 import {migrationReceiptType} from '../packages/auth/migration-receipts.ts';
 import {sessionEventPublicKey} from '../packages/auth/session-revocation.ts';
+import {hash} from '../packages/auth/store.ts';
 import {projects, type Project} from './projects.ts';
 
 type ProjectId = Project['id'];
@@ -13,9 +14,15 @@ export interface MigrationConfig {
   identityIssuer:string;
   keys:Partial<Record<ProjectId, ProjectKey>>;
   db:D1Database;
+  erasureEnabled:boolean;
 }
-export interface MigrationEnv {MIGRATION_RECEIPTS_ENABLED?:string; MIGRATION_RECEIPT_KEYS?:string}
+export interface ReceiptErasureEnv {MIGRATION_RECEIPT_ERASURE_ENABLED?:string}
+export interface MigrationEnv extends ReceiptErasureEnv {MIGRATION_RECEIPTS_ENABLED?:string; MIGRATION_RECEIPT_KEYS?:string}
 const prefix='/api/migrations/receipts/';
+
+export function receiptErasureDigest(issuer:string,subject:string) {
+  return hash(JSON.stringify(['worlds-hub:receipt-erasure:v1',issuer,subject]));
+}
 
 export function migrationConfig(env:MigrationEnv,origin:string,issuer:string|undefined,db:D1Database|undefined):MigrationConfig|null {
   if(env.MIGRATION_RECEIPTS_ENABLED!=='true'||!issuer||!db||!env.MIGRATION_RECEIPT_KEYS)return null;
@@ -30,7 +37,8 @@ export function migrationConfig(env:MigrationEnv,origin:string,issuer:string|und
       keys[project.id]=key;
     }
     const publicKeys=Object.values(keys).map(key=>key.x);
-    return publicKeys.length&&new Set(publicKeys).size===publicKeys.length?{origin,identityIssuer:issuer,keys,db}:null;
+    return publicKeys.length&&new Set(publicKeys).size===publicKeys.length
+      ?{origin,identityIssuer:issuer,keys,db,erasureEnabled:env.MIGRATION_RECEIPT_ERASURE_ENABLED==='true'}:null;
   }catch{return null;}
 }
 
@@ -70,13 +78,17 @@ export async function receiveMigrationReceipt(request:Request,config:MigrationCo
   // The project owns the original mapping. This table only records signed
   // evidence of committed changes and does not participate in authorization.
   try{
+    const erasedDigest=config.erasureEnabled?await receiptErasureDigest(config.identityIssuer,sub):null;
+    const values=erasedDigest===null?'VALUES (?,?,?,?,?,?,?)':`
+      SELECT ?,?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM erased_identity_receipts WHERE subject_digest=?)`;
     const written=await config.db.prepare(`
       INSERT OR IGNORE INTO migration_receipts (project,identity_issuer,subject,account_ref,revision,state,recorded_at)
-      VALUES (?,?,?,?,?,?,?)
+      ${values}
       ON CONFLICT(project,identity_issuer,subject) DO UPDATE SET
         revision=excluded.revision,state=excluded.state,recorded_at=excluded.recorded_at
       WHERE account_ref=excluded.account_ref AND revision<excluded.revision
-    `).bind(project.id,config.identityIssuer,sub,account_ref,revision,state,Date.now()).run();
+    `).bind(project.id,config.identityIssuer,sub,account_ref,revision,state,Date.now(),
+      ...(erasedDigest===null?[]:[erasedDigest])).run();
     if(written.meta.changes)return json({result:'stored'});
     const previous=await config.db.prepare(`
       SELECT account_ref, revision, state FROM migration_receipts
@@ -86,6 +98,8 @@ export async function receiveMigrationReceipt(request:Request,config:MigrationCo
       if(previous.revision>revision)return json({result:'stale'});
       if(previous.revision===revision&&previous.state===state)return json({result:'duplicate'});
     }
+    if(erasedDigest!==null && !previous && await config.db.prepare('SELECT 1 FROM erased_identity_receipts WHERE subject_digest=?')
+      .bind(erasedDigest).first()) return json({result:'stale'});
     return json({error:'RECEIPT_CONFLICT'},409);
   }catch{return json({error:'MIGRATION_STORE_UNAVAILABLE'},503);}
 }

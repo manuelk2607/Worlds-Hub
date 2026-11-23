@@ -1,10 +1,11 @@
 import { createAuthServer, NEON_AUTH_SESSION_COOKIE_NAME, resolveNeonAuthLogging } from '@neon/auth/server';
 import { sessionEventMaxDelay, sessionRevocationPath } from '../packages/auth/session-revocation.ts';
 import { revokeHubSessionStatements } from './hub-session-revocation.ts';
+import { receiptErasureDigest, type ReceiptErasureEnv } from './migration-receipts.ts';
 import type { ProjectSessionEvents } from './project-session-events.ts';
 import { projects } from './projects.ts';
 
-export interface IdentityDeletionEnv {
+export interface IdentityDeletionEnv extends ReceiptErasureEnv {
   IDENTITY_ACCOUNT_DELETION_ENABLED?: string;
   IDENTITY_DELETION_ISSUER?: string;
   IDENTITY_DELETION_ADMIN_SUBJECT?: string;
@@ -35,7 +36,8 @@ export function identityDeletionConfig(
 ): IdentityDeletion | undefined {
   const adminSubject = env.IDENTITY_DELETION_ADMIN_SUBJECT;
   const adminSession = env.IDENTITY_DELETION_ADMIN_SESSION;
-  if (env.IDENTITY_ACCOUNT_DELETION_ENABLED !== 'true' || env.IDENTITY_DELETION_ISSUER !== issuer ||
+  if (env.IDENTITY_ACCOUNT_DELETION_ENABLED !== 'true' || env.MIGRATION_RECEIPT_ERASURE_ENABLED !== 'true' ||
+      env.IDENTITY_DELETION_ISSUER !== issuer ||
       !adminSubject || !validSubject(adminSubject) || !adminSession || !/^[A-Za-z0-9_.%=-]{20,512}$/.test(adminSession) ||
       recipients?.identityIssuer !== issuer || recipients.db !== db) return;
   const expected = projects.flatMap(project => project.url ? [new URL(project.url).origin + sessionRevocationPath] : []);
@@ -93,11 +95,13 @@ export async function processAccountDeletion(config: IdentityDeletion, now = Dat
   if (!job) return false;
   await config.remove(job.subject);
   const finishedAt = Math.max(now,Date.now());
+  const erasedDigest = await receiptErasureDigest(config.issuer,job.subject);
   await config.db.batch([
     config.db.prepare(`UPDATE identity_deletion_jobs SET removed_at=?
       WHERE issuer=? AND subject=? AND removed_at IS NULL`).bind(finishedAt,config.issuer,job.subject),
     ...revokeHubSessionStatements(config.db,config.issuer,job.subject,finishedAt,config.projects),
     config.db.prepare('DELETE FROM user_preferences WHERE issuer=? AND subject=?').bind(config.issuer,job.subject),
+    config.db.prepare('INSERT OR IGNORE INTO erased_identity_receipts(subject_digest) VALUES (?)').bind(erasedDigest),
     config.db.prepare('DELETE FROM migration_receipts WHERE identity_issuer=? AND subject=?').bind(config.issuer,job.subject),
   ]);
   return true;

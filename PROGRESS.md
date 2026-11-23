@@ -110,8 +110,17 @@ Löschung, den Wiederanlauf und ein unberührtes Kontrollkonto ab.
 85 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium
 Desktop DE und WebKit bei 320 px EN prüften mit simulierten Antworten
 Abbruch, falsches Passwort, ausstehenden Auftrag und Sprachwechsel.
-Die Funktion ist produktiv deaktiviert. Offen sind der Test mit einem
-synthetischen Konto beim Anmeldedienst sowie Migration und Laufzeitfreigabe.
+Migration 0008 verhindert auch nach dem Aufräumen des Löschauftrags,
+dass ein verspäteter, gültig signierter Projektnachweis die gelöschte
+Zuordnung neu speichert. Der Hub hält dafür nur den SHA-256-Abdruck aus
+Aussteller und Konto-ID. Der Test bestätigt die gemeinsame Rücknahme
+bei einem Speicherfehler und den Empfang für ein anderes Konto.
+Alle 85 Tests und die Anwendung der acht Migrationen in lokalem D1
+bestanden. Typprüfung, Lint, Build und Artefaktprüfung sind grün.
+Produktiv sind 0007 und 0008 noch ausstehend und die Funktion ist
+deaktiviert. Das aktuelle Neon-OpenAPI-Schema listet `delete-user` und
+`change-email`. Für die Selbstlöschung fehlt weiterhin ein erfolgreich
+geprüfter Aufruf mit einem normalen Testkonto.
 
 ## IT-Worlds produktiv angebunden
 

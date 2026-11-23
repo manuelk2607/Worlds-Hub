@@ -9,10 +9,24 @@ project IDs. The items below do not authorize a production cutover.
 | Password change | Native QA API preserves the subject, rejects the old password and revokes a second session | Full personal browser acceptance and project session revocation |
 | Password bounds | Native QA rejects 129 characters with `PASSWORD_TOO_LONG`; no account created. Hub rejects oversized credentials before forwarding them; accepts existing eight-character logins unchanged | Verified in deployed `504ec19`; new passwords require 12 characters, maximum 128. Both browsers passed locally with simulated responses; CI and live checks passed |
 | Password reset | Actual signed QA delivery and native reset passed: one-use token, stable subject, old password denied, both old sessions revoked, unrelated account preserved | Browser/BFF acceptance passed locally against the real QA provider (Chromium DE, WebKit EN, 320 px). Project session revocation remains open. After QA restoration, the same reset-revocation option was enabled in the primary pilot; all other settings are unchanged |
-| Self-deletion | Public `delete-user` returned 404. The separately approved SDK `admin.removeUser` removed its synthetic target and invalidated its session. The production issuer's OpenAPI advertises `verify-password` and rejects an anonymous request with 401. The Hub requires fresh password proof and confirmation. SQLite covers retry and four queued revocations. Chromium DE and WebKit EN pass with simulated API responses. | Authenticated acceptance with a synthetic account, delivery to all four worlds, restricted runtime operation and deployment of migration 0007 |
+| Self-deletion | `delete-user` previously returned 404 for a signed-in QA account. The separately approved SDK `admin.removeUser` removed its synthetic target and invalidated its session. As of 2026-11-23, the production issuer's OpenAPI lists `delete-user`, `change-email` and `verify-password`. The Hub requires fresh password proof and confirmation. SQLite covers retry, four queued revocations and suppression of late signed receipts after job cleanup. Chromium DE and WebKit EN passed with simulated API responses. | Authenticated acceptance with a synthetic account, delivery to all four worlds, restricted runtime operation and deployment of migrations 0007 and 0008 |
 | Cross-project logout | Native SDK `revokeSessions()` revoked both sessions of an ordinary test account while preserving the control. The Hub can revoke its own sessions and fence old callbacks. Four adapters verify signed OIDC backchannel tokens and reject replay | Supported invalidation of every project BFF and complete browser acceptance. Actual backchannel delivery remains open |
 
 ## Provider configuration limits
+
+The OpenAPI listing by itself does not establish that a provider option is
+enabled. [Neon's Admin documentation](https://neon.com/docs/auth/guides/plugins/admin)
+requires an admin role for Admin APIs.
+
+Apply D1 migrations 0007 and 0008 before turning on
+`MIGRATION_RECEIPT_ERASURE_ENABLED`. Verify receipt acceptance for other
+identities before enabling `IDENTITY_ACCOUNT_DELETION_ENABLED`. The deletion
+transaction stores a domain-separated SHA-256 digest of issuer and subject,
+removes the receipt, and queues project revocations together. The digest is
+pseudonymous and stays in D1 after the job is cleaned up because a project
+may generate a fresh signature for an older queued receipt. Keep receipt
+erasure enabled even when disabling new deletions. After the first deletion,
+any Worker rollback needs to preserve the receipt guard and its D1 data.
 
 The native `revokeSessions()` method uses the account's existing session.
 In the already expiring Sprachwelten QA branch `br-twilight-river-ba9t32rl`,
