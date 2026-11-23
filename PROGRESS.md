@@ -76,6 +76,16 @@ bestanden. Die Produktion verwendet weiterhin den bestehenden Stand.
 Offen: Wiederherstellungspunkt, Migration 009, projektspezifischer
 Schlüssel und Upload mit einem gültigen IT-Worlds-Zugang.
 
+## Music-Worlds-Nachweis für die Veröffentlichung vorbereitet
+
+Der produktive Nur-Lese-Abgleich bestätigt eine vorhandene Übernahme
+mit derselben zentralen Identität wie der verifizierte Slop-Nachweis.
+Migration 008 und der signierte Sender bestanden lokal und im
+[QA-Lauf](https://github.com/manuelk2607/Music-Worlds/actions/runs/45267464276).
+Die Music-Sicherung `br-mute-dust-b9q9wt0a` ist bereit. Der Hub erhält
+nur den eigenen öffentlichen Prüfschlüssel für Music-Worlds. Die
+bestehenden Nachweise und die globale Abmeldung bleiben aktiv.
+
 ## Zentrale Kontolöschung lokal umgesetzt
 
 Die Kontoseite verlangt die ausdrückliche Bestätigung und das aktuelle
