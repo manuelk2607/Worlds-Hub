@@ -117,9 +117,13 @@ Aussteller und Konto-ID. Der Test bestätigt die gemeinsame Rücknahme
 bei einem Speicherfehler und den Empfang für ein anderes Konto.
 Alle 85 Tests und die Anwendung der acht Migrationen in lokalem D1
 bestanden. Typprüfung, Lint, Build und Artefaktprüfung sind grün.
+Der Cloudflare-Trockenlauf und die
+[GitHub-Prüfung](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45269687327)
+für `cbacd57` bestanden.
 Produktiv sind 0007 und 0008 noch ausstehend und die Funktion ist
 deaktiviert. Das aktuelle Neon-OpenAPI-Schema listet `delete-user` und
-`change-email`. Für die Selbstlöschung fehlt weiterhin ein erfolgreich
+`change-email`. Die ausgelesene verwaltete Konfiguration enthält dafür
+keine eigenen Schalter. Für die Selbstlöschung fehlt ein erfolgreich
 geprüfter Aufruf mit einem normalen Testkonto.
 
 ## IT-Worlds produktiv angebunden
