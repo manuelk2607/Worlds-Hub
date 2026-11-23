@@ -76,15 +76,27 @@ bestanden. Die Produktion verwendet weiterhin den bestehenden Stand.
 Offen: Wiederherstellungspunkt, Migration 009, projektspezifischer
 Schlüssel und Upload mit einem gültigen IT-Worlds-Zugang.
 
-## Music-Worlds-Nachweis für die Veröffentlichung vorbereitet
+## Music-Worlds-Nachweis produktiv zugestellt
 
 Der produktive Nur-Lese-Abgleich bestätigt eine vorhandene Übernahme
 mit derselben zentralen Identität wie der verifizierte Slop-Nachweis.
 Migration 008 und der signierte Sender bestanden lokal und im
 [QA-Lauf](https://github.com/manuelk2607/Music-Worlds/actions/runs/45267464276).
 Die Music-Sicherung `br-mute-dust-b9q9wt0a` ist bereit. Der Hub erhält
-nur den eigenen öffentlichen Prüfschlüssel für Music-Worlds. Die
-bestehenden Nachweise und die globale Abmeldung bleiben aktiv.
+nur den eigenen öffentlichen Prüfschlüssel für Music-Worlds. Version
+`cc6b011e-5b9b-49b2-bd33-3a4e28a5ea2e`; Rücknahme auf `92243e10`.
+[Hub-Release](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45268080562)
+mit aktiver globaler Abmeldung bestanden. Die Eingänge für Sprachwelten,
+Slop Urself und Music-Worlds weisen unsignierte Anfragen ab.
+
+Music-Worlds läuft als Worker `8e97e0e5-e8ec-413a-b28f-9df8e8852bc4`.
+[Produktionslauf](https://github.com/manuelk2607/Music-Worlds/actions/runs/45268081000)
+bestand. Migration 008 ist mit bestätigter Prüfsumme angewendet. Der Hub
+bestätigte den signierten Nachweis für das freigegebene Altprofil, Revision 1,
+ohne Konflikt. Musikprofile, Beiträge, Ergebnisse und die ursprüngliche
+Zuordnung stimmen per Prüfsumme überein. Die persönliche Kontoansicht und
+eine automatische Zustellung sind noch nicht beobachtet. IT-Worlds bleibt
+der einzige ausstehende produktive Migrationsnachweis.
 
 ## Zentrale Kontolöschung lokal umgesetzt
 
