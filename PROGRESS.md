@@ -2,13 +2,18 @@
 
 Stand: 2026-11-24 (Europe/Helsinki)
 
-Das aktualisierte Ziel priorisiert die zentrale Kontoverwaltung und die
-sichere Migration vor dem Wechsel zur ausschließlichen Worlds-Anmeldung.
-Offen sind insbesondere Kontolöschung und Datenschutzfunktionen am
-zentralen Konto, Migrationsnachweise aus allen vier Welten und die
-kontrollierte produktive Kontoübernahme.
-Die getrennten Projektzuordnungen sind weiterhin nötig, um bestehende
-lokale IDs und Berechtigungen beim Übergang zu erhalten.
+Zentrale Anmeldung und projektübergreifende Abmeldung laufen in allen vier
+Welten. Jede Welt hat einen bestätigten Migrationsnachweis an den Hub
+geliefert. Die getrennten Projektzuordnungen erhalten lokale IDs und
+Berechtigungen.
+
+Als Nächstes steht die in CI geprüfte IT-Worlds-Selbstübernahme für das
+verbleibende Altprofil zur Freigabe an. Music-Worlds hat ein unverknüpftes
+Gastprofil mit acht Beiträgen. Dafür fehlt ein überprüfbarer
+Eigentumsnachweis. Sprachwelten und Slop Urself warten auf die Veröffentlichung
+der Korrektur für den automatischen Nachweisversand. Die zentrale
+Kontolöschung ist lokal getestet. Im Produktivbetrieb fehlt der freigegebene
+Löschzugang zum Anmeldedienst.
 
 ## Sprachwelten-Altprofil produktiv übernommen
 
