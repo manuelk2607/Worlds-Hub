@@ -93,8 +93,11 @@ im gemeinsamen Sender nachgewiesen. Auth 0.1.7 verwendet `manual` und
 weist 3xx vor dem Lesen des Inhalts ab. IT-Worlds und Music-Worlds nutzen
 die Korrektur produktiv. [Music-Worlds-Release](https://github.com/manuelk2607/Music-Worlds/actions/runs/45389185697)
 mit aktiver Worlds-Anmeldung und 03:17-UTC-Zeitplan bestand. Sprachwelten
-und Slop Urself haben die Korrektur im Repository. Für deren produktive
-Veröffentlichung fehlt ein gültiger Cloudflare-Zugang.
+und Slop Urself haben die Korrektur im Repository. Beide Browser-Prüfungen
+und Cloudflare-Trockenläufe bestanden. Für deren produktive Veröffentlichung
+fehlt der kurzzeitige Cloudflare-Zugang.
+[Sprachwelten](https://github.com/manuelk2607/Sprachwelten/actions/runs/45389343509) ·
+[Slop Urself](https://github.com/manuelk2607/Slop_Urself/actions/runs/45390239830)
 
 ## Music-Worlds-Nachweis produktiv zugestellt
 
