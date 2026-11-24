@@ -79,7 +79,21 @@ Einzelversand meldete einen bestätigten Nachweis, Revision 1, ohne Konflikt.
 mit aktiver globaler Abmeldung bestand. Die vier Projekte haben damit
 jeweils einen bestätigten Nachweis geliefert. Cloudflares fünf kostenlose
 Zeitpläne sind belegt. Der IT-Sender wird deshalb über den vorhandenen
-Hub-Zeitplan intern aufgerufen.
+Hub-Zeitplan um 03:17 UTC intern aufgerufen. Hub-Version
+`10fca8eb-653d-4e4f-953e-705c6a0a8c25` und IT-Worker `163de77f` laufen
+zu 100 %. Der interne Dienst und die vier Abmeldeverbindungen sind aktiv.
+Private Zustellung mit Signatur und Quittung bestand in der lokalen
+Worker-Laufzeit. Der tägliche Produktionslauf steht aus.
+[Hub-Prüfung und Release](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45388263227)
+bestanden mit 87 Tests. Rücknahme zuerst Hub `59d1b615`, danach IT-Worker
+`50474787`.
+
+Der Worker-Test hat die nicht unterstützte Fetch-Option `redirect: error`
+im gemeinsamen Sender nachgewiesen. Hub-Quelle und IT-Worlds verwenden
+`manual` und weisen 3xx vor dem Lesen des Inhalts ab. Die produktiven
+Sender von Sprachwelten, Slop Urself und Music-Worlds verwenden den alten
+Stand. Ihre manuell bestätigten Nachweise bleiben gültig. Der Fix für
+deren automatische Zustellung steht aus.
 
 ## Music-Worlds-Nachweis produktiv zugestellt
 
