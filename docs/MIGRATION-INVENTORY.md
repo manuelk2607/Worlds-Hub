@@ -1,5 +1,33 @@
 # Kontenübernahme: tatsächlicher Bestand und Freigabegrenzen
 
+## Produktiver Abgleich vom 24.11.2026
+
+Der Abgleich zählt nur Altprofile. In jedem Projekt ist eine bestätigte
+Übernahme gespeichert. Die Projektprofile und ihre Inhalte bleiben in den
+jeweiligen Datenbanken. Alle Abfragen unten liefern nur Summen.
+
+| Projekt | Altprofile | Übernommen | Offen | Nächster möglicher Schritt |
+| --- | ---: | ---: | ---: | --- |
+| Music-Worlds | 2 | 1 | 1 | Unabhängigen Eigentumsnachweis prüfen. Dem offenen Profil gehören acht Beiträge. Es gibt keine gespeicherte Gastsitzung, frühere zentrale Zuordnung oder Quellautor-Referenz. |
+| Sprachwelten | 3 | 1 | 2 | Beide verbleibenden Konten können die vorhandene Übernahme mit ihrer bisherigen Anmeldung nutzen. |
+| IT-Worlds | 2 | 1 | 1 | Den geprüften Selbstübernahme-Ablauf veröffentlichen. Für das offene Konto sind Lernfortschritte gespeichert. |
+| Slop Urself | 13 | 1 | 12 | Den geprüften Ablauf für vier passwortgeschützte Profile veröffentlichen. Acht passwortlose Profile benötigen eine individuelle Eigentumsprüfung. |
+
+Bei Slop haben unter den acht offenen passwortlosen Profilen zwei einen
+Eintrag in der Spielerhistorie und zwei einen Eintrag in der Videohistorie.
+Diese Summen können dieselben Profile enthalten. Es gibt keine gültige,
+unverbrauchte Freigabe für diese acht Profile. Die Historien enthalten die
+Projekt-ID, aber keinen bestätigten Hugging-Face-Eigentümer für eine Übernahme.
+Die verschlüsselte HF-Verbindung ist zeitlich begrenzt und konnte nach einer
+Anmeldung allein per Benutzername neu hergestellt werden. Für die Übernahme
+ist daher ein unabhängiger Eigentumsnachweis zum konkreten Profil nötig.
+Vorhandene Daten und die persönliche HF-Anforderung bleiben erhalten.
+
+[IT-Worlds-Prüfung](https://github.com/manuelk2607/IT-Worlds/actions/runs/45397308296) ·
+[Slop-Urself-Prüfung](https://github.com/manuelk2607/Slop_Urself/actions/runs/45400243124)
+
+## Ursprünglicher Stand vor den Produktionsübernahmen
+
 Stand: 08.11.2026, Europe/Stockholm. Read-only SQL gegen die expliziten
 Produktionszweige, keine Schreibzugriffe und keine exportierten Zugangsdaten.
 Diese Zahlen beschreiben lokale Konten/Profile, nicht verschiedene Personen.
