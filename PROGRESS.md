@@ -89,11 +89,12 @@ bestanden mit 87 Tests. Rücknahme zuerst Hub `59d1b615`, danach IT-Worker
 `50474787`.
 
 Der Worker-Test hat die nicht unterstützte Fetch-Option `redirect: error`
-im gemeinsamen Sender nachgewiesen. Hub-Quelle und IT-Worlds verwenden
-`manual` und weisen 3xx vor dem Lesen des Inhalts ab. Die produktiven
-Sender von Sprachwelten, Slop Urself und Music-Worlds verwenden den alten
-Stand. Ihre manuell bestätigten Nachweise bleiben gültig. Der Fix für
-deren automatische Zustellung steht aus.
+im gemeinsamen Sender nachgewiesen. Auth 0.1.7 verwendet `manual` und
+weist 3xx vor dem Lesen des Inhalts ab. IT-Worlds und Music-Worlds nutzen
+die Korrektur produktiv. [Music-Worlds-Release](https://github.com/manuelk2607/Music-Worlds/actions/runs/45389185697)
+mit aktiver Worlds-Anmeldung und 03:17-UTC-Zeitplan bestand. Sprachwelten
+und Slop Urself haben die Korrektur im Repository. Für deren produktive
+Veröffentlichung fehlt ein gültiger Cloudflare-Zugang.
 
 ## Music-Worlds-Nachweis produktiv zugestellt
 
