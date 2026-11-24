@@ -135,6 +135,12 @@ Webhook für den bestätigten Abschluss. Die Mailzustellung bleibt wie bisher.
 87 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium DE
 am Desktop und WebKit EN bei 320 px bestanden mit simuliertem Reset,
 Wiederholung nach einem Fehler, erneuter Anmeldung und Abmeldebestätigung.
+`d50b79d` ist als Worker `97e206ce-71f5-4822-93a7-eec0ea0f9984` live.
+Die [GitHub-Prüfung](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45442479177)
+und die direkten DE/EN-Abfragen bestätigen beide Seiten, das aktualisierte
+Browser-Skript und den Datenschutz der Reset-Seite. Die vier
+Abmeldeverbindungen und der private IT-Nachweisempfänger sind aktiv.
+Rücknahmeversion `10fca8eb`. Es wurde kein echtes Passwort zurückgesetzt.
 
 Nach bestätigter Passwortänderung verwendet der Hub die bestehende
 projektübergreifende Abmeldung. Alte Rücksprünge werden abgefangen, und
