@@ -45,7 +45,8 @@ const configFile=`.${basename(temporary)}.json`;
 try{
   const config=ts.parseConfigFileTextToJson('wrangler.jsonc',readFileSync('wrangler.jsonc','utf8'));
   assert.ok(!config.error&&config.config.name==='worlds-hub','Invalid Hub configuration');
-  writeFileSync(configFile,JSON.stringify({...config.config,services}),{mode:0o600,flag:'wx'});
+  const bindings=production?[...services,{binding:'IT_WORLDS_MIGRATION_TASK',service:'it-worlds',entrypoint:'MigrationReceiptDelivery'}]:services;
+  writeFileSync(configFile,JSON.stringify({...config.config,services:bindings}),{mode:0o600,flag:'wx'});
   const file=join(temporary,'secrets.json');
   writeFileSync(file,JSON.stringify({
     ...(production?{}:{IDENTITY_DEVICE_SIGN_OUT_PILOT:JSON.stringify(pilot)}),

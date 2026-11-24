@@ -64,17 +64,22 @@ Der Erstversand war ein Einzellauf. Eine weitere automatische Zustellung
 wurde live noch nicht beobachtet. IT-Worlds und Music-Worlds fehlen beim
 zentralen Nachweis.
 
-## IT-Worlds-Nachweis mit GitHub geprüft
+## IT-Worlds-Nachweis produktiv bestätigt
 
 Der produktive Nur-Lese-Abgleich bestätigt genau eine vorhandene
 Altprofilübernahme. Der IT-Worlds-Stand `7d0c93c` enthält Migration 009,
 den signierten Sender und den vorgesehenen täglichen Versand.
 [GitHub](https://github.com/manuelk2607/IT-Worlds/actions/runs/45266022475)
-bestand einschließlich PostgreSQL 18. Lokale Prüfung der eingeschränkten
-Datenbankrolle, des signierten Versands, Build und Kontoseite DE/EN
-bestanden. Die Produktion verwendet weiterhin den bestehenden Stand.
-Offen: Wiederherstellungspunkt, Migration 009, projektspezifischer
-Schlüssel und Upload mit einem gültigen IT-Worlds-Zugang.
+bestand einschließlich PostgreSQL 18. Nach der bestätigten Neon-Sicherung
+`br-purple-hill-bauxj1e4` wurde Migration 009 angewendet. Profile, Lernstände
+und Zuordnungen blieben per Prüfsumme erhalten. Hub-Version `59d1b615`
+nimmt den eigenen öffentlichen Prüfschlüssel an. Der freigegebene
+Einzelversand meldete einen bestätigten Nachweis, Revision 1, ohne Konflikt.
+[Hub-Release](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45386080215)
+mit aktiver globaler Abmeldung bestand. Die vier Projekte haben damit
+jeweils einen bestätigten Nachweis geliefert. Cloudflares fünf kostenlose
+Zeitpläne sind belegt. Der IT-Sender wird deshalb über den vorhandenen
+Hub-Zeitplan intern aufgerufen.
 
 ## Music-Worlds-Nachweis produktiv zugestellt
 
@@ -95,8 +100,7 @@ bestand. Migration 008 ist mit bestätigter Prüfsumme angewendet. Der Hub
 bestätigte den signierten Nachweis für das freigegebene Altprofil, Revision 1,
 ohne Konflikt. Musikprofile, Beiträge, Ergebnisse und die ursprüngliche
 Zuordnung stimmen per Prüfsumme überein. Die persönliche Kontoansicht und
-eine automatische Zustellung sind noch nicht beobachtet. IT-Worlds bleibt
-der einzige ausstehende produktive Migrationsnachweis.
+eine automatische Zustellung sind noch nicht beobachtet.
 
 ## Passwortänderung beendet Worlds-Sitzungen
 

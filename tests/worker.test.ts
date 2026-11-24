@@ -41,6 +41,28 @@ test('device locale initializes a missing profile preference without overwriting
 
 test('scheduled auth cleanup bounds D1 writes and preserves valid sessions',async()=>{const {db,binding}=await sqliteD1();try{db.exec(await readFile('migrations/0002_identity_rate_limits.sql','utf8'));const now=Date.now();const insert=db.prepare('INSERT INTO auth_transactions (id,payload,expires) VALUES (?,?,?)');for(let i=0;i<501;i++)insert.run('old-'+i,'{}',now-1000);insert.run('valid','{}',now+60000);await worker.scheduled({}, {AUTH_DB:binding});assert.equal(db.prepare('SELECT count(*) AS count FROM auth_transactions WHERE expires < ?').get(now)?.count,1);assert.ok(db.prepare('SELECT id FROM auth_transactions WHERE id = ?').get('valid'));}finally{db.close();}});
 
+test('the existing production schedule calls the private IT-Worlds receipt task once daily',async t=>{
+ const {db,binding}=await sqliteD1();
+ t.after(()=>db.close());
+ db.exec(await readFile('migrations/0002_identity_rate_limits.sql','utf8'));
+ let calls=0;
+ const task={async deliver(){calls++;return {acknowledged:0,conflict:0};}};
+ const env={AUTH_DB:binding,AUTH_ENABLED:'true',SITE_ORIGIN:origin,OIDC_ISSUER:'https://managed.example/auth',
+  OIDC_CLIENT_ID:'hub',OIDC_ID_TOKEN_ALG:'EdDSA',MIGRATION_RECEIPTS_ENABLED:'true',
+  MIGRATION_RECEIPT_KEYS:JSON.stringify({'it-worlds':{kid:'fixture',kty:'OKP',crv:'Ed25519',x:'A'.repeat(43)}}),
+  IT_WORLDS_MIGRATION_TASK:task};
+ const selected={scheduledTime:Date.UTC(2026,10,24,3,17)};
+ await worker.scheduled({},env);
+ await worker.scheduled({scheduledTime:Date.UTC(2026,10,24,2,17)},env);
+ await worker.scheduled(selected,{...env,SITE_ORIGIN:'https://test.example'});
+ await worker.scheduled(selected,{...env,MIGRATION_RECEIPTS_ENABLED:'false'});
+ await worker.scheduled(selected,{...env,MIGRATION_RECEIPT_KEYS:undefined});
+ await worker.scheduled(selected,{...env,IT_WORLDS_MIGRATION_TASK:undefined});
+ assert.equal(calls,0);
+ await worker.scheduled(selected,env);
+ assert.equal(calls,1);
+});
+
 test('scheduled pilot deliveries stay within the authorized account, test audiences and expiry',async t=>{
  const {db,binding}=await sqliteD1();
  try{

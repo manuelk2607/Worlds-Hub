@@ -14,7 +14,7 @@ import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRoute
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
 
-export interface Env extends IdentityEnv,MigrationEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database}
+export interface Env extends IdentityEnv,MigrationEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database;IT_WORLDS_MIGRATION_TASK?:{deliver():Promise<{acknowledged:number;conflict:number}>}}
 export const DEFAULT_ORIGIN='https://worlds-hub.maki26.workers.dev';
 export function authConfig(env:Env):AuthConfig|null {
  if(env.AUTH_ENABLED!=='true'||!env.SITE_ORIGIN||!env.OIDC_ISSUER||!env.OIDC_CLIENT_ID||!env.AUTH_DB||!env.OIDC_ID_TOKEN_ALG)return null;
@@ -135,17 +135,17 @@ export default {
   const response=finish(text(request.method==='HEAD'?'':html,'text/html',statusCode));
   if(env.PUBLIC_INDEXING!=='true')response.headers.set('X-Robots-Tag','noindex, nofollow');return response;
  },
- async scheduled(_event:unknown,env:Env){
+ async scheduled(event:{scheduledTime?:number},env:Env){
   const db=env.AUTH_DB;if(!db)return;
   const now=Date.now();
   await db.batch(['auth_transactions','auth_sessions','auth_replays','identity_rate_limits'].map(table=>db.prepare(`DELETE FROM ${table} WHERE id IN (SELECT id FROM ${table} WHERE expires < ? ORDER BY expires LIMIT 500)`).bind(now)));
   if(['true','pilot'].includes(env.IDENTITY_DEVICE_SIGN_OUT_ENABLED??''))await pruneHubRevocations(db,now);
-  const identity=identityConfig(env),projects=identity?.projectSessionEvents;
+  const identity=identityConfig(env),projects=identity?.projectSessionEvents,oidcIssuer=authConfig(env)?.issuer;
   if(projects||env.IDENTITY_DEVICE_SIGN_OUT_ENABLED==='pilot'){
    const expired=await pruneProjectRevocationDeliveries(db,now);
    if(expired)console.warn('Unconfirmed project sign-outs expired',expired);
   }
-  if(projects&&authConfig(env)?.issuer===identity.baseUrl){
+  if(projects&&oidcIssuer===identity.baseUrl){
    const deletion=identity.deletion;
    if(deletion){
     try{await processAccountDeletion(deletion,now);}
@@ -153,6 +153,11 @@ export default {
     await pruneCompletedAccountDeletions(deletion,now);
    }
    await deliverProjectRevocations(projects,identity.deviceSignOutPilot?.subject);
+  }
+  if(env.IT_WORLDS_MIGRATION_TASK&&env.SITE_ORIGIN===DEFAULT_ORIGIN&&event.scheduledTime!==undefined&&
+    new Date(event.scheduledTime).getUTCHours()===3&&migrationConfig(env,DEFAULT_ORIGIN,oidcIssuer,db)?.keys['it-worlds']){
+   try{console.info('IT-Worlds migration receipts',await env.IT_WORLDS_MIGRATION_TASK.deliver());}
+   catch{console.warn('IT-Worlds migration receipt delivery needs a retry');}
   }
  }
 };

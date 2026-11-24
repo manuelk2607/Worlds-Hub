@@ -72,10 +72,14 @@ test('the shared sender retries a committed receipt and reports conflicts using 
     await assert.rejects(migrationReceiptSender({...settings,privateJwk:JSON.stringify(key)}),/signing key/);
     const send=await migrationReceiptSender(settings);
     const receipt={subject,localAccountId:'private-profile-id',revision:1,state:'confirmed' as const};
-    let loseAcknowledgement=true;
+    let redirectBeforeDelivery=true,loseAcknowledgement=true;
     t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
       assert.equal(String(input),settings.url);
-      assert.equal(init?.redirect,'error');
+      assert.equal(init?.redirect,'manual');
+      if(redirectBeforeDelivery){
+        redirectBeforeDelivery=false;
+        return Response.json({result:'stored'},{status:307,headers:{location:'https://untrusted.example/receipt'}});
+      }
       const payload=decodeJwt(String(init?.body));
       assert.doesNotMatch(JSON.stringify(payload),/private-profile-id|@/);
       assert.equal(payload.sub,subject);
@@ -86,6 +90,8 @@ test('the shared sender retries a committed receipt and reports conflicts using 
       }
       return response;
     });
+    await assert.rejects(send(receipt),/unavailable/);
+    assert.deepEqual(await readMigrationStatus(config,subject),{});
     await assert.rejects(send(receipt),/unavailable/);
     assert.deepEqual(await readMigrationStatus(config,subject),{sprachwelten:'confirmed'});
     assert.equal(await send(receipt),'acknowledged');
