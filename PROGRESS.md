@@ -167,6 +167,15 @@ geprüfter Aufruf mit einem normalen Testkonto.
 
 ## IT-Worlds produktiv angebunden
 
+Die Selbstübernahme ist in `feature/worlds-it-self-service` vorbereitet.
+Der Nur-Lese-Abgleich bestätigt zwei Altprofile, eines bereits verbunden.
+Das verbleibende Profil kann nach der Freischaltung mit zwei frischen
+Anmeldungen und ausdrücklicher Bestätigung übernommen werden. Die bisherige
+Profil-ID und ihre Lernstände bleiben bestehen. 141 lokale Tests, Cloudflare-
+Trockenlauf und [GitHub](https://github.com/manuelk2607/IT-Worlds/actions/runs/45397308296)
+bestanden für `73847b4`. Die Freischaltung benötigt Cloudflare-Zugang,
+keine weitere Migration. Rücknahme auf IT-Worker `163de77f`.
+
 Der Worlds-Login ist auf IT-Worlds live, Worker
 `db925d3d-0b15-4412-b0f0-fd4be9e902b7`. Reale Anmeldung, Rücksprung und
 Wiederanmeldung nach lokaler Abmeldung ohne erneutes Passwort sind bestätigt.
