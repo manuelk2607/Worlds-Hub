@@ -11,7 +11,7 @@ jeweiligen Datenbanken. Alle Abfragen unten liefern nur Summen.
 | Music-Worlds | 2 | 1 | 1 | Unabhängigen Eigentumsnachweis prüfen. Dem offenen Profil gehören acht Beiträge. Es gibt keine gespeicherte Gastsitzung, frühere zentrale Zuordnung oder Quellautor-Referenz. |
 | Sprachwelten | 3 | 1 | 2 | Beide verbleibenden Konten können die vorhandene Übernahme mit ihrer bisherigen Anmeldung nutzen. |
 | IT-Worlds | 2 | 1 | 1 | Den geprüften Selbstübernahme-Ablauf veröffentlichen. Für das offene Konto sind Lernfortschritte gespeichert. |
-| Slop Urself | 13 | 1 | 12 | Den geprüften Ablauf für vier passwortgeschützte Profile veröffentlichen. Acht passwortlose Profile benötigen eine individuelle Eigentumsprüfung. |
+| Slop Urself | 13 | 1 | 12 | Vier passwortgeschützte Profile können die produktive Selbstübernahme nutzen. Acht passwortlose Profile benötigen eine individuelle Eigentumsprüfung. |
 
 Bei Slop haben unter den acht offenen passwortlosen Profilen zwei einen
 Eintrag in der Spielerhistorie und zwei einen Eintrag in der Videohistorie.

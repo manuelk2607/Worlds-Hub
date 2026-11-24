@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-24 (Europe/Helsinki)
+Stand: 2026-11-25 (Europe/Helsinki)
 
 Zentrale Anmeldung und projektübergreifende Abmeldung laufen in allen vier
 Welten. Jede Welt hat einen bestätigten Migrationsnachweis an den Hub
@@ -10,8 +10,10 @@ Berechtigungen.
 Als Nächstes steht die in CI geprüfte IT-Worlds-Selbstübernahme für das
 verbleibende Altprofil zur Freigabe an. Music-Worlds hat ein unverknüpftes
 Gastprofil mit acht Beiträgen. Dafür fehlt ein überprüfbarer
-Eigentumsnachweis. Sprachwelten und Slop Urself warten auf die Veröffentlichung
-der Korrektur für den automatischen Nachweisversand. Die zentrale
+Eigentumsnachweis. Slop Urself bietet die Selbstübernahme für vier
+passwortgeschützte Altprofile an. Die erste bestätigte Übernahme über diesen
+Ablauf steht aus. Sprachwelten wartet auf die Veröffentlichung der Korrektur
+für den automatischen Nachweisversand. Die zentrale
 Kontolöschung ist lokal getestet. Im Produktivbetrieb fehlt der freigegebene
 Löschzugang zum Anmeldedienst.
 
@@ -97,12 +99,16 @@ Der Worker-Test hat die nicht unterstützte Fetch-Option `redirect: error`
 im gemeinsamen Sender nachgewiesen. Auth 0.1.7 verwendet `manual` und
 weist 3xx vor dem Lesen des Inhalts ab. IT-Worlds und Music-Worlds nutzen
 die Korrektur produktiv. [Music-Worlds-Release](https://github.com/manuelk2607/Music-Worlds/actions/runs/45389185697)
-mit aktiver Worlds-Anmeldung und 03:17-UTC-Zeitplan bestand. Sprachwelten
-und Slop Urself haben die Korrektur im Repository. Beide Browser-Prüfungen
-und Cloudflare-Trockenläufe bestanden. Für deren produktive Veröffentlichung
-fehlt der kurzzeitige Cloudflare-Zugang.
-[Sprachwelten](https://github.com/manuelk2607/Sprachwelten/actions/runs/45389343509) ·
-[Slop Urself](https://github.com/manuelk2607/Slop_Urself/actions/runs/45390239830)
+mit aktiver Worlds-Anmeldung und 03:17-UTC-Zeitplan bestand. Slop Urself
+nutzt die Korrektur seit Worker-Version `756c193c-b151-4e96-818c-0860e7ea7a30`
+produktiv. Live geprüft sind DE/EN, der PKCE-Anmeldestart, die Zugriffssperre
+für anonyme Verknüpfungen und die persönliche HF-Pflicht. Es gibt weiterhin
+13 Altprofile und eine bestätigte Zuordnung. Der nächste echte Versand
+steht aus. Sprachwelten hat beide Browser-Prüfungen und den Cloudflare-
+Trockenlauf bestanden. Für die Veröffentlichung fehlt der kurzzeitige
+Cloudflare-Zugang.
+[Sprachwelten](https://github.com/manuelk2607/Sprachwelten/actions/runs/45448999477) ·
+[Slop Urself](https://github.com/manuelk2607/Slop_Urself/commit/5395a71)
 
 ## Music-Worlds-Nachweis produktiv zugestellt
 
