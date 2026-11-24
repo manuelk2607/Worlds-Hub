@@ -19,6 +19,48 @@ test('missing routes return 404; no catch-all redirects or unexpected mutations'
 
 test('first visit negotiates English, explicit cookie wins, and language preference is identity-bound',async()=>{const first=await request('/',{},{headers:{'accept-language':'sv,en;q=0.9,de;q=0.5'},redirect:'manual'});assert.equal(first.status,302);assert.equal(first.headers.get('location'),'/en/');assert.match(first.headers.get('set-cookie')!,/__Host-worlds-locale=en/);const explicit=await request('/',{},{headers:{cookie:'__Host-worlds-locale=de','accept-language':'en'}});assert.equal(explicit.status,200);assert.match(await explicit.text(),/<html lang="de"/);const {db,binding}=await sqliteD1();try{db.exec(await readFile('migrations/0001_auth.sql','utf8'));db.exec(await readFile('migrations/0003_user_preferences.sql','utf8'));const raw='A'.repeat(40),issuer='https://identity.test',payload={issuer,sub:'user-a',csrf:'csrf',expires:Date.now()+60_000};db.prepare('INSERT INTO auth_sessions (id,issuer,subject,payload,expires) VALUES (?,?,?,?,?)').run(await hash(raw),issuer,'user-a',JSON.stringify(payload),payload.expires);const env={AUTH_ENABLED:'true',SITE_ORIGIN:origin,OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',OIDC_ID_TOKEN_ALG:'RS256',AUTH_DB:binding};const unauth=await request('/api/preferences/locale',env,{headers:{accept:'application/json'}});assert.equal(unauth.status,401);const saved=await request('/api/preferences/locale',env,{method:'POST',headers:{origin,'content-type':'application/json',cookie:'__Host-worlds-session='+raw},body:'{"locale":"en"}'});assert.equal(saved.status,200);assert.deepEqual(await saved.json(),{locale:'en'});assert.deepEqual(await (await request('/api/preferences/locale',env,{headers:{cookie:'__Host-worlds-session='+raw}})).json(),{locale:'en'});assert.equal(db.prepare('SELECT subject,locale FROM user_preferences').get()?.subject,'user-a');const hostile=await request('/api/preferences/locale',env,{method:'POST',headers:{origin:'https://evil.test','content-type':'application/json',cookie:'__Host-worlds-session='+raw},body:'{"locale":"de"}'});assert.equal(hostile.status,403);}finally{db.close();}});
 
+test('verified central login stores locale without a separate Hub session',async t=>{
+ const {db,binding}=await sqliteD1();
+ t.after(()=>db.close());
+ for(const file of ['0002_identity_rate_limits.sql','0003_user_preferences.sql']){
+  db.exec(await readFile('migrations/'+file,'utf8'));
+ }
+ const issuer='https://identity.test/auth';
+ const env={AUTH_ENABLED:'true',SITE_ORIGIN:origin,OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',
+  OIDC_ID_TOKEN_ALG:'EdDSA',IDENTITY_ENABLED:'true',IDENTITY_AUTH_URL:issuer,
+  IDENTITY_COOKIE_SECRET:'test-only-cookie-key-at-least-32-characters',AUTH_DB:binding};
+ const cookie='__Secure-neon-auth.session_token=test-only-native-cookie';
+ let userId='native-user',sessionUserId=userId,verified=true,calls=0;
+ t.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+  calls++;
+  const url=new URL(String(input));
+  assert.equal(url.origin+url.pathname,issuer+'/get-session');
+  assert.equal(url.searchParams.get('disableCookieCache'),'true');
+  assert.equal(url.searchParams.get('disableRefresh'),'true');
+  assert.equal(new Headers(init?.headers).get('cookie'),cookie);
+  return Response.json({user:{id:userId,email:'fixture@example.test',emailVerified:verified},session:{userId:sessionUserId}});
+ });
+ const path='/api/preferences/locale';
+ const headers={cookie,'cf-connecting-ip':'192.0.2.1'};
+ const save=(requestOrigin:string)=>request(path,env,{method:'POST',headers:{...headers,origin:requestOrigin,'content-type':'application/json'},body:'{"locale":"en","subject":"other-user"}'});
+ assert.equal((await request(path,env)).status,401);
+ assert.equal((await save('https://other.test')).status,403);
+ assert.equal((await request(path,{...env,IDENTITY_AUTH_URL:'https://other.test/auth'},{headers})).status,401);
+ assert.equal(calls,0);
+ verified=false;
+ assert.equal((await save(origin)).status,401);
+ verified=true;
+ sessionUserId='different-user';
+ assert.equal((await save(origin)).status,401);
+ sessionUserId=userId;
+ assert.deepEqual(await (await save(origin)).json(),{locale:'en'});
+ assert.deepEqual(await (await request(path,env,{headers})).json(),{locale:'en'});
+ userId=sessionUserId='other-user';
+ assert.deepEqual(await (await request(path,env,{headers})).json(),{locale:null});
+ const rows=db.prepare('SELECT issuer,subject,locale FROM user_preferences').all();
+ assert.deepEqual(rows.map(row=>[row.issuer,row.subject,row.locale]),[[issuer,'native-user','en']]);
+});
+
 test('device locale initializes a missing profile preference without overwriting an existing one',async()=>{
  const {db,binding}=await sqliteD1();
  try{

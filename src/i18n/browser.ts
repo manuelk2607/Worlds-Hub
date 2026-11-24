@@ -72,18 +72,22 @@ if(localPreference){
  document.cookie=languageCookie(localPreference);
  if(localPreference!==current)applyLocale(localPreference);
 }
-void fetch('/api/preferences/locale',{headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)}).then(async response=>{
- if(!response.ok)return;
- let preferred=normalizeLocale((await response.json() as {locale?:unknown}).locale);
- if(!preferred&&localPreference&&!manuallySelected){
-  const initialized=profileWrite.then(()=>saveProfileLocale(localPreference,true));
-  profileWrite=initialized.then(()=>{});
-  preferred=await initialized;
- }
- if(!preferred||manuallySelected)return;
- rememberLocale(preferred);
- if(preferred!==current)applyLocale(preferred);
-}).catch(()=>{/* Guest and offline visits keep the negotiated language. */});
+export async function loadProfileLocale(){
+ try{
+  const response=await fetch('/api/preferences/locale',{headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)});
+  if(!response.ok)return;
+  let preferred=normalizeLocale((await response.json() as {locale?:unknown}).locale);
+  if(!preferred&&localPreference&&!manuallySelected){
+   const initialized=profileWrite.then(()=>saveProfileLocale(localPreference,true));
+   profileWrite=initialized.then(()=>{});
+   preferred=await initialized;
+  }
+  if(!preferred||manuallySelected)return;
+  rememberLocale(preferred);
+  if(preferred!==current)applyLocale(preferred);
+ }catch{/* Guest and offline visits keep the negotiated language. */}
+}
+void loadProfileLocale();
 
 export function formatDates(){document.querySelectorAll<HTMLElement>('[data-date]').forEach(element=>{const date=new Date(element.dataset.date??'');if(Number.isFinite(date.getTime()))element.textContent=new Intl.DateTimeFormat(localeTags[current],{dateStyle:'medium',timeStyle:'short'}).format(date);});}
 formatDates();document.addEventListener('worlds:locale',formatDates);

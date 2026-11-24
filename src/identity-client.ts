@@ -1,4 +1,4 @@
-import {clearStatus,errorKey,status,text} from './i18n/browser.ts';
+import {clearStatus,errorKey,loadProfileLocale,status,text} from './i18n/browser.ts';
 
 const identityRoot=document.querySelector<HTMLElement>('[data-identity]');
 if(identityRoot){
@@ -102,6 +102,7 @@ if(identityRoot){
    else{
     const session=await refresh();
     if(action==='login'&&resetSaved&&session.user?.emailVerified){location.assign('/identity/account');return;}
+    if(action==='login'&&session.user?.emailVerified)void loadProfileLocale();
     status(message,action==='update'?'status.nameSaved':'status.signedIn');
     if(oauth&&session.user?.emailVerified&&!freshSignInRequired)await continueOAuth();
    }

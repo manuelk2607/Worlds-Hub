@@ -102,6 +102,11 @@ async function verifiedAccount(request:Request,config:IdentityConfig,noRefresh=f
   return {id:user.id,email:user.email,name:typeof user.name==='string'?user.name:null,emailVerified:true};
 }
 
+export async function verifiedPreferenceSubject(request:Request,config:IdentityConfig) {
+  if(!readCookie(request,NEON_AUTH_SESSION_COOKIE_NAME)||!await limitIdentity(request,'get-session',config))return null;
+  return (await verifiedAccount(request,config,true))?.id??null;
+}
+
 export async function identityProxy(request:Request,config:IdentityConfig,migration?:MigrationConfig|null) {
   const url=new URL(request.url),path=url.pathname.slice('/api/identity/'.length);
   const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});

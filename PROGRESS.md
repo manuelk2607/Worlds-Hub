@@ -17,6 +17,17 @@ für den automatischen Nachweisversand. Die zentrale
 Kontolöschung ist lokal getestet. Im Produktivbetrieb fehlt der freigegebene
 Löschzugang zum Anmeldedienst.
 
+## Sprachpräferenz mit zentraler Sitzung
+
+Die Profil-Sprache kann nach reiner Worlds-Anmeldung ohne zusätzliche
+Hub-Sitzung gelesen und gespeichert werden. Der Hub prüft dafür die
+zentrale Sitzung beim fest hinterlegten Aussteller. Nach Anmeldung auf
+derselben Seite liest die Oberfläche die gespeicherte Sprache erneut.
+88 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+Chromium am Desktop und WebKit bei 320 px prüften mit einer simulierten
+Anmeldung das Laden und Umschalten in beiden Sprachen. Produktionsprüfung
+steht aus.
+
 ## Sprachwelten-Altprofil produktiv übernommen
 
 Für das bestätigte Kontopaar wurde nur die Zuordnung zum leeren Profil nach

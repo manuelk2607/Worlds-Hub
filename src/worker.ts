@@ -1,4 +1,4 @@
-import {identityConfig,identityProxy,identityCsrf,type IdentityEnv} from './identity.ts';
+import {identityConfig,identityProxy,identityCsrf,verifiedPreferenceSubject,type IdentityConfig,type IdentityEnv} from './identity.ts';
 import {identityPage} from './identity-pages.ts';
 import {css,identityCss} from './styles.ts';
 import {layout,home,detail,account,loggedOut,privacy,notFound} from './pages.ts';
@@ -36,15 +36,22 @@ const text=(body:string,type:string,status=200)=>new Response(body,{status,heade
 const redirect=(location:string,cookie?:string)=>new Response(null,{status:302,headers:{location,...(cookie?{'set-cookie':cookie}:{})}});
 const pageLocale=(request:Request,match:ReturnType<typeof matchRoute>):Locale=>match?.locale??(new URL(request.url).pathname.startsWith('/en/')?'en':requestLocale(request));
 
-async function localePreference(request:Request,config:AuthConfig|null,db:D1Database|undefined){
+async function localePreference(request:Request,config:AuthConfig|null,db:D1Database|undefined,central:IdentityConfig|null){
  const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
  if(!config||!db)return json({error:'SSO_NOT_CONFIGURED'},503);
- let current;try{current=await session(request,config);}catch{return json({error:'SESSION_UNAVAILABLE'},503);}
- if(!current)return json({locale:null},401);
+ if(new URL(request.url).origin!==config.origin)return json({error:'INVALID_HOST'},421);
  if(request.method!=='GET'&&request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
+ if(request.method==='POST'&&!sameOrigin(request,config.origin))return json({error:'INVALID_ORIGIN'},403);
+ let subject:string|null|undefined;
+ try{
+  subject=(await session(request,config))?.sub;
+  if(!subject&&central?.baseUrl===config.issuer&&central.origin===config.origin){
+   subject=await verifiedPreferenceSubject(request,central);
+  }
+ }catch{return json({error:'SESSION_UNAVAILABLE'},503);}
+ if(!subject)return json({locale:null},401);
  try{
   if(request.method==='POST'){
-   if(!sameOrigin(request,config.origin))return json({error:'INVALID_ORIGIN'},403);
    if(request.headers.get('content-type')?.split(';')[0]!=='application/json')return json({error:'JSON_REQUIRED'},415);
    let body:{locale?:unknown;initial?:unknown}|null;
    try{body=JSON.parse(await boundedBody(request,1024)) as typeof body;}catch{return json({error:'INVALID_BODY'},400);}
@@ -52,10 +59,10 @@ async function localePreference(request:Request,config:AuthConfig|null,db:D1Data
    if(body.initial!==undefined&&typeof body.initial!=='boolean')return json({error:'INVALID_BODY'},400);
    const conflict=body.initial?'DO NOTHING':'DO UPDATE SET locale = excluded.locale, updated_at = excluded.updated_at';
    await db.prepare('INSERT INTO user_preferences (issuer, subject, locale, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(issuer, subject) '+conflict)
-    .bind(current.issuer,current.sub,body.locale,Date.now()).run();
+    .bind(config.issuer,subject,body.locale,Date.now()).run();
    if(!body.initial)return json({locale:body.locale});
   }
-  const row=await db.prepare('SELECT locale FROM user_preferences WHERE issuer = ? AND subject = ?').bind(current.issuer,current.sub).first<{locale:Locale}>();
+  const row=await db.prepare('SELECT locale FROM user_preferences WHERE issuer = ? AND subject = ?').bind(config.issuer,subject).first<{locale:Locale}>();
   return json({locale:row?.locale??null});
  }catch{return json({error:'PREFERENCE_UNAVAILABLE'},503);}
 }
@@ -91,7 +98,7 @@ export default {
   const migration=migrationConfig(env,origin,config?.issuer,env.AUTH_DB);
   if(path.startsWith('/api/identity/'))return finish(central?await identityProxy(request,central,migration):Response.json({error:'IDENTITY_NOT_CONFIGURED'},{status:503}));
   if(path.startsWith('/api/migrations/receipts/'))return finish(migration?await receiveMigrationReceipt(request,migration):Response.json({error:'NOT_FOUND'},{status:404}));
-  if(path==='/api/preferences/locale')return finish(await localePreference(request,config,env.AUTH_DB));
+  if(path==='/api/preferences/locale')return finish(await localePreference(request,config,env.AUTH_DB,central));
   if(path.startsWith('/identity/')){
    if(!central)return finish(text(t(locale,'error.notConfigured'),'text/plain',503));
    if(!['/identity/login','/identity/consent','/identity/account','/identity/reset'].includes(path))return finish(text(t(locale,'notFound.body'),'text/plain',404));
