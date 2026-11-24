@@ -17,6 +17,15 @@ für den automatischen Nachweisversand. Die zentrale
 Kontolöschung ist lokal getestet. Im Produktivbetrieb fehlt der freigegebene
 Löschzugang zum Anmeldedienst.
 
+## Anmeldung und Datenschutz auf aktuellem Stand
+
+Die DE/EN-Hinweise auf der Startseite und im Anmeldedialog beschreiben
+die produktive zentrale Anmeldung. Der Datenschutz erklärt, welche
+Verknüpfungsdaten der Hub speichert, und verweist zum Identitätsdatenexport.
+89 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+Chromium bei 1440 px und WebKit bei 320 px bestätigten beide Sprachen,
+die Navigation zum Datenschutz und den lokalisierten Link zur Kontoseite.
+
 ## Sprachpräferenz mit zentraler Sitzung
 
 Die Profil-Sprache kann nach reiner Worlds-Anmeldung ohne zusätzliche

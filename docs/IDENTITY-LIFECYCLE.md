@@ -20,6 +20,18 @@ requires an admin role for Admin APIs.
 The managed [user management guide](https://neon.com/docs/auth/guides/user-management)
 documents password changes and currently lists email address changes as unsupported.
 
+On 2026-11-25 the existing QA and production issuers both advertised
+`/delete-user` in OpenAPI and returned 401 for an unauthenticated request.
+Better Auth 1.7.16 runs its session check before testing whether self-deletion
+is enabled. This result therefore does not supersede the earlier authenticated
+QA 404. The current [Neon CLI options](https://neon.com/docs/cli/neon-auth#configuration)
+document no self-deletion switch, while the
+[Neon management API](https://neon.com/docs/auth/guides/manage-auth-api)
+documents branch-user administration. Keep the existing release gate until
+the provider confirms a supported activation path or a scoped operator
+credential is approved. Repeat an authenticated probe only if the provider
+configuration or support changes.
+
 After a successful password change, the production Hub revokes existing Hub
 sessions and atomically queues signed revocations for the four worlds. The
 browser starts a fresh central sign-in with the new password so that a

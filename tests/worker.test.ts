@@ -61,6 +61,26 @@ test('verified central login stores locale without a separate Hub session',async
  assert.deepEqual(rows.map(row=>[row.issuer,row.subject,row.locale]),[[issuer,'native-user','en']]);
 });
 
+test('both languages explain central login, project linkage and the identity data export',async()=>{
+ const env={IDENTITY_ENABLED:'true',SITE_ORIGIN:origin,IDENTITY_AUTH_URL:'https://identity.test/auth',
+  IDENTITY_COOKIE_SECRET:'test-only-cookie-key-at-least-32-characters',AUTH_DB:{} as D1Database};
+ for(const locale of ['de','en'] as const){
+  const home=await (await request(route('home',locale),env)).text();
+  assert.ok(home.includes(t(locale,'faq.accountAnswer')));
+  const signIn=await request('/identity/login?ui_locales='+locale,env);
+  assert.equal(signIn.status,200);
+  const identity=await signIn.text();
+  assert.ok(identity.includes(t(locale,'identity.intro')));
+  assert.doesNotMatch(identity,/\bpilot\b/i);
+  const response=await request(route('privacy',locale),env);
+  const privacy=await response.text();
+  assert.match(response.headers.get('x-robots-tag')!,/noindex/);
+  assert.ok(privacy.includes(t(locale,'privacy.linksBody')));
+  assert.ok(privacy.includes(t(locale,'privacy.exportBody')));
+  assert.ok(privacy.includes('href="'+route('account',locale)+'"><span data-i18n="account.manage"'));
+ }
+});
+
 test('device locale initializes a missing profile preference without overwriting an existing one',async()=>{
  const {db,binding}=await sqliteD1();
  try{
