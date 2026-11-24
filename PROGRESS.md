@@ -127,6 +127,15 @@ eine automatische Zustellung sind noch nicht beobachtet.
 
 ## Passwortänderung beendet Worlds-Sitzungen
 
+Nach dem Passwort-Reset entfernt der Hub den Reset-Token sofort aus der
+Browseradresse. Nach bestätigtem Reset führt die erneute Anmeldung in die
+Kontoverwaltung zur vorhandenen Aktion „Auf allen Geräten abmelden“. DE und
+EN erklären, dass der Nutzer die Aktion auslösen muss. Neon bietet keinen
+Webhook für den bestätigten Abschluss. Die Mailzustellung bleibt wie bisher.
+87 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium DE
+am Desktop und WebKit EN bei 320 px bestanden mit simuliertem Reset,
+Wiederholung nach einem Fehler, erneuter Anmeldung und Abmeldebestätigung.
+
 Nach bestätigter Passwortänderung verwendet der Hub die bestehende
 projektübergreifende Abmeldung. Alte Rücksprünge werden abgefangen, und
 nicht erreichbare Empfänger bleiben für einen erneuten Versand vorgemerkt.

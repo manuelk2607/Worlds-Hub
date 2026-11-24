@@ -3,21 +3,27 @@ import {clearStatus,errorKey,status,text} from './i18n/browser.ts';
 const identityRoot=document.querySelector<HTMLElement>('[data-identity]');
 if(identityRoot){
  const root=identityRoot,message=root.querySelector<HTMLElement>('[data-identity-message]')!,csrf=root.querySelector<HTMLMetaElement>('meta[name="worlds-identity-csrf"]')!.content;
- const rawQuery=location.search.slice(1),params=new URLSearchParams(rawQuery),oauth=params.has('client_id');
+ const resetPage=root.dataset.mode==='reset',params=new URLSearchParams(location.search);
+ let resetToken=resetPage?params.get('token'):null;
+ if(resetPage&&params.has('token')){
+  params.delete('token');
+  const query=params.toString();
+  history.replaceState(null,'',location.pathname+(query?'?'+query:'')+location.hash);
+ }
+ const rawQuery=resetPage?'':location.search.slice(1),oauth=!resetPage&&params.has('client_id');
  const forms=[...root.querySelectorAll<HTMLFormElement>('[data-identity-form]')];
  const deviceSignOut=root.querySelector<HTMLButtonElement>('[data-identity-device-sign-out]');
- let busy=false,freshSignInRequired=false,currentUser:{id:string;name?:string;email:string;emailVerified:boolean}|undefined;
+ let busy=false,freshSignInRequired=false,resetSaved=false,currentUser:{id:string;name?:string;email:string;emailVerified:boolean}|undefined;
  function show(mode:string){forms.forEach(form=>{form.hidden=form.dataset.identityForm!==mode;});root.querySelectorAll<HTMLButtonElement>('.identity-tabs button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.identityAction===mode)));clearStatus(message);}
  async function api(path:string,body?:Record<string,unknown>){
   const response=await fetch('/api/identity/'+path,{method:body?'POST':'GET',headers:body?{'content-type':'application/json','x-worlds-identity-csrf':csrf}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
-  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;pending?:boolean;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;deviceSignOutAllowed?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
+  const data=await response.json() as {message?:string;error?:string;code?:string;url?:string;status?:boolean;pending?:boolean;hubSessionsRevoked?:boolean;projectSessionsEnded?:boolean;deviceSignOutAllowed?:boolean;session?:{createdAt?:string};user?:{id:string;name?:string;email:string;emailVerified:boolean}};
   if(!response.ok)throw new Error(data.code??data.error??String(response.status));return data;
  }
  function navigate(url:string){const target=new URL(url,location.origin);if(target.protocol!=='https:')throw new Error('UNSAFE_REDIRECT');location.assign(target.href);}
  function renderUser(){const user=root.querySelector<HTMLElement>('[data-identity-user]'),greeting=root.querySelector<HTMLElement>('[data-identity-greeting]');if(user&&currentUser)user.textContent=text(currentUser.emailVerified?'status.emailVerified':'status.emailNeeded');if(greeting&&currentUser)greeting.textContent=currentUser.name?text('account.greeting',{name:currentUser.name}):text('identity.welcome');}
  async function refresh(){
   const data=await api('get-session');currentUser=data.user;
-  const reset=root.dataset.mode==='reset';
   const maxAge=params.get('max_age'),createdAt=Date.parse(data.session?.createdAt??'');
   freshSignInRequired=oauth&&maxAge!==null&&(!/^\d+$/.test(maxAge)||!Number.isSafeInteger(Number(maxAge))||!Number.isFinite(createdAt)||
    createdAt>Date.now()+5000||Date.now()-createdAt>=Number(maxAge)*1000);
@@ -25,9 +31,9 @@ if(identityRoot){
   root.dataset.verified=String(active);
   if(deviceSignOut?.dataset.identityDeviceSignOut==='pilot')deviceSignOut.hidden=!active||data.deviceSignOutAllowed!==true;
   const panel=root.querySelector<HTMLElement>('[data-identity-session]');
-  if(panel)panel.hidden=!currentUser||reset||freshSignInRequired;
+  if(panel)panel.hidden=!currentUser||resetPage||freshSignInRequired;
   const anonymous=root.querySelector<HTMLElement>('[data-identity-anonymous]');
-  if(anonymous)anonymous.hidden=active&&!reset;
+  if(anonymous)anonymous.hidden=active&&!resetPage;
   renderUser();pending(busy);return data;
  }
  function pending(value:boolean){busy=value;root.setAttribute('aria-busy',String(value));root.querySelectorAll<HTMLButtonElement>('button').forEach(button=>button.disabled=value||(button.matches('[data-identity-continue],[data-identity-verified-action]')&&root.dataset.verified!=='true'));}
@@ -62,12 +68,19 @@ if(identityRoot){
    const paths:Record<string,string>={login:'sign-in/email',signup:'sign-up/email',verify:'email-otp/verify-email','send-code':'email-otp/send-verification-otp',forgot:'request-password-reset',reset:'reset-password',update:'update-user','change-password':'change-password','delete-account':'delete-account'};const body:Record<string,unknown>={...fields};
    if(action==='change-password')delete body.confirmation;
    if(action==='delete-account')body.confirmed=true;
-   if(action==='login'&&oauth)body.oauth_query=rawQuery;if(action==='send-code')body.type='email-verification';if(action==='reset'){body.token=params.get('token');if(!body.token)throw new Error('RESET_INCOMPLETE');}
-   const data=await api(paths[action],body);form.reset();if(data.url){navigate(data.url);return;}
+   if(action==='login'&&oauth)body.oauth_query=rawQuery;if(action==='send-code')body.type='email-verification';if(action==='reset'){if(!resetToken)throw new Error('RESET_INCOMPLETE');body.token=resetToken;}
+   const data=await api(paths[action],body);form.reset();if(data.url&&action!=='reset'){navigate(data.url);return;}
    if(action==='signup'){show('verify');const verifyEmail=root.querySelector<HTMLInputElement>('[data-identity-form=verify] input[name=email]');if(verifyEmail)verifyEmail.value=fields.email;status(message,'status.signupDone');}
    else if(action==='send-code')status(message,'status.codeSent');
    else if(action==='forgot')status(message,'status.recoverySent');
-   else if(action==='reset'){history.replaceState(null,'','/identity/login');show('login');status(message,'status.passwordSaved');}
+   else if(action==='reset'){
+    if(data.status!==true)throw new Error('IDENTITY_UNAVAILABLE');
+    resetToken=null;
+    resetSaved=true;
+    history.replaceState(null,'','/identity/login');
+    showSignedOut();
+    status(message,root.hasAttribute('data-reset-device-sign-out')?'status.passwordSavedWorlds':'status.passwordSaved');
+   }
    else if(action==='change-password'){
     form.hidden=true;
     if(!data.hubSessionsRevoked)status(message,'status.passwordChangedPartial');
@@ -86,7 +99,12 @@ if(identityRoot){
     }
    }
    else if(action==='verify'){show('login');status(message,'status.verifiedDone');}
-   else{const session=await refresh();status(message,action==='update'?'status.nameSaved':'status.signedIn');if(oauth&&session.user?.emailVerified&&!freshSignInRequired)await continueOAuth();}
+   else{
+    const session=await refresh();
+    if(action==='login'&&resetSaved&&session.user?.emailVerified){location.assign('/identity/account');return;}
+    status(message,action==='update'?'status.nameSaved':'status.signedIn');
+    if(oauth&&session.user?.emailVerified&&!freshSignInRequired)await continueOAuth();
+   }
   }catch(error){if(error instanceof Error&&error.message==='RESET_INCOMPLETE')status(message,'error.resetIncomplete');else showError(error);}finally{if(action==='change-password'||action==='delete-account')form.reset();pending(false);}
  });
  root.querySelector('[data-identity-export]')?.addEventListener('click',async()=>{

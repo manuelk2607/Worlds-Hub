@@ -246,6 +246,7 @@
   "status.codeSent": "Falls ein passendes Konto existiert, wurde ein Code angefordert. Prüfe bitte auch den Spam-Ordner.",
   "status.recoverySent": "Falls ein Konto existiert, wurde eine Wiederherstellung angefordert. Prüfe bitte dein Postfach.",
   "status.passwordSaved": "Passwort gespeichert. Melde dich bitte erneut an.",
+  "status.passwordSavedWorlds": "Passwort gespeichert. Melde dich erneut an. Danach kannst du im Konto mit „Auf allen Geräten abmelden“ auch die Sitzungen in den vier Welten beenden.",
   "status.passwordChanged": "Passwort geändert. Deine anderen zentralen Anmeldungen und deine Hub-Sitzungen wurden beendet.",
   "status.passwordChangedPartial": "Passwort geändert. Die Hub-Sitzungen konnten gerade nicht beendet werden.",
   "status.passwordChangedWorlds": "Passwort geändert. Deine Sitzungen im Hub und in den vier Welten wurden beendet. Melde dich mit deinem neuen Passwort an.",

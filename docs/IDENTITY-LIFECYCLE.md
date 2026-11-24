@@ -166,6 +166,19 @@ was verified in QA, not by resetting the personal central account.
 This native setting does not establish revocation of Hub or project sessions.
 Cross-project session revocation remains a separate unresolved acceptance item.
 
+The reset page now removes the token from the browser address as soon as the
+page loads. An unsuccessful submission can retry while the page stays open.
+After a successful reset and verified sign-in, the Hub opens the account page.
+When the four production recipients are enabled, the reset screen explains
+where to choose “Sign out on all devices”. The project sessions end after the
+user confirms that action.
+
+The supported Managed Better Auth webhook events cover delivery of a reset
+link or code. They do not report completion. That delivery event also replaces
+the built-in email sender if enabled. The Hub keeps the existing sender and
+requires the verified account session to identify whom to sign out.
+[Neon webhook event reference](https://neon.com/docs/auth/guides/webhooks#supported-events)
+
 ## Sources checked on 2026-11-08
 
 - [Neon user management and password limits](https://neon.com/docs/auth/guides/user-management)

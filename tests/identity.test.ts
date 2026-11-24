@@ -325,6 +325,11 @@ test('a verified password change fences older callbacks and queues signed revoca
   IDENTITY_DEVICE_SIGN_OUT_ENABLED:'true',WORLDS_SESSION_EVENT_PRIVATE_JWK:JSON.stringify({kid,...await exportJWK(privateKey)}),...recipients})!;
  assert.match(identityPage('/identity/account','',f.csrf.value,config,'de').body,/enden deine Sitzungen/);
  assert.match(identityPage('/identity/account','',f.csrf.value,config,'en').body,/ends your sessions/);
+ const resetPage=identityPage('/identity/reset','token=fixture-reset-token&client_id=unrelated',f.csrf.value,config);
+ assert.equal(resetPage.status,200);
+ assert.match(resetPage.body,/data-mode="reset" data-reset-device-sign-out/);
+ assert.doesNotMatch(resetPage.body,/fixture-reset-token|data-identity-continue/);
+ assert.doesNotMatch(identityPage('/identity/reset','',f.csrf.value,f.config).body,/data-reset-device-sign-out/);
  const store=new D1AuthStore(f.binding),expires=Date.now()+60_000;
  const subjectSession={issuer:baseUrl,sub:fixtureUser.id,expires,csrf:'fixture'};
  await store.putSession('self',subjectSession);

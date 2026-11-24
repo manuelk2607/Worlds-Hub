@@ -246,6 +246,7 @@
   "status.codeSent": "If a matching account exists, a code has been requested. Please also check your spam folder.",
   "status.recoverySent": "If an account exists, password recovery has been requested. Please check your inbox.",
   "status.passwordSaved": "Password saved. Please sign in again.",
+  "status.passwordSavedWorlds": "Password saved. Sign in again, then choose ‘Sign out on all devices’ in your account to end sessions in all four worlds.",
   "status.passwordChanged": "Password changed. Your other central sign-ins and your Hub sessions have ended.",
   "status.passwordChangedPartial": "Password changed. Your Hub sessions could not be ended right now.",
   "status.passwordChangedWorlds": "Password changed. Your sessions in the Hub and all four worlds have ended. Sign in with your new password.",
