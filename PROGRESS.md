@@ -25,8 +25,13 @@ zentrale Sitzung beim fest hinterlegten Aussteller. Nach Anmeldung auf
 derselben Seite liest die Oberfläche die gespeicherte Sprache erneut.
 88 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 Chromium am Desktop und WebKit bei 320 px prüften mit einer simulierten
-Anmeldung das Laden und Umschalten in beiden Sprachen. Produktionsprüfung
-steht aus.
+Anmeldung das Laden und Umschalten in beiden Sprachen.
+`858208f` ist als Worker `35af3f3a-965b-4882-bdfb-aa92e75dd6ec` live.
+[GitHub](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45498423585)
+bestätigt den Build, vier Abmeldeempfänger und den produktiven Smoke-Test.
+Der private IT-Nachweisempfänger ist gebunden. Live wurde das identische
+Browser-Skript ausgeliefert. Anonyme Lesezugriffe und fremde Schreibzugriffe
+wurden abgewiesen. Der authentifizierte Ablauf ist mit Testdaten geprüft.
 
 ## Sprachwelten-Altprofil produktiv übernommen
 
