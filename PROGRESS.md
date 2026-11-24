@@ -25,6 +25,12 @@ Verknüpfungsdaten der Hub speichert, und verweist zum Identitätsdatenexport.
 89 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 Chromium bei 1440 px und WebKit bei 320 px bestätigten beide Sprachen,
 die Navigation zum Datenschutz und den lokalisierten Link zur Kontoseite.
+`e0b7154` ist als Worker `e0a1f0bc-5a17-471a-9e26-cb91c31251d0` live.
+DE/EN-Startseite, Anmeldedialog und Datenschutz inklusive privater
+Indexierungskennzeichnung sind produktiv geprüft. Der Hub wurde mit den
+vier projektübergreifenden Abmeldeverbindungen und dem privaten
+IT-Nachweisempfänger veröffentlicht.
+[GitHub-Lauf](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45499356220)
 
 ## Sprachpräferenz mit zentraler Sitzung
 
