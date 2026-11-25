@@ -12,10 +12,24 @@ verbleibende Altprofil zur Freigabe an. Music-Worlds hat ein unverknüpftes
 Gastprofil mit acht Beiträgen. Dafür fehlt ein überprüfbarer
 Eigentumsnachweis. Slop Urself bietet die Selbstübernahme für vier
 passwortgeschützte Altprofile an. Die erste bestätigte Übernahme über diesen
-Ablauf steht aus. Sprachwelten wartet auf die Veröffentlichung der Korrektur
-für den automatischen Nachweisversand. Die zentrale
+Ablauf steht aus. Bei Sprachwelten warten der Anmelderücksprung und die
+Korrektur für den automatischen Nachweisversand auf die Veröffentlichung.
+Bei Slop Urself steht der geprüfte Rücksprung zu Raumeinladungen zur
+Freigabe an. Die zentrale
 Kontolöschung ist lokal getestet. Im Produktivbetrieb fehlt der freigegebene
 Löschzugang zum Anmeldedienst.
+
+## Standard-Releases der vier Welten
+
+Alle vier `main`-Branches enthalten den jeweils produktiv belegten
+SSO-Anwendungscode. Die Standard-Deploys paketieren die bestehende
+Worlds-Anmeldung mit den projektspezifischen Prüfungen. Lokale
+Trockenläufe, GitHub-Prüfungen und öffentliche Live-Statusabfragen
+bestanden. Die Paketänderungen wurden in GitHub veröffentlicht.
+[Music-Worlds](https://github.com/manuelk2607/Music-Worlds/commit/04b121d) ·
+[Sprachwelten](https://github.com/manuelk2607/Sprachwelten/commit/87e7280) ·
+[IT-Worlds](https://github.com/manuelk2607/IT-Worlds/commit/4ba9b0c) ·
+[Slop Urself](https://github.com/manuelk2607/Slop_Urself/commit/5ff3aa1)
 
 ## Anmeldung und Datenschutz auf aktuellem Stand
 
