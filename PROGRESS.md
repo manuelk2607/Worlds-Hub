@@ -43,6 +43,15 @@ bestanden. Die Paketänderungen wurden in GitHub veröffentlicht.
 [IT-Worlds](https://github.com/manuelk2607/IT-Worlds/commit/4ba9b0c) ·
 [Slop Urself](https://github.com/manuelk2607/Slop_Urself/commit/5ff3aa1)
 
+## Direkte Projektkonten im Hub
+
+Die DE/EN-Kontoseite verlinkt zu den vier Projektkonten. Beim Sprachwechsel
+werden die Ziele ohne Neuladen aktualisiert. Bestätigte und widerrufene
+Zuordnungen sowie fehlende Übernahmenachweise sind separat gekennzeichnet.
+90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium
+bei 1440 px und WebKit bei 320 px bestätigten Sprachwechsel und Layout.
+Alle acht lokalisierten Zielseiten antworteten produktiv mit HTTP 200.
+
 ## Anmeldung und Datenschutz auf aktuellem Stand
 
 Die DE/EN-Hinweise auf der Startseite und im Anmeldedialog beschreiben

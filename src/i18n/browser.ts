@@ -1,4 +1,5 @@
 import {LOCALE_STORAGE_KEY,isMessageKey,languageCookie,localeTags,normalizeLocale,route,routes,t,type Locale,type MessageKey,type Values} from './core.ts';
+import {projectAccountUrl,projects} from '../projects.ts';
 
 let current:Locale=normalizeLocale(document.documentElement.lang)??'de';
 const localeButtons=document.querySelectorAll<HTMLButtonElement>('button[data-locale]');
@@ -26,6 +27,11 @@ export function applyLocale(next:Locale,{persist=false,announce=false,replaceUrl
  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(element=>{const key=element.dataset.i18n;if(key&&isMessageKey(key))element.textContent=t(next,key,valuesFor(element));});
  document.querySelectorAll<HTMLElement>('[data-i18n-aria-label],[data-i18n-title],[data-i18n-placeholder],[data-i18n-content]').forEach(setAttributeTranslations);
  document.querySelectorAll<HTMLAnchorElement>('[data-route]').forEach(anchor=>{const id=anchor.dataset.route;if(id&&Object.hasOwn(routes,id)){const hash=anchor.dataset.routeHash??'';anchor.href=route(id as keyof typeof routes,next)+hash;}});
+ document.querySelectorAll<HTMLAnchorElement>('[data-project-account]').forEach(anchor=>{
+  const project=projects.find(item=>item.id===anchor.dataset.projectAccount);
+  const url=project&&projectAccountUrl(project,next);
+  if(url)anchor.href=url;
+ });
  localeButtons.forEach(button=>{const active=button.dataset.locale===next;button.setAttribute('aria-pressed',String(active));button.setAttribute('aria-current',active?'true':'false');});
  const og=document.querySelector<HTMLMetaElement>('meta[property="og:locale"]');if(og)og.content=next==='de'?'de_DE':'en_GB';
  if(replaceUrl){const id=document.body.dataset.route;if(id&&Object.hasOwn(routes,id)){const path=route(id as keyof typeof routes,next),target=path+location.search+location.hash;if(target!==location.pathname+location.search+location.hash)history.replaceState(history.state,'',target);const canonical=document.querySelector<HTMLLinkElement>('link[rel="canonical"]');if(canonical)canonical.href=location.origin+path;const ogUrl=document.querySelector<HTMLMetaElement>('meta[property="og:url"]');if(ogUrl)ogUrl.content=location.origin+path;const schema=document.querySelector<HTMLScriptElement>('script[type="application/ld+json"]');if(schema){try{const value=JSON.parse(schema.textContent??'{}') as Record<string,unknown>;value.url=location.origin+path;value.inLanguage=next;value.description=t(next,'meta.description');schema.textContent=JSON.stringify(value);}catch{/* Invalid third-party metadata is left unchanged. */}}}}
