@@ -50,7 +50,13 @@ werden die Ziele ohne Neuladen aktualisiert. Bestätigte und widerrufene
 Zuordnungen sowie fehlende Übernahmenachweise sind separat gekennzeichnet.
 90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium
 bei 1440 px und WebKit bei 320 px bestätigten Sprachwechsel und Layout.
-Alle acht lokalisierten Zielseiten antworteten produktiv mit HTTP 200.
+Alle acht lokalisierten Ziele antworteten mit HTTP 200. Chromium bestätigte
+zusätzlich beide Music-Worlds-Profilansichten mit zentralem Anmeldelink.
+Commit `e40e45d` ist als Worker `74749b86-6f48-4363-86d6-d73d225d3b9a` live.
+Beide Hub-Kontoseiten lieferten anonym die erwarteten Links und `noindex`.
+Der ausgelieferte Browsercode entspricht dem geprüften Build.
+[GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45645411524)
+bestätigt Deployment und Produktionsprüfung.
 
 ## Anmeldung und Datenschutz auf aktuellem Stand
 
