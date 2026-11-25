@@ -7,17 +7,29 @@ Welten. Jede Welt hat einen bestätigten Migrationsnachweis an den Hub
 geliefert. Die getrennten Projektzuordnungen erhalten lokale IDs und
 Berechtigungen.
 
-Als Nächstes steht die in CI geprüfte IT-Worlds-Selbstübernahme für das
-verbleibende Altprofil zur Freigabe an. Music-Worlds hat ein unverknüpftes
-Gastprofil mit acht Beiträgen. Dafür fehlt ein überprüfbarer
-Eigentumsnachweis. Slop Urself bietet die Selbstübernahme für vier
-passwortgeschützte Altprofile an. Die erste bestätigte Übernahme über diesen
-Ablauf steht aus. Bei Sprachwelten warten der Anmelderücksprung und die
-Korrektur für den automatischen Nachweisversand auf die Veröffentlichung.
-Bei Slop Urself steht der geprüfte Rücksprung zu Raumeinladungen zur
-Freigabe an. Die zentrale
-Kontolöschung ist lokal getestet. Im Produktivbetrieb fehlt der freigegebene
-Löschzugang zum Anmeldedienst.
+IT-Worlds bietet die Selbstübernahme für das verbleibende Altprofil an.
+In Sprachwelten können zwei Inhaber ihr Altprofil übernehmen. Bei Slop
+Urself stehen vier passwortgeschützte Altprofile zur Selbstübernahme bereit.
+Für das offene Music-Worlds-Gastprofil mit acht Beiträgen und acht
+passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
+Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
+freigegebene Löschzugang zum Anmeldedienst.
+
+## Drei genehmigte Produktions-Releases
+
+| Projekt | Produktive Funktion | Worker | Rücknahme | Nachweis |
+| --- | --- | --- | --- | --- |
+| IT-Worlds | Selbstübernahme mit frischer Worlds- und IT-Anmeldung | `96ea3c9b` | `163de77f` | [Release](https://github.com/manuelk2607/IT-Worlds/commit/cff39a2) |
+| Sprachwelten | Rücksprung zur angeforderten Seite und korrigierter Nachweisversand | `a699a346` | `4b62fb37` | [Release](https://github.com/manuelk2607/Sprachwelten/commit/27d4cb1) |
+| Slop Urself | Rückkehr zur Raumeinladung nach Worlds-Anmeldung | `7a68c388` | `756c193c` | [Release](https://github.com/manuelk2607/Slop_Urself/commit/eccb05b) |
+
+Alle drei Worker laufen zu 100 Prozent. CI und gezielte Live-Prüfungen
+bestanden. Die produktiven Datenbanken wurden lesend geprüft und melden
+je Projekt eine bestehende Zuordnung. IT-Worlds zählt 17 Lernfortschritte,
+Sprachwelten vier Projektprofile und Slop Urself 13 Profile. Die befristete
+Cloudflare-Anmeldung ist beendet. Der erste echte Rücksprung in einen Raum
+und die erste Übernahme im neuen IT-Modus stehen für die persönliche Abnahme aus.
+Der [Neon-Verbrauch und die Freikontingente](docs/COSTS.md) wurden aktualisiert.
 
 ## Standard-Releases der vier Welten
 
