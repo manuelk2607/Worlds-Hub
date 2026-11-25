@@ -20,7 +20,11 @@ for(const path of paths){
     assert.match(response.headers.get('content-security-policy')!,/frame-ancestors 'none'/);
   }
   if(path==='/konto'||path==='/en/account'){assert.match(response.headers.get('x-robots-tag')!,/noindex/);assert.equal(response.headers.get('cache-control'),'no-store');assert.match(body,path.startsWith('/en/')?/Sign in to Worlds/:/Bei Worlds anmelden/);assert.equal(response.headers.get('referrer-policy'),'same-origin');}
-  if(path==='/robots.txt'){assert.match(body,/Allow: \//);assert.match(body,/Disallow: \/auth\//);assert.ok(body.includes(origin+'/sitemap.xml'));}
+  if(path==='/robots.txt'){
+    assert.match(body,/Allow: \//);
+    assert.deepEqual(body.split('\n').filter(line=>line.startsWith('Disallow:')),['Disallow: /auth/','Disallow: /api/']);
+    assert.ok(body.includes(origin+'/sitemap.xml'));
+  }
   if(path==='/sitemap.xml'){assert.equal((body.match(/<loc>/g)??[]).length,10);assert.equal((body.match(/hreflang="en"/g)??[]).length,10);assert.doesNotMatch(body,/\/(konto|account|auth|admin|rooms)(\/|<)/);assert.ok(body.includes(origin));}
   console.log('PASS '+path);
 }

@@ -4,7 +4,7 @@
 
 **Produktiv:** https://worlds-hub.maki26.workers.dev/ . Bereitstellung über den manuell gestarteten, geprüften GitHub-Actions-Workflow. Deployment, HTTPS, Navigation, Metadaten und Indexierungsregeln sind produktiv geprüft. Details und Credential-Ablauf: `CLOUDFLARE.md`.
 
-Die frühere Sites-ID `appgprj_6aea673346808191acd302d1a40c3c60` gehört nur zur privaten Zusatzvorschau; dort ist keine öffentliche Freigabe vorgesehen. Der Hub-SSO-Schalter bleibt bis zum echten IdP-/Projektpilot aus.
+Die frühere Sites-ID `appgprj_6aea673346808191acd302d1a40c3c60` gehört nur zur privaten Zusatzvorschau; dort ist keine öffentliche Freigabe vorgesehen. Die zentrale Anmeldung ist im Hub und in allen vier Welten aktiv. Der aktuelle Stand zu Releases und Abnahme steht in [PROGRESS.md](../PROGRESS.md).
 
 `npm run check`: TypeScript, ESLint, signierte OIDC-/Linking-/SQLite-/Worker-/SEO-Tests, Build und ESM-Artefaktprüfung.
 `npm audit` für alle Abhängigkeiten. `minimatch` ist zur Schließung GHSA-g3hv-75wg-m249 gezielt auf >=11.0.1 überschrieben; Lint und Build wurden damit geprüft.
@@ -47,14 +47,31 @@ Nicht geprüft: echter zentraler Provider, SMTP/E-Mail-Roundtrip, produktive D1-
 
 ## SEO und Search Console
 
-Der Worker erzeugt serverseitige Projektbeschreibungen, individuelle Titel und Descriptions, absolute Canonicals, OG-Metadaten und WebSite-Strukturdaten. Öffentlicher Modus listet nur `/` und die vier `/welten/*`-Seiten. Private Konto-, Auth-, API-, Logout- und Fehlerseiten erhalten noindex/no-store; Robots-Regeln sind zusätzliche Crawlerhinweise, kein Zugriffsschutz.
+Die öffentliche Sitemap enthält die Startseite und vier Projektseiten in
+DE und EN mit wechselseitigen `hreflang`-Verweisen und Canonicals. Konto-,
+Anmelde-, Registrierungs-, Abmelde- und Datenschutzseiten liefern
+`noindex` und `no-store`. Die Crawler dürfen diese HTML-Antworten abrufen,
+damit sie `noindex` sehen. `robots.txt` sperrt die Protokoll- und API-Pfade
+`/auth/` und `/api/`. Die Zugriffskontrolle erfolgt serverseitig.
+Private Vorschauen bleiben mit einer leeren Sitemap und `Disallow: /` gesperrt.
+[Google Search Central zu noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing)
 
-1. Öffentlichen Hosting-Zugang bewusst konfigurieren; Canonical-Origin bestätigen. Die Datenschutzhinweise beschreiben das technische Verhalten. Solange privat, `PUBLIC_INDEXING=false` belassen.
-2. Bei öffentlicher Freigabe `PUBLIC_INDEXING=true` setzen und deployen; in echten HTTP-Antworten Status, Titel, Canonical, robots.txt, sitemap.xml und private Noindex-/Cache-Header prüfen.
-3. Für die neue Sites-/workers.dev-URL eine URL-Präfix-Property in Google Search Console anlegen. Bei eigener DNS-kontrollierter Domain alternativ Domain-Property mit DNS-TXT-Verifikation. Verifizierungswert in Runtime setzen; keine erfundenen Tokens.
-4. Sitemap `https://<bestätigte-origin>/sitemap.xml` einreichen, öffentliche URLs inspizieren. Keine Aufnahme in den Index garantieren.
-5. Bestehende Properties/Verifizierungstags/Sitemaps/Canonicals der drei Projekte behalten. Erst nach deren Pilotabnahme einen normalen Hub-Link in die vorhandene Navigation aufnehmen.
-6. Bei späteren Domainwechseln altes->neues vollständiges URL-Mapping erstellen, pro tatsächlicher URL 301/308 einsetzen und Canonical/Sitemap/interne Links aktualisieren. Der Hub führt keine pauschalen Projektumleitungen aus.
+1. In der [Google Search Console](https://search.google.com/search-console)
+   die URL-Präfix-Property `https://worlds-hub.maki26.workers.dev/` auswählen
+   oder anlegen. Die HTML-Tag-Methode deckt beide Sprachversionen ab.
+2. Den `content`-Wert aus dem von Google erzeugten Tag als
+   `GOOGLE_SITE_VERIFICATION` im Cloudflare-Worker `worlds-hub` hinterlegen.
+   Beide Startseiten geben ihn im serverseitigen HTML-Head aus. Die
+   Worker-Konfiguration erhält die Variable bei Routine-Deployments.
+3. Den Tag im anonym abrufbaren HTML prüfen und in Search Console auf
+   **Bestätigen** klicken. Nach Bestätigung den Wert gesetzt lassen und
+   [sitemap.xml](https://worlds-hub.maki26.workers.dev/sitemap.xml) einreichen.
+   Ergebnisse zur Indexierung sind erst mit Zugriff auf die Property belegbar.
+   [Google-Anleitung zur HTML-Verifizierung](https://support.google.com/webmasters/answer/9008080)
+4. Die separaten Search-Console-Properties, Verifizierungstags, Sitemaps
+   und Canonicals der vier Welten erhalten. Bei einem tatsächlichen
+   Domainwechsel pro betroffener URL die passende 301- oder 308-Weiterleitung
+   einrichten und Canonical, Sitemap und interne Links gemeinsam aktualisieren.
 
 ## Deployment und Quellcode
 

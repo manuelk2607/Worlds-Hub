@@ -10,7 +10,7 @@ import {processAccountDeletion,pruneCompletedAccountDeletions} from './identity-
 import {deliverProjectRevocations,pruneProjectRevocationDeliveries} from './project-session-events.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
 import {backchannelLogout,boundedBody,callback,logout,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
-import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type RouteId,type Values} from './i18n/core.ts';
+import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type Values} from './i18n/core.ts';
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
 
@@ -81,9 +81,7 @@ export default {
   if(path==='/client.js'&&request.method==='GET')return finish(text(clientScript,'text/javascript'));
   if(path==='/favicon.svg'&&request.method==='GET')return finish(text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#f7f7f2"/><rect x="8" y="8" width="10" height="10" rx="3" fill="#ac95d2"/><rect x="22" y="8" width="10" height="10" rx="3" fill="#dba677"/><rect x="8" y="22" width="10" height="10" rx="3" fill="#8faec3"/><rect x="22" y="22" width="10" height="10" rx="3" fill="#9fb681"/></svg>','image/svg+xml'));
   if(path==='/robots.txt'&&request.method==='GET'){
-   const privateRoutes=['account','signIn','signUp','signedOut','privacy'] as RouteId[];
-   const rules=privateRoutes.flatMap(id=>locales.map(language=>'Disallow: '+route(id,language))).join('\n');
-   return finish(text(env.PUBLIC_INDEXING==='true'?`User-agent: *\nAllow: /\n${rules}\nDisallow: /auth/\nDisallow: /api/\nDisallow: /identity/\nSitemap: ${origin}/sitemap.xml\n`:'User-agent: *\nDisallow: /\n','text/plain'));
+   return finish(text(env.PUBLIC_INDEXING==='true'?`User-agent: *\nAllow: /\nDisallow: /auth/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n`:'User-agent: *\nDisallow: /\n','text/plain'));
   }
   if(path==='/sitemap.xml'&&request.method==='GET'){
    const urls=env.PUBLIC_INDEXING==='true'?publicRouteIds.flatMap(id=>locales.map(language=>`<url><loc>${escapeHtml(origin+route(id,language))}</loc><xhtml:link rel="alternate" hreflang="de" href="${escapeHtml(origin+route(id,'de'))}"/><xhtml:link rel="alternate" hreflang="en" href="${escapeHtml(origin+route(id,'en'))}"/><xhtml:link rel="alternate" hreflang="x-default" href="${escapeHtml(origin+route(id,'de'))}"/></url>`)).join(''):'';

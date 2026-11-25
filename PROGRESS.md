@@ -15,6 +15,17 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## SEO und Search Console
+
+Der Hub erlaubt Crawlern, `noindex` auf Konto- und Identitätsseiten zu lesen.
+Die zehn öffentlichen DE/EN-Seiten bleiben die einzigen Sitemap-Einträge.
+Protokoll- und API-Pfade sowie private Vorschauen bleiben in `robots.txt`
+gesperrt. Alle 90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+Der Search-Console-Tag ist in beiden Sprachen mit einem Testwert geprüft.
+Die [Anleitung](docs/OPERATIONS.md#seo-und-search-console) nennt die genaue
+URL-Präfix-Property. Auf der Live-Startseite fehlt der Google-Tag.
+Property-Bestätigung und Indexierungsstatus sind noch offen.
+
 ## Drei genehmigte Produktions-Releases
 
 | Projekt | Produktive Funktion | Worker | Rücknahme | Nachweis |

@@ -44,7 +44,40 @@ test('localized account links lead to project profiles and distinguish transfer 
  }
 });
 test('unconfigured SSO fails closed with no account creation/session and honest UI',async()=>{for(const path of ['/auth/login','/auth/callback','/auth/logout','/auth/backchannel-logout']){const r=await request(path,{}, {method:'POST'});assert.equal(r.status,503);assert.equal(r.headers.get('set-cookie'),null);assert.equal(r.headers.get('cache-control'),'no-store');assert.match(r.headers.get('x-robots-tag')!,/noindex/);}const r=await request('/konto');assert.match(await r.text(),/momentan noch kein zentrales Konto/);});
-test('private preview is never indexed; public mode includes ten reciprocal localized pages',async()=>{const privateRobots=await (await request('/robots.txt')).text();assert.match(privateRobots,/Disallow: \//);assert.doesNotMatch(await (await request('/sitemap.xml')).text(),/<loc>/);assert.match((await request('/')).headers.get('x-robots-tag')!,/noindex/);const env={PUBLIC_INDEXING:'true'};const xml=await (await request('/sitemap.xml',env)).text();assert.equal((xml.match(/<loc>/g)??[]).length,10);assert.equal((xml.match(/hreflang="en"/g)??[]).length,10);assert.doesNotMatch(xml,/\/(konto|account|auth|admin|chat|rooms)(\/|<)/);const robots=await (await request('/robots.txt',env)).text();assert.match(robots,/Disallow: \/auth\//);assert.match(robots,/Disallow: \/en\/account/);for(const locale of ['de','en'] as const){const home=await (await request(route('home',locale),env)).text();assert.match(home,/<meta name="robots" content="index,follow">/);assert.match(home,new RegExp('<link rel="canonical" href="'+(origin+route('home',locale)).replaceAll('.','\\.')+'">'));}assert.match((await request('/konto',env)).headers.get('x-robots-tag')!,/noindex/);});
+test('public crawlers can read noindex on unlisted Hub pages while private preview remains closed',async()=>{
+ const preview=await (await request('/robots.txt')).text();
+ assert.match(preview,/Disallow: \//);
+ assert.doesNotMatch(await (await request('/sitemap.xml')).text(),/<loc>/);
+ assert.match((await request('/')).headers.get('x-robots-tag')!,/noindex/);
+
+ const env={PUBLIC_INDEXING:'true',GOOGLE_SITE_VERIFICATION:'test-ownership-value'};
+ const xml=await (await request('/sitemap.xml',env)).text();
+ assert.equal((xml.match(/<loc>/g)??[]).length,10);
+ assert.equal((xml.match(/hreflang="en"/g)??[]).length,10);
+
+ const robots=await (await request('/robots.txt',env)).text();
+ const blocked=robots.split('\n').filter(line=>line.startsWith('Disallow: ')).map(line=>line.slice(10));
+ assert.deepEqual(blocked,['/auth/','/api/']);
+ for(const locale of ['de','en'] as const){
+  const home=await (await request(route('home',locale),env)).text();
+  assert.match(home,/<meta name="robots" content="index,follow">/);
+  assert.ok(home.includes(`<link rel="canonical" href="${origin+route('home',locale)}">`));
+  assert.match(home,/<head>.*<meta name="google-site-verification" content="test-ownership-value">.*<\/head>/s);
+  for(const id of ['account','signIn','signUp','signedOut','privacy'] as const){
+   const path=route(id,locale);
+   assert.ok(!blocked.some(prefix=>path.startsWith(prefix)),path);
+   assert.ok(!xml.includes(`<loc>${origin+path}</loc>`),path);
+   const response=await request(path,env);
+   assert.equal(response.status,200,path);
+   assert.match(response.headers.get('x-robots-tag')!,/noindex/,path);
+   assert.equal(response.headers.get('cache-control'),'no-store',path);
+   assert.match(await response.text(),/<meta name="robots" content="noindex,nofollow">/,path);
+  }
+ }
+ for(const namespace of ['/identity/','/auth/','/api/','/admin/','/rooms/']){
+  assert.ok(!xml.includes(origin+namespace),namespace);
+ }
+});
 test('security headers and same-origin assets with no inline executable JS',async()=>{const r=await request('/');assert.equal(r.headers.get('x-frame-options'),'DENY');assert.match(r.headers.get('content-security-policy')!,/frame-ancestors 'none'/);assert.doesNotMatch(r.headers.get('content-security-policy')!,/script-src[^;]*unsafe-inline/);assert.equal(r.headers.get('referrer-policy'),'no-referrer');assert.equal((await request('/konto')).headers.get('referrer-policy'),'same-origin');assert.equal((await request('/identity/reset')).headers.get('referrer-policy'),'no-referrer');const html=await r.text();assert.doesNotMatch(html,/<script(?![^>]*src=|[^>]*type="application\/ld\+json")/);assert.match(await (await request('/styles.css')).text(),/prefers-reduced-motion/);assert.match(await (await request('/client.js')).text(),/aria-pressed/);});
 test('missing routes return 404; no catch-all redirects or unexpected mutations',async()=>{assert.equal((await request('/missing')).status,404);assert.equal((await request('/?utm_source=test')).status,200);assert.equal((await request('/',{},{method:'POST'})).status,405);const r=await worker.fetch(new Request('http://example.test/old-url?x=1'),{});assert.equal(r.status,308);assert.equal(r.headers.get('location'),'https://example.test/old-url?x=1');assert.equal((await request('/auth/login',{AUTH_ENABLED:'true',SITE_ORIGIN:origin})).status,503);});
 
