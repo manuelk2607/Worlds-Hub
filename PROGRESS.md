@@ -30,6 +30,10 @@ Der unmittelbare GitHub-Livecheck las noch die vorige `robots.txt`.
 Nach dem Upload bestätigte der direkte Abruf die neuen Regeln und 14
 HTML-Antworten mit `noindex` und `no-store`. Die Liveprüfung wartet bei der
 bekannten alten Antwort begrenzt auf die Veröffentlichung am Edge.
+Der erneute [GitHub-Lauf](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45646388528)
+aus `b3521e5` ist grün. Worker `898c93c4-5b70-4033-ba81-8dc1f0f3245d`.
+Die zehn öffentlichen URLs hatten gültige Canonicals und gegenseitige
+DE/EN-Alternativen.
 
 ## Drei genehmigte Produktions-Releases
 
