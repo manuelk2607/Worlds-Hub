@@ -1,13 +1,23 @@
 import assert from 'node:assert/strict';
+import {setTimeout as delay} from 'node:timers/promises';
 const raw=process.argv[2]??'https://worlds-hub.maki26.workers.dev';
 const origin=new URL(raw).origin;
 if(!raw.startsWith('https://')&&!['localhost','127.0.0.1'].includes(new URL(raw).hostname))throw new Error('HTTPS required');
 const publicPaths=['/','/welten/music-worlds','/welten/sprachwelten','/welten/it-worlds','/welten/slop-urself','/en/','/en/worlds/music-worlds','/en/worlds/sprachwelten','/en/worlds/it-worlds','/en/worlds/slop-urself'];
 const paths=[...publicPaths,'/konto','/en/account','/robots.txt','/sitemap.xml','/styles.css','/client.js'];
 for(const path of paths){
-  const response=await fetch(origin+path,{redirect:'manual',signal:AbortSignal.timeout(15000)});
+  const read=()=>fetch(origin+path,{redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(15000)});
+  let response=await read();
+  let body=await response.text();
+  if(path==='/robots.txt'){
+    // The previous Worker may still serve this public file just after an upload.
+    for(let attempt=0;attempt<4&&response.ok&&body.includes('Disallow: /konto\n');attempt++){
+      await delay(3000);
+      response=await read();
+      body=await response.text();
+    }
+  }
   assert.equal(response.status,200,`${path}: HTTP ${response.status}`);
-  const body=await response.text();
   if(publicPaths.includes(path)){
     assert.ok(body.includes(`rel="canonical" href="${origin+path}"`),`${path}: canonical`);
     assert.match(body,/<title[^>]*>[^<]+<\/title>/);assert.match(body,/<meta name="description" content="[^"]+"/);

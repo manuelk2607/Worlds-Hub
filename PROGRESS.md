@@ -25,6 +25,11 @@ Der Search-Console-Tag ist in beiden Sprachen mit einem Testwert geprüft.
 Die [Anleitung](docs/OPERATIONS.md#seo-und-search-console) nennt die genaue
 URL-Präfix-Property. Auf der Live-Startseite fehlt der Google-Tag.
 Property-Bestätigung und Indexierungsstatus sind noch offen.
+Erster Upload aus `1a71e7e` als Worker `39382b6c-db56-4e35-884d-64cf151be218`.
+Der unmittelbare GitHub-Livecheck las noch die vorige `robots.txt`.
+Nach dem Upload bestätigte der direkte Abruf die neuen Regeln und 14
+HTML-Antworten mit `noindex` und `no-store`. Die Liveprüfung wartet bei der
+bekannten alten Antwort begrenzt auf die Veröffentlichung am Edge.
 
 ## Drei genehmigte Produktions-Releases
 
