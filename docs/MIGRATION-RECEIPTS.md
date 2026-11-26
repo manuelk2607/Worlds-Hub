@@ -54,8 +54,8 @@ only the authenticated user's reported states.
    `WORLDS_MIGRATION_RECEIPT_PRIVATE_JWK`. Pin only `kid`, `kty`, `crv`,
    and `x` under `sprachwelten` in the Hub's `MIGRATION_RECEIPT_KEYS`
    variable and set `MIGRATION_RECEIPTS_ENABLED=true`. Publish the Hub with
-   `device_sign_out_production=true` to retain the existing four-project
-   sign-out, then publish Sprachwelten with its existing production bindings.
+   the standard production workflow (`deploy=true`), then publish
+   Sprachwelten with its existing production bindings.
 3. Verify the enabled route rejects an invalid signature with HTTP 401.
    Check that an actual pending audit record is acknowledged in Sprachwelten
    and present in Hub D1 with the same revision and state. Check that the

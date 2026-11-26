@@ -15,7 +15,7 @@
     "validate": "node scripts/validate-artifact.mjs",
     "check": "npm run typecheck && npm run lint && npm test && npm run validate",
     "deploy:check": "wrangler deploy --dry-run",
-    "deploy:cloudflare": "wrangler deploy",
+    "deploy:cloudflare": "node --experimental-strip-types scripts/deploy-device-sign-out.ts --production",
     "smoke": "node --experimental-strip-types scripts/smoke.ts"
   },
   "dependencies": {

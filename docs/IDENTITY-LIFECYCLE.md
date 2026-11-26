@@ -240,6 +240,5 @@ wiederholt fehlende Zustellungen mit dem ursprünglichen Widerrufszeitpunkt.
 Gruppen von höchstens vier Empfängern lassen Verbindungsspielraum für
 D1-Bestätigungen im kostenlosen Workers-Tarif. Bei Fehler zuerst die
 bisherige Hub-Version wiederherstellen. Bereits bestätigte Abmeldungen
-behält das jeweilige Projekt bei. Solange die Aktivierung über die
-Workflow-Option erfolgt, wird sie bei weiteren aktiven Releases erneut
-ausgewählt. [Cloudflare Workers-Limits](https://developers.cloudflare.com/workers/platform/limits/)
+behält das jeweilige Projekt bei. Reguläre Hub-Deployments auf `main` erhalten
+die vier produktiven Empfänger und den IT-Worlds-Nachweisdienst automatisch. [Cloudflare Workers-Limits](https://developers.cloudflare.com/workers/platform/limits/)

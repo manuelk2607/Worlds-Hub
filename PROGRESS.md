@@ -15,6 +15,16 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Produktiver Hub-Standard für Abmeldung und Nachweise
+
+`deploy=true` paketiert auf `main` regulär alle vier produktiven
+Abmeldeempfänger und den internen IT-Nachweisdienst. Der frühere
+explizite Produktionsschalter wird weiter akzeptiert. Der getrennte
+Pilot bleibt an seine eigenen Eingaben gebunden.
+90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+Beide Deployment-Trockenläufe wählten die erwarteten Bindings. Sieben
+Kombinationen der Workflow-Freigaben wurden über dessen Prüfschritt getestet.
+
 ## Rückwege aus den Projekten zum Hub
 
 Music-Worlds verlinkt den Hub bereits produktiv. Sprachwelten `5f8c04f`

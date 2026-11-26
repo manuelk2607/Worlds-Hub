@@ -10,7 +10,12 @@
 
 ## Nachvollziehbarer Ablauf
 
-`.github/workflows/cloudflare.yml` läuft ausschließlich über `workflow_dispatch`. Gepinnte Actions-Commits, `contents: read`, maximal 10 Minuten, keine Artefakt-Uploads. Standard `deploy=false` führt Prüfungen aus. Ein produktiver Lauf prüft und deployt denselben Checkout und führt anschließend `npm run smoke` aus.
+`.github/workflows/cloudflare.yml` läuft ausschließlich über `workflow_dispatch`. Gepinnte Actions-Commits, `contents: read`, maximal 10 Minuten, keine Artefakt-Uploads. Standard `deploy=false` führt Prüfungen aus. Ein produktiver Lauf prüft und deployt denselben Checkout von `main` und
+führt anschließend `npm run smoke` aus. `deploy=true` verwendet regulär
+die vier produktiven Abmeldeempfänger und den internen IT-Worlds-Dienst
+für Migrationsnachweise. Die bisherige explizite Angabe
+`device_sign_out_production=true` wird weiterhin akzeptiert. Der getrennte
+Pilotmodus erfordert `device_sign_out_pilot=true` und seine eigenen Secrets.
 
 ```sh
 gh workflow run cloudflare.yml --repo manuelk2607/Worlds-Hub --ref main -f deploy=true
