@@ -24,6 +24,11 @@ Sprachwechsel auf den Identitätsseiten lokal. 90 Tests, Typprüfung, Lint
 und Build bestanden. Chromium bei 1440 px und WebKit bei 320 px prüften
 zwei unterschiedliche Testkonten im selben Browser und die Abmeldung
 eines davon mit simuliertem Anmeldedienst.
+`b791e27` läuft als Worker `0db6dea8-4704-488a-9034-e10e1ca65dca`.
+Der ausgelieferte Browsercode entspricht dem geprüften Build. Beide
+Präferenzrouten weisen anonyme Zugriffe mit HTTP 401 und `no-store` ab.
+Die produktive Löschfunktion ist weiterhin deaktiviert.
+[GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45832407777)
 
 ## Löschabnahme im bestehenden QA-Zweig
 
