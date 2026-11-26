@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-25 (Europe/Helsinki)
+Stand: 2026-11-26 (Europe/Helsinki)
 
 Zentrale Anmeldung und projektübergreifende Abmeldung laufen in allen vier
 Welten. Jede Welt hat einen bestätigten Migrationsnachweis an den Hub
@@ -14,6 +14,20 @@ Für das offene Music-Worlds-Gastprofil mit acht Beiträgen und acht
 passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
+
+## Rückwege aus den Projekten zum Hub
+
+Music-Worlds verlinkt den Hub bereits produktiv. Sprachwelten `5f8c04f`
+und IT-Worlds `a6ad092` ergänzen den lokalisierten Rückweg. Beide Commits
+auf `main` sind grün ([Sprachwelten](https://github.com/manuelk2607/Sprachwelten/actions/runs/45647577498),
+[IT-Worlds](https://github.com/manuelk2607/IT-Worlds/actions/runs/45647576735)).
+Slop Urself `9a686b4` ergänzt denselben Link. `05cb5b8` behebt eine
+Timing-Annahme des Revanche-Tests. Der Einzeltest bestand in Chromium
+und WebKit mit lokalem workerd. Der
+[neue CI-Lauf](https://github.com/manuelk2607/Slop_Urself/actions/runs/45792725831)
+läuft. Alle neuen Links wurden lokal in DE/EN bei Desktop- und Mobilbreite
+geprüft. Der Live-Abruf zeigt die Versionen vor diesen drei Änderungen.
+Wrangler meldet eine abgelaufene Cloudflare-Anmeldung.
 
 ## SEO und Search Console
 
