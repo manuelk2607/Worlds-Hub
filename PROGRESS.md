@@ -24,6 +24,11 @@ sind in beiden Sprachen aktualisiert. 92 Tests, Typprüfung, Lint, Build
 und Artefaktprüfung bestanden. Chromium bei 1440 px und WebKit bei
 320 px prüften vier simulierte Statusmeldungen im Dark Mode, den
 Sprachwechsel und den Hinweis auf der Detailseite.
+`1c9a365` läuft als Worker `fb5b7d5e-7741-4775-a4c3-3ef0a9b8a275`.
+[CI und Deployment](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45834133156)
+sind grün. DE/EN-Startseiten und IT-Worlds-Detailseiten lieferten live
+HTTP 200, korrekte Canonicals und die erwarteten Projektlinks. Derzeit
+ist kein Ausfall im Hub konfiguriert.
 
 ## Rücksprung von der Identitätsseite zum Hub-Konto
 
