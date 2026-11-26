@@ -128,7 +128,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
       'sign-in/email':['email','password','oauth_query'],'sign-up/email':['email','password','name'],
       'email-otp/send-verification-otp':['email'],'email-otp/verify-email':['email','otp'],
       'request-password-reset':['email'],'reset-password':['token','newPassword'],
-      'update-user':['name'],'sign-out':[],'change-password':['currentPassword','newPassword'],'export':[],'revoke-sessions':[]
+      'update-user':['name'],'sign-out':[],'change-password':['currentPassword','newPassword'],'export':[],'revoke-sessions':['expectedSubject']
     };
     if(fields[path]){
       data=Object.fromEntries(fields[path].filter(k=>data![k]!==undefined).map(k=>[k,data![k]]));
@@ -182,6 +182,7 @@ export async function identityProxy(request:Request,config:IdentityConfig,migrat
     return response;
   }
   if(path==='revoke-sessions'&&account){
+    if(data?.expectedSubject!==undefined&&data.expectedSubject!==account.id)return json({error:'SIGN_IN_REQUIRED'},401);
     const pilot=config.deviceSignOutPilot;
     if(pilot&&(pilot.expiresAt<=Date.now()||pilot.subject!==account.id))return json({error:'NOT_FOUND'},404);
     // Commit local revocation before ending the verified native session so

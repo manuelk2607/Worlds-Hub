@@ -180,10 +180,12 @@ Cross-project session revocation remains a separate unresolved acceptance item.
 
 The reset page now removes the token from the browser address as soon as the
 page loads. An unsuccessful submission can retry while the page stays open.
-After a successful reset and verified sign-in, the Hub opens the account page.
-When the four production recipients are enabled, the reset screen explains
-where to choose “Sign out on all devices”. The project sessions end after the
-user confirms that action.
+After a successful reset, the next sign-in offers a checkbox to end all
+existing Worlds sessions, including the new sign-in. It is unchecked by
+default. The Hub checks that the verified session still belongs to the
+account returned by sign-in before accepting the account-bound request.
+The existing signed revocation queue handles all four project acknowledgements.
+Signing in without selecting the checkbox opens the account page.
 
 The supported Managed Better Auth webhook events cover delivery of a reset
 link or code. They do not report completion. That delivery event also replaces

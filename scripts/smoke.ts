@@ -62,6 +62,16 @@ for(const language of ['de','en']){
   assert.ok(accountCsrfCookie);
  }else assert.doesNotMatch(body,/data-identity-device-sign-out/);
 }
+for(const language of ['de','en']){
+ const response=await fetch(origin+'/identity/reset?ui_locales='+language,{redirect:'manual'});
+ assert.equal(response.status,200);
+ assert.match(response.headers.get('x-robots-tag')!,/noindex/);
+ assert.equal(response.headers.get('cache-control'),'no-store');
+ const body=await response.text();
+ assert.ok(body.includes('<html lang="'+language+'"'));
+ if(expectProduction)assert.match(body,/data-reset-sign-out-option hidden><input type="checkbox" data-reset-sign-out-choice>/);
+ else assert.doesNotMatch(body,/data-reset-sign-out-choice/);
+}
 const deviceSignOut=await fetch(origin+'/api/identity/revoke-sessions',{
  method:'POST',headers:{origin,'content-type':'application/json',...(accountCsrfCookie?{
   cookie:accountCsrfCookie,'x-worlds-identity-csrf':accountCsrfCookie.split('=')[1],

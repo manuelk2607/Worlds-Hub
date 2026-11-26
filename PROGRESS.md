@@ -15,6 +15,17 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Abmeldung direkt nach der Passwort-Wiederherstellung
+
+Nach erfolgreichem Reset kann der Nutzer beim erneuten Anmelden ausdrücklich
+die Abmeldung auf allen Geräten auswählen. Die Auswahl ist standardmäßig
+aus. Der Hub prüft, ob die aktuelle Sitzung weiterhin zu dem soeben
+bestätigten Konto gehört, und nutzt die bestehende Abmeldung mit vier
+Empfängern und Zustellstatus. Ohne Auswahl öffnet sich das Konto.
+90 Tests, Typprüfung, Lint und Build bestanden. Chromium DE und WebKit EN
+prüften mit simuliertem Anmeldedienst je fünf Fälle, darunter keine Auswahl,
+ausstehende Zustellung und eine inzwischen gewechselte Sitzung.
+
 ## Produktiver Hub-Standard für Abmeldung und Nachweise
 
 `deploy=true` paketiert auf `main` regulär alle vier produktiven

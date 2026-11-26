@@ -13,6 +13,8 @@ if(identityRoot){
  const rawQuery=resetPage?'':location.search.slice(1),oauth=!resetPage&&params.has('client_id');
  const forms=[...root.querySelectorAll<HTMLFormElement>('[data-identity-form]')];
  const deviceSignOut=root.querySelector<HTMLButtonElement>('[data-identity-device-sign-out]');
+ const resetSignOutOption=root.querySelector<HTMLLabelElement>('[data-reset-sign-out-option]');
+ const resetSignOutChoice=root.querySelector<HTMLInputElement>('[data-reset-sign-out-choice]');
  let busy=false,freshSignInRequired=false,resetSaved=false,currentUser:{id:string;name?:string;email:string;emailVerified:boolean}|undefined;
  function show(mode:string){forms.forEach(form=>{form.hidden=form.dataset.identityForm!==mode;});root.querySelectorAll<HTMLButtonElement>('.identity-tabs button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.identityAction===mode)));clearStatus(message);}
  async function api(path:string,body?:Record<string,unknown>){
@@ -61,6 +63,7 @@ if(identityRoot){
  for(const form of forms)form.addEventListener('submit',async event=>{
   event.preventDefault();if(busy)return;const fields=Object.fromEntries(new FormData(form)) as Record<string,string>;
   const action=form.dataset.identityForm!;
+  const signOutAfterReset=action==='login'&&resetSaved&&resetSignOutChoice?.checked===true;
   if(action==='change-password'&&fields.newPassword!==fields.confirmation){status(message,'error.passwordMismatch');return;}
   if(action==='delete-account'&&(root.dataset.verified!=='true'||!window.confirm(text('identity.deleteAccountConfirm')))){form.reset();return;}
   pending(true);status(message,'status.waiting');
@@ -79,7 +82,8 @@ if(identityRoot){
     resetSaved=true;
     history.replaceState(null,'','/identity/login');
     showSignedOut();
-    status(message,root.hasAttribute('data-reset-device-sign-out')?'status.passwordSavedWorlds':'status.passwordSaved');
+    if(resetSignOutOption)resetSignOutOption.hidden=false;
+    status(message,resetSignOutOption?'status.passwordSavedWorlds':'status.passwordSaved');
    }
    else if(action==='change-password'){
     form.hidden=true;
@@ -101,7 +105,16 @@ if(identityRoot){
    else if(action==='verify'){show('login');status(message,'status.verifiedDone');}
    else{
     const session=await refresh();
-    if(action==='login'&&resetSaved&&session.user?.emailVerified){location.assign('/identity/account');return;}
+    if(action==='login'&&resetSaved&&session.user?.emailVerified){
+     if(!signOutAfterReset){location.assign('/identity/account');return;}
+     if(data.user?.id!==session.user.id)throw new Error('IDENTITY_UNAVAILABLE');
+     const result=await api('revoke-sessions',{expectedSubject:session.user.id});
+     resetSaved=false;
+     if(resetSignOutOption)resetSignOutOption.hidden=true;
+     showSignedOut();
+     status(message,result.projectSessionsEnded?'status.signedOutWorldsDevices':'status.projectSignOutPending');
+     return;
+    }
     if(action==='login'&&session.user?.emailVerified)void loadProfileLocale();
     status(message,action==='update'?'status.nameSaved':'status.signedIn');
     if(oauth&&session.user?.emailVerified&&!freshSignInRequired)await continueOAuth();

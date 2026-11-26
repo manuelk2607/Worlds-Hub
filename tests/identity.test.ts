@@ -136,13 +136,16 @@ test('signing out all devices uses only the verified account and fences in-fligh
   assert.equal((await identityProxy(request(),config)).status,401);
   assert.ok(await store.getSession('self'));
   identity='verified';
+  const mismatched=await identityProxy(f.request('revoke-sessions',{expectedSubject:'another-user'}),config);
+  assert.equal(mismatched.status,401);
+  assert.ok(await store.getSession('self'));
   const partial=await identityProxy(request(),config);
   assert.deepEqual(await partial.json(),{error:'DEVICE_SIGN_OUT_PARTIAL'});
   assert.equal(partial.headers.get('set-cookie'),null);
   assert.ok(await store.getSession('other'));
   assert.ok(await store.getSession('foreign'));
   confirmed=true;
-  const response=await identityProxy(request(),config);
+  const response=await identityProxy(f.request('revoke-sessions',{expectedSubject:fixtureUser.id}),config);
   assert.equal(response.status,200);
   assert.deepEqual(await response.json(),{success:true});
   for(const name of ['__Host-worlds-session','__Secure-neon-auth.session_token','__Secure-neon-auth.local.session_data']){
@@ -327,9 +330,10 @@ test('a verified password change fences older callbacks and queues signed revoca
  assert.match(identityPage('/identity/account','',f.csrf.value,config,'en').body,/ends your sessions/);
  const resetPage=identityPage('/identity/reset','token=fixture-reset-token&client_id=unrelated',f.csrf.value,config);
  assert.equal(resetPage.status,200);
- assert.match(resetPage.body,/data-mode="reset" data-reset-device-sign-out/);
+ assert.match(resetPage.body,/data-mode="reset"/);
+ assert.match(resetPage.body,/<label[^>]*data-reset-sign-out-option hidden><input type="checkbox" data-reset-sign-out-choice>/);
  assert.doesNotMatch(resetPage.body,/fixture-reset-token|data-identity-continue/);
- assert.doesNotMatch(identityPage('/identity/reset','',f.csrf.value,f.config).body,/data-reset-device-sign-out/);
+ assert.doesNotMatch(identityPage('/identity/reset','',f.csrf.value,f.config).body,/data-reset-sign-out-choice/);
  const store=new D1AuthStore(f.binding),expires=Date.now()+60_000;
  const subjectSession={issuer:baseUrl,sub:fixtureUser.id,expires,csrf:'fixture'};
  await store.putSession('self',subjectSession);
