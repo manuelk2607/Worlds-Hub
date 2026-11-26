@@ -39,12 +39,14 @@ const pageLocale=(request:Request,match:ReturnType<typeof matchRoute>):Locale=>m
 async function localePreference(request:Request,config:AuthConfig|null,db:D1Database|undefined,central:IdentityConfig|null){
  const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
  if(!config||!db)return json({error:'SSO_NOT_CONFIGURED'},503);
- if(new URL(request.url).origin!==config.origin)return json({error:'INVALID_HOST'},421);
+ const url=new URL(request.url);
+ if(url.origin!==config.origin)return json({error:'INVALID_HOST'},421);
  if(request.method!=='GET'&&request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405);
  if(request.method==='POST'&&!sameOrigin(request,config.origin))return json({error:'INVALID_ORIGIN'},403);
  let subject:string|null|undefined;
  try{
-  subject=(await session(request,config))?.sub;
+  // The identity pages display the native account, which can differ from the Hub session.
+  if(url.searchParams.get('session')!=='identity')subject=(await session(request,config))?.sub;
   if(!subject&&central?.baseUrl===config.issuer&&central.origin===config.origin){
    subject=await verifiedPreferenceSubject(request,central);
   }

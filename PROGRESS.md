@@ -15,6 +15,16 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Sprachpräferenz bei zwei aktiven Sitzungen
+
+Identitätsseiten lesen und ändern die Sprache nur für das beim
+Anmeldedienst verifizierte Konto. Hub-Seiten verwenden wie bisher die eigene
+Hub-Sitzung, sofern vorhanden. Ein fehlendes Anmeldekonto lässt den
+Sprachwechsel auf den Identitätsseiten lokal. 90 Tests, Typprüfung, Lint
+und Build bestanden. Chromium bei 1440 px und WebKit bei 320 px prüften
+zwei unterschiedliche Testkonten im selben Browser und die Abmeldung
+eines davon mit simuliertem Anmeldedienst.
+
 ## Löschabnahme im bestehenden QA-Zweig
 
 Drei neu erzeugte Testkonten bestätigten die getrennte Admin-Anmeldung und

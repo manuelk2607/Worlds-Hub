@@ -126,6 +126,33 @@ test('verified central login stores locale without a separate Hub session',async
  assert.deepEqual(await (await request(path,env,{headers})).json(),{locale:null});
  const rows=db.prepare('SELECT issuer,subject,locale FROM user_preferences').all();
  assert.deepEqual(rows.map(row=>[row.issuer,row.subject,row.locale]),[[issuer,'native-user','en']]);
+
+ const staleHub='A'.repeat(40), expires=Date.now()+60_000;
+ const hubSession={issuer,sub:'hub-user',csrf:'fixture',expires};
+ db.prepare('INSERT INTO auth_sessions (id,issuer,subject,payload,expires) VALUES (?,?,?,?,?)')
+  .run(await hash(staleHub),issuer,hubSession.sub,JSON.stringify(hubSession),expires);
+ db.prepare('INSERT INTO user_preferences (issuer, subject, locale, updated_at) VALUES (?,?,?,?)')
+  .run(issuer,hubSession.sub,'de',Date.now());
+ userId=sessionUserId='native-user';
+ const hubCookie='__Host-worlds-session='+staleHub;
+ const both={...headers,cookie:hubCookie+'; '+cookie};
+ const identityPath=path+'?session=identity';
+ assert.deepEqual(await (await request(path,env,{headers:both})).json(),{locale:'de'});
+ assert.deepEqual(await (await request(identityPath,env,{headers:both})).json(),{locale:'en'});
+ const change=await request(identityPath,env,{method:'POST',
+  headers:{...both,origin,'content-type':'application/json'},body:'{"locale":"de"}'});
+ assert.equal(change.status,200);
+ assert.equal(db.prepare("SELECT locale FROM user_preferences WHERE subject='native-user'").get()?.locale,'de');
+ assert.equal(db.prepare("SELECT locale FROM user_preferences WHERE subject='hub-user'").get()?.locale,'de');
+ const changedHub=await request(path,env,{method:'POST',
+  headers:{...both,origin,'content-type':'application/json'},body:'{"locale":"en"}'});
+ assert.equal(changedHub.status,200);
+ assert.deepEqual(await (await request(identityPath,env,{headers:both})).json(),{locale:'de'});
+ const onlyHub={...headers,cookie:hubCookie};
+ assert.equal((await request(identityPath,env,{headers:onlyHub})).status,401);
+ assert.equal((await request(identityPath,env,{method:'POST',
+  headers:{...onlyHub,origin,'content-type':'application/json'},body:'{"locale":"de"}'})).status,401);
+ assert.deepEqual(await (await request(path,env,{headers:onlyHub})).json(),{locale:'en'});
 });
 
 test('both languages explain central login, project linkage and the identity data export',async()=>{

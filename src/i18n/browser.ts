@@ -3,6 +3,7 @@ import {projectUrl,projects} from '../projects.ts';
 
 let current:Locale=normalizeLocale(document.documentElement.lang)??'de';
 const localeButtons=document.querySelectorAll<HTMLButtonElement>('button[data-locale]');
+const profileLocaleUrl=location.pathname.startsWith('/identity/')?'/api/preferences/locale?session=identity':'/api/preferences/locale';
 let manuallySelected=false;
 let profileWrite=Promise.resolve();
 export const locale=()=>current;
@@ -47,7 +48,7 @@ export function applyLocale(next:Locale,{persist=false,announce=false,replaceUrl
 
 async function saveProfileLocale(next:Locale,initial=false){
  try{
-  const response=await fetch('/api/preferences/locale',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({locale:next,...(initial?{initial:true}:{})}),signal:AbortSignal.timeout(5000)});
+  const response=await fetch(profileLocaleUrl,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({locale:next,...(initial?{initial:true}:{})}),signal:AbortSignal.timeout(5000)});
   if(response.ok)return normalizeLocale((await response.json() as {locale?:unknown}).locale);
  }catch{/* Local preference remains active if profile storage is unavailable. */}
  return null;
@@ -81,7 +82,7 @@ if(localPreference){
 }
 export async function loadProfileLocale(){
  try{
-  const response=await fetch('/api/preferences/locale',{headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)});
+  const response=await fetch(profileLocaleUrl,{headers:{accept:'application/json'},signal:AbortSignal.timeout(5000)});
   if(!response.ok)return;
   let preferred=normalizeLocale((await response.json() as {locale?:unknown}).locale);
   if(!preferred&&localPreference&&!manuallySelected){
