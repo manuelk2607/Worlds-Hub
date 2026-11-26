@@ -27,6 +27,10 @@ frische Anmeldestart funktionierte mit signiertem Rücksprung im Test.
 [CI und produktiver Smoke-Test](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45850599237)
 bestätigten regulären Anmeldestart, PKCE und die Ablehnung eines ungültigen
 Rücksprungs. Die simulierten Providerfehler waren auf den lokalen Test begrenzt.
+Music-Worlds verwendet denselben zeitbegrenzten OIDC-Transport. Der
+DE/EN-Hinweis führt zum Profil zurück und ist bei abgelaufener Transaktion
+live geprüft. `71bf289` läuft als Worker `2c8f8dcc-03ed-4432-87ce-f665bf27330f`.
+[Music-Worlds-Prüfung und Deployment](https://github.com/manuelk2607/Music-Worlds/actions/runs/45851673877)
 
 Wenn die Anbieterkonfiguration beim Start der Anmeldung nicht erreichbar
 ist, antwortet der Hub mit lokalisiertem HTTP 503 und begrenzt die Abfrage
