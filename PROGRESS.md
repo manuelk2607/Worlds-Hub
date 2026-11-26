@@ -23,6 +23,10 @@ Der unterbrochene Rücksprung bleibt einmalig, vorhandene Hub-Sitzungen
 bleiben gültig. 94 Tests bestanden. Ein Dienstfehler beim Token-Abruf und
 ein Timeout beim Signaturschlüssel wurden simuliert. Der anschließende
 frische Anmeldestart funktionierte mit signiertem Rücksprung im Test.
+`b44808d` läuft als Worker `d17af1b4-0cae-4088-9f89-04f57195c433`.
+[CI und produktiver Smoke-Test](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45850599237)
+bestätigten regulären Anmeldestart, PKCE und die Ablehnung eines ungültigen
+Rücksprungs. Die simulierten Providerfehler waren auf den lokalen Test begrenzt.
 
 Wenn die Anbieterkonfiguration beim Start der Anmeldung nicht erreichbar
 ist, antwortet der Hub mit lokalisiertem HTTP 503 und begrenzt die Abfrage
