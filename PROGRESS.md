@@ -22,6 +22,11 @@ OIDC-Ablauf mit PKCE. Das Ziel ist die DE/EN-Kontoseite mit eigener
 Hub-Sitzung. 91 Tests, Typprüfung, Lint und Build bestanden. Chromium bei
 1440 px und WebKit bei 320 px prüften Anmeldebeginn, temporären Fehler,
 Wiederholung und signierten Rücksprung mit simuliertem Anbieter.
+`159be47` läuft als Worker `f0774974-28cf-4bdc-8ea5-6bbfdbd2f4c1`.
+Der [Live-Smoketest](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45833399096)
+bestätigte den Button in beiden Sprachen und den produktiven OIDC-Start.
+Der Rücksprung mit aktivem persönlichem Konto wurde für diesen Button lokal
+simuliert.
 
 ## Sprachpräferenz bei zwei aktiven Sitzungen
 
