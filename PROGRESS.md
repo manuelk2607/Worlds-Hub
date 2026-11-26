@@ -24,6 +24,11 @@ Pilot bleibt an seine eigenen Eingaben gebunden.
 90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 Beide Deployment-Trockenläufe wählten die erwarteten Bindings. Sieben
 Kombinationen der Workflow-Freigaben wurden über dessen Prüfschritt getestet.
+Der Standardaufruf veröffentlichte `951ee9a` als Worker
+`e1b29146-0833-451e-a6ad-016130bd1759` und bestand den Live-Smoketest.
+Der Upload bestätigte die IT-Worlds-Dienstbindung. Rücknahmeversion
+`898c93c4-5b70-4033-ba81-8dc1f0f3245d`.
+[GitHub Actions](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45826291589)
 
 ## Rückwege aus den Projekten zum Hub
 
