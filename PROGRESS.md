@@ -24,7 +24,11 @@ JavaScript bleibt das vorhandene Formular für einen neuen Versuch bereit.
 Eine gestörte Anfrage setzt keine Transaktions- oder Sitzungscookies.
 93 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium
 DE bei 1440 px und WebKit EN bei 320 px prüften den simulierten Ausfall mit
-und ohne JavaScript. Produktive Prüfung läuft über GitHub Actions.
+und ohne JavaScript. `a6cf33a` läuft als Worker
+`24b7f36f-a64e-4527-ad82-5eaacb00fb13`. Der produktive Anmeldestart
+funktionierte in DE und EN mit PKCE. Die [GitHub-Produktionsprüfung](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45849933562)
+bestand einschließlich des Zugriffsschutzes und der Ablehnung eines
+Rücksprungs ohne gültige Anmeldetransaktion. Der Ausfall wurde lokal simuliert.
 
 ## Kurzfristige Projektausfälle auf Landing- und Detailseiten
 
