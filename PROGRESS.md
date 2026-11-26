@@ -25,6 +25,11 @@ Empfängern und Zustellstatus. Ohne Auswahl öffnet sich das Konto.
 90 Tests, Typprüfung, Lint und Build bestanden. Chromium DE und WebKit EN
 prüften mit simuliertem Anmeldedienst je fünf Fälle, darunter keine Auswahl,
 ausstehende Zustellung und eine inzwischen gewechselte Sitzung.
+`cb0ac42` läuft als Worker `c456cacf-81c8-4804-91e9-f59266468b00`.
+Der [Produktionscheck](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45829764296)
+bestätigte die DE/EN-Reset-Ansichten und den anonymen Zugriffsschutz.
+Ein echter Reset mit anschließender Abmeldung in den vier Welten wurde in
+diesem Release noch nicht abgenommen.
 
 ## Produktiver Hub-Standard für Abmeldung und Nachweise
 
