@@ -12,7 +12,10 @@ import {route,t,type MessageKey} from '../src/i18n/core.ts';
 const {default:worker}=await import(pathToFileURL(resolve('dist/server/index.js')).href);
 const origin='https://worlds-hub.maki26.workers.dev';
 const request=(path:string,env:Record<string,unknown>={},options?:RequestInit)=>worker.fetch(new Request(origin+path,options),env) as Promise<Response>;
-test('both localized landing pages and all project details are server-rendered with correct links',async()=>{for(const locale of ['de','en'] as const){const r=await request(route('home',locale)),html=await r.text();assert.equal(r.status,200);assert.match(html,new RegExp(`<html lang="${locale}"`));assert.equal((html.match(/<h1/g)??[]).length,1);const overview=html.slice(html.indexOf('<section id="welten"'),html.indexOf('<section id="idee"'));assert.equal((overview.match(/<article class="card">/g)??[]).length,4);assert.doesNotMatch(overview,/<button|data-filter|data-interests|status-count/);assert.ok(html.includes(t(locale,'meta.description')));assert.match(html,new RegExp(`hreflang="${locale}"`));for(const p of projects){assert.ok(html.includes(p.name));if(p.url)assert.ok(html.includes('href="'+p.url+'"'));assert.ok(html.includes(t(locale,`projects.${p.id}.description` as MessageKey)));const d=await request(route(`world:${p.id}`,locale));assert.equal(d.status,200);assert.ok((await d.text()).includes('<h1>'+p.name+'</h1>'));}if(locale==='en')assert.doesNotMatch(html,/>SPRACHE<|>TECHNIK<|>KREATIVITÄT</);assert.doesNotMatch(html,/Adventskalender|token=|access_token|lorem ipsum/i);assert.match(html,/application\/ld\+json/);}});
+const localizedLaunchPaths={
+ 'music-worlds':'/en','sprachwelten':'/en','it-worlds':'/en/','slop-urself':'/',
+} as const;
+test('both localized landing pages and all project details are server-rendered with correct links',async()=>{for(const locale of ['de','en'] as const){const r=await request(route('home',locale)),html=await r.text();assert.equal(r.status,200);assert.match(html,new RegExp(`<html lang="${locale}"`));assert.equal((html.match(/<h1/g)??[]).length,1);const overview=html.slice(html.indexOf('<section id="welten"'),html.indexOf('<section id="idee"'));assert.equal((overview.match(/<article class="card">/g)??[]).length,4);assert.doesNotMatch(overview,/<button|data-filter|data-interests|status-count/);assert.ok(html.includes(t(locale,'meta.description')));assert.match(html,new RegExp(`hreflang="${locale}"`));for(const p of projects){assert.ok(html.includes(p.name));if(p.url){const target=new URL(locale==='en'?localizedLaunchPaths[p.id]:'/',p.url).href;assert.ok(overview.includes(`data-project-home="${p.id}" href="${target}"`));}assert.ok(html.includes(t(locale,`projects.${p.id}.description` as MessageKey)));const d=await request(route(`world:${p.id}`,locale));assert.equal(d.status,200);const detail=await d.text();assert.ok(detail.includes('<h1>'+p.name+'</h1>'));if(p.url)assert.ok(detail.includes(`data-project-home="${p.id}" href="${new URL(locale==='en'?localizedLaunchPaths[p.id]:'/',p.url).href}"`));}if(locale==='en')assert.doesNotMatch(html,/>SPRACHE<|>TECHNIK<|>KREATIVITÄT</);assert.doesNotMatch(html,/Adventskalender|token=|access_token|lorem ipsum/i);assert.match(html,/application\/ld\+json/);}});
 test('localized account links lead to project profiles and distinguish transfer status',async()=>{
  const targets={
   'music-worlds':{de:'/#profil',en:'/en#profil'},
@@ -35,7 +38,7 @@ test('localized account links lead to project profiles and distinguish transfer 
    const link=`data-project-account="${project.id}" href="${href}"`;
    assert.ok(guestHtml.includes(link));
    assert.ok(signedIn.includes(link));
-   assert.ok(publicLinks.includes(`href="${project.url}"`));
+   assert.ok(publicLinks.includes(`data-project-home="${project.id}" href="${new URL(locale==='en'?localizedLaunchPaths[project.id]:'/',project.url).href}"`));
   }
   assert.ok(guestHtml.includes(t(locale,'account.openProjectAccount')));
   for(const key of ['account.linkConfirmed','account.linkRevoked','account.linkUnreported'] as const){

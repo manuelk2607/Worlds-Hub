@@ -1,5 +1,5 @@
 import {LOCALE_STORAGE_KEY,isMessageKey,languageCookie,localeTags,normalizeLocale,route,routes,t,type Locale,type MessageKey,type Values} from './core.ts';
-import {projectAccountUrl,projects} from '../projects.ts';
+import {projectUrl,projects} from '../projects.ts';
 
 let current:Locale=normalizeLocale(document.documentElement.lang)??'de';
 const localeButtons=document.querySelectorAll<HTMLButtonElement>('button[data-locale]');
@@ -27,9 +27,10 @@ export function applyLocale(next:Locale,{persist=false,announce=false,replaceUrl
  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(element=>{const key=element.dataset.i18n;if(key&&isMessageKey(key))element.textContent=t(next,key,valuesFor(element));});
  document.querySelectorAll<HTMLElement>('[data-i18n-aria-label],[data-i18n-title],[data-i18n-placeholder],[data-i18n-content]').forEach(setAttributeTranslations);
  document.querySelectorAll<HTMLAnchorElement>('[data-route]').forEach(anchor=>{const id=anchor.dataset.route;if(id&&Object.hasOwn(routes,id)){const hash=anchor.dataset.routeHash??'';anchor.href=route(id as keyof typeof routes,next)+hash;}});
- document.querySelectorAll<HTMLAnchorElement>('[data-project-account]').forEach(anchor=>{
-  const project=projects.find(item=>item.id===anchor.dataset.projectAccount);
-  const url=project&&projectAccountUrl(project,next);
+ document.querySelectorAll<HTMLAnchorElement>('[data-project-home],[data-project-account]').forEach(anchor=>{
+  const {projectAccount,projectHome}=anchor.dataset;
+  const project=projects.find(item=>item.id===(projectAccount??projectHome));
+  const url=project&&projectUrl(project,next,projectAccount?'account':'home');
   if(url)anchor.href=url;
  });
  localeButtons.forEach(button=>{const active=button.dataset.locale===next;button.setAttribute('aria-pressed',String(active));button.setAttribute('aria-current',active?'true':'false');});

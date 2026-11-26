@@ -15,6 +15,17 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Lokalisierte öffentliche Projektziele
+
+Start-, Detail- und Abmeldeseiten wählen die veröffentlichten DE/EN-Ziele
+von Music-Worlds, Sprachwelten und IT-Worlds. Slop Urself nutzt seine
+gemeinsame öffentliche Startadresse. Beim Sprachwechsel aktualisieren
+sich die Ziele direkt. Chromium bei 1440 px und WebKit bei 320 px
+prüften die Links ohne Neuladen sowie die bestehenden Kontoziele.
+90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
+Die drei englischen Projektadressen antworteten live mit HTTP 200 und
+`lang="en"`.
+
 ## Abmeldung direkt nach der Passwort-Wiederherstellung
 
 Nach erfolgreichem Reset kann der Nutzer beim erneuten Anmelden ausdrücklich

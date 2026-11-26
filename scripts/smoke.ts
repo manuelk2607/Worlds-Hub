@@ -29,6 +29,15 @@ for(const path of paths){
     assert.match(body,/href="\/welten\/music-worlds"/);assert.match(body,/application\/ld\+json/);
     assert.match(response.headers.get('content-security-policy')!,/frame-ancestors 'none'/);
   }
+  if(path==='/en/'){
+    const targets={
+      'music-worlds':'https://music-worlds.maki26.workers.dev/en',
+      sprachwelten:'https://sprachwelten.maki26.workers.dev/en',
+      'it-worlds':'https://it-worlds.maki26.workers.dev/en/',
+      'slop-urself':'https://slopurself.maki26.workers.dev/',
+    };
+    for(const [id,url] of Object.entries(targets))assert.ok(body.includes(`data-project-home="${id}" href="${url}"`),id);
+  }
   if(path==='/konto'||path==='/en/account'){assert.match(response.headers.get('x-robots-tag')!,/noindex/);assert.equal(response.headers.get('cache-control'),'no-store');assert.match(body,path.startsWith('/en/')?/Sign in to Worlds/:/Bei Worlds anmelden/);assert.equal(response.headers.get('referrer-policy'),'same-origin');}
   if(path==='/robots.txt'){
     assert.match(body,/Allow: \//);
