@@ -30,15 +30,24 @@ type AdminApi = {
 const validSubject = (id: string) => /^[A-Za-z0-9_-]{1,256}$/.test(id);
 const quiet = resolveNeonAuthLogging({ logLevel: 'silent' });
 
+function providerSessionCookie(value: string | undefined) {
+  if (!value || value.length > 1536) return;
+  try {
+    // Neon SDK callbacks expose the decoded cookie, while browser headers use its wire form.
+    const decoded = decodeURIComponent(value);
+    if (/^[A-Za-z0-9_.=+/_-]{20,512}$/.test(decoded)) return encodeURIComponent(decoded);
+  } catch { return; }
+}
+
 export function identityDeletionConfig(
   env: IdentityDeletionEnv, issuer: string, cookieSecret: string,
   db: D1Database, recipients: ProjectSessionEvents | undefined,
 ): IdentityDeletion | undefined {
   const adminSubject = env.IDENTITY_DELETION_ADMIN_SUBJECT;
-  const adminSession = env.IDENTITY_DELETION_ADMIN_SESSION;
+  const adminSession = providerSessionCookie(env.IDENTITY_DELETION_ADMIN_SESSION);
   if (env.IDENTITY_ACCOUNT_DELETION_ENABLED !== 'true' || env.MIGRATION_RECEIPT_ERASURE_ENABLED !== 'true' ||
       env.IDENTITY_DELETION_ISSUER !== issuer ||
-      !adminSubject || !validSubject(adminSubject) || !adminSession || !/^[A-Za-z0-9_.%=-]{20,512}$/.test(adminSession) ||
+      !adminSubject || !validSubject(adminSubject) || !adminSession ||
       recipients?.identityIssuer !== issuer || recipients.db !== db) return;
   const expected = projects.flatMap(project => project.url ? [new URL(project.url).origin + sessionRevocationPath] : []);
   if (recipients.audiences.length !== expected.length ||

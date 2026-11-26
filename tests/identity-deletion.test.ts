@@ -15,6 +15,7 @@ const issuer = 'https://auth.example/worlds/auth';
 const hub = 'https://worlds-hub.maki26.workers.dev';
 const owner = 'owner-fixture';
 const admin = 'admin-fixture';
+const adminCookie = 'test-admin-cookie-fixture.a+b/c=';
 const control = 'control-fixture';
 
 test('deletion confirms the exact target, recovers failed cleanup and fences late Hub writes', async t => {
@@ -41,13 +42,17 @@ test('deletion confirms the exact target, recovers failed cleanup and fences lat
     MIGRATION_RECEIPT_ERASURE_ENABLED: 'true',
     IDENTITY_DELETION_ISSUER: issuer,
     IDENTITY_DELETION_ADMIN_SUBJECT: admin,
-    IDENTITY_DELETION_ADMIN_SESSION: 'test-admin-cookie-never-external',
+    IDENTITY_DELETION_ADMIN_SESSION: adminCookie,
   };
   const cookieSecret = 'test-only-cookie-key-at-least-32-characters';
   assert.equal(identityDeletionConfig({}, issuer, cookieSecret, binding, projectConfig), undefined);
   assert.equal(identityDeletionConfig({ ...env, MIGRATION_RECEIPT_ERASURE_ENABLED: 'false' }, issuer, cookieSecret, binding, projectConfig), undefined);
   assert.equal(identityDeletionConfig(env, 'https://foreign.example', cookieSecret, binding, projectConfig), undefined);
   assert.equal(identityDeletionConfig(env, issuer, cookieSecret, binding, { ...projectConfig, recipients: new Map() }), undefined);
+  for (const invalidCookie of ['valid-looking-session-cookie%0A', 'valid-looking-session-cookie%253B', 'valid-looking-session-cookie;other=secret']) {
+    assert.equal(identityDeletionConfig({ ...env, IDENTITY_DELETION_ADMIN_SESSION: invalidCookie }, issuer, cookieSecret, binding, projectConfig), undefined);
+  }
+  assert.ok(identityDeletionConfig({ ...env, IDENTITY_DELETION_ADMIN_SESSION: encodeURIComponent(adminCookie) }, issuer, cookieSecret, binding, projectConfig));
   const config = identityDeletionConfig(env, issuer, cookieSecret, binding, projectConfig)!;
   assert.ok(config);
 
@@ -59,7 +64,7 @@ test('deletion confirms the exact target, recovers failed cleanup and fences lat
     const request = new Request(input, init);
     const url = new URL(request.url);
     assert.ok(url.href.startsWith(issuer + '/'));
-    assert.match(request.headers.get('cookie') ?? '', /test-admin-cookie-never-external/);
+    assert.ok(request.headers.get('cookie')?.endsWith('=' + encodeURIComponent(adminCookie)));
     if (url.pathname.endsWith('/get-session')) {
       return Response.json({ user: { id: admin, role: providerRole }, session: { userId: admin } });
     }

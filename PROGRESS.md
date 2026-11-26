@@ -15,6 +15,17 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Löschabnahme im bestehenden QA-Zweig
+
+Drei neu erzeugte Testkonten bestätigten die getrennte Admin-Anmeldung und
+die verifizierte Zielidentität. Die Hub-Konfiguration stoppte vor dem
+Löschaufruf. Die Prüfung wird auf dekodierte und URL-kodierte Neon-Cookies
+normalisiert und lehnt Header-Trennzeichen weiter ab. 90 Tests, Typprüfung,
+Lint und Build bestanden. Die temporäre Rolle sowie alle drei Testkonten
+und Sitzungen wurden entfernt. Die 13 bestehenden QA-Konten und sieben
+Sitzungen waren vor und nach dem Test per Prüfsumme identisch.
+Die vollständige QA-Löschung und die Produktionsfreigabe stehen aus.
+
 ## Lokalisierte öffentliche Projektziele
 
 Start-, Detail- und Abmeldeseiten wählen die veröffentlichten DE/EN-Ziele
@@ -25,6 +36,9 @@ prüften die Links ohne Neuladen sowie die bestehenden Kontoziele.
 90 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden.
 Die drei englischen Projektadressen antworteten live mit HTTP 200 und
 `lang="en"`.
+`89c2f2e` läuft als Worker `d42f6c75-0d82-4cbe-8d8e-a4b358dbf3ef`.
+Die englische Landingpage lieferte ihre erwarteten Projektlinks im
+[Produktionscheck](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45830802532).
 
 ## Abmeldung direkt nach der Passwort-Wiederherstellung
 
