@@ -145,6 +145,10 @@ Der Search-Console-Tag ist in beiden Sprachen mit einem Testwert geprüft.
 Die [Anleitung](docs/OPERATIONS.md#seo-und-search-console) nennt die genaue
 URL-Präfix-Property. Auf der Live-Startseite fehlt der Google-Tag.
 Property-Bestätigung und Indexierungsstatus sind noch offen.
+Der direkte Zugriff in Search Console wurde am 26.11. geprüft. Das
+angemeldete Google-Konto kann IT-Worlds öffnen. Für den Hub meldet Google
+fehlenden Zugriff. Der nächste Schritt ist die Bestätigung der Hub-Property
+per HTML-Tag oder eine Freigabe durch einen vorhandenen Property-Inhaber.
 Erster Upload aus `1a71e7e` als Worker `39382b6c-db56-4e35-884d-64cf151be218`.
 Der unmittelbare GitHub-Livecheck las noch die vorige `robots.txt`.
 Nach dem Upload bestätigte der direkte Abruf die neuen Regeln und 14
