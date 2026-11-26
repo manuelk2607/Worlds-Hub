@@ -164,6 +164,14 @@ Sprachwelten und Slop Urself, die Slop-Auditspalte sowie IT-Migrationen 003–00
 und Laufzeitrechte mit RLS. Der öffentliche Abruf zeigte die drei bisherigen
 Versionen. Die Cloudflare-Gerätefreigabe ist ohne Bestätigung abgelaufen.
 Der nächste Upload wartet auf eine frische Gerätefreigabe.
+Der erneute Zugriff am 26.11. konnte die aktiven Worker-Versionen lesen
+(`a699a346` Sprachwelten, `96ea3c9b` IT-Worlds, `7a68c388` Slop Urself).
+Sprachwelten-Build und lesende Datenbankprüfung bestanden. Cloudflare
+lehnte danach den Upload vor der ersten Änderung bei beiden Wrangler-
+Versionen mit `10001` ab und verweigerte anschließend auch die Abfrage
+der Deployments. Die DE/EN-Startseiten antworten weiter mit HTTP 200
+und zeigen den bisherigen Stand. Nächster Versuch mit einem separaten,
+auf die drei bestehenden Worker beschränkten Deployment-Zugang.
 
 ## SEO und Search Console
 
