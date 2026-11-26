@@ -25,6 +25,7 @@ Die frühere Sites-ID `appgprj_6aea673346808191acd302d1a40c3c60` gehört nur zur
 | OIDC_ACCOUNT_URL | Optionaler bestätigter HTTPS-Link zur fertigen IdP-Kontoverwaltung. |
 | AUTH_DB | Separate Cloudflare-D1-Bindung für Hub-Transaktionen/Sessions/Replays, kein URL-String. |
 | PUBLIC_INDEXING | `true` erst bei öffentlichem, geprüftem Hosting. Standard bleibt noindex + robots Disallow + leere Sitemap. |
+| PROJECTS_UNAVAILABLE | Optionale komma-getrennte Liste vorübergehend nicht verfügbarer Welten. Erlaubte IDs sind `music-worlds`, `sprachwelten`, `it-worlds` und `slop-urself`. |
 | GOOGLE_SITE_VERIFICATION | Optionaler öffentlicher Search-Console-Verifizierungswert. |
 
 Runtime-Secrets nicht in Git, Build-Logs, `hosting.json` oder Client-JavaScript speichern. Statische Quellen enthalten keine Zugangsdaten. Bei Änderung der kanonischen Origin mit derselben `SITE_ORIGIN` beim Build arbeiten (CSP-Hash der strukturierten Daten) und Runtime konfigurieren.
@@ -44,6 +45,14 @@ Runtime-Secrets nicht in Git, Build-Logs, `hosting.json` oder Client-JavaScript 
 Aktuelle Tests prüfen State, Nonce, S256, Code-Einmaligkeit, JWS-Signatur, Issuer/Audience/Ablauf, verifizierte E-Mail, Sessionrotation, Ablauf, doppelte Cookies, Origin/CSRF, Backchannel-Signatur/Replays, Single-Use-Linking, Zuordnungskonflikte, historische IDs, fremde Issuer und HF-Guard.
 
 Nicht geprüft: echter zentraler Provider, SMTP/E-Mail-Roundtrip, produktive D1-Bindung, tatsächliche lokale Reauth-Adapter, Projektrollen in produktiven Umgebungen, globale Abmeldung, echte HF-Generierung und Datenbank-Restore. Diese Punkte sind Freigabekriterien, keine behaupteten Erfolge.
+
+## Vorübergehende Nichtverfügbarkeit
+
+Bei bestätigtem Ausfall die Projekt-ID in `PROJECTS_UNAVAILABLE` am Hub-Worker
+hinterlegen. Die Kachel und Detailseite zeigen den Hinweis in DE/EN.
+Alle vier Kacheln, Projekt-Links und Suchmaschinenadressen bleiben nutzbar.
+Die Anzeige folgt der Einstellung im Worker. Nach Wiederherstellung die
+jeweilige Projekt-ID aus der Liste entfernen.
 
 ## SEO und Search Console
 

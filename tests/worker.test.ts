@@ -16,6 +16,26 @@ const localizedLaunchPaths={
  'music-worlds':'/en','sprachwelten':'/en','it-worlds':'/en/','slop-urself':'/',
 } as const;
 test('both localized landing pages and all project details are server-rendered with correct links',async()=>{for(const locale of ['de','en'] as const){const r=await request(route('home',locale)),html=await r.text();assert.equal(r.status,200);assert.match(html,new RegExp(`<html lang="${locale}"`));assert.equal((html.match(/<h1/g)??[]).length,1);const overview=html.slice(html.indexOf('<section id="welten"'),html.indexOf('<section id="idee"'));assert.equal((overview.match(/<article class="card">/g)??[]).length,4);assert.doesNotMatch(overview,/<button|data-filter|data-interests|status-count/);assert.ok(html.includes(t(locale,'meta.description')));assert.match(html,new RegExp(`hreflang="${locale}"`));for(const p of projects){assert.ok(html.includes(p.name));if(p.url){const target=new URL(locale==='en'?localizedLaunchPaths[p.id]:'/',p.url).href;assert.ok(overview.includes(`data-project-home="${p.id}" href="${target}"`));}assert.ok(html.includes(t(locale,`projects.${p.id}.description` as MessageKey)));const d=await request(route(`world:${p.id}`,locale));assert.equal(d.status,200);const detail=await d.text();assert.ok(detail.includes('<h1>'+p.name+'</h1>'));if(p.url)assert.ok(detail.includes(`data-project-home="${p.id}" href="${new URL(locale==='en'?localizedLaunchPaths[p.id]:'/',p.url).href}"`));}if(locale==='en')assert.doesNotMatch(html,/>SPRACHE<|>TECHNIK<|>KREATIVITÄT</);assert.doesNotMatch(html,/Adventskalender|token=|access_token|lorem ipsum/i);assert.match(html,/application\/ld\+json/);}});
+test('temporary project unavailability is announced in both languages with all project links retained',async()=>{
+ const env={PUBLIC_INDEXING:'true',PROJECTS_UNAVAILABLE:' music-worlds, it-worlds, unknown '};
+ for(const locale of ['de','en'] as const){
+  const home=await (await request(route('home',locale),env)).text();
+  assert.equal((home.match(/<article class="card">/g)??[]).length,4);
+  assert.equal((home.match(/data-i18n="project.unavailable"/g)??[]).length,2);
+  assert.equal((home.match(/data-project-home=/g)??[]).length,4);
+  for(const id of ['music-worlds','it-worlds','slop-urself'] as const){
+   const r=await request(route(`world:${id}`,locale),env),html=await r.text();
+   assert.equal(r.status,200);
+   assert.match(html,/<meta name="robots" content="index,follow">/);
+   if(id==='slop-urself')assert.doesNotMatch(html,/data-i18n="detail.unavailableBody"/);
+   else{
+    assert.ok(html.includes(t(locale,'detail.unavailableBody',{name:projects.find(project=>project.id===id)!.name})));
+    assert.match(html,/class="notice"><h2><span data-i18n="project.unavailable"/);
+    assert.ok(html.includes(`data-project-home="${id}"`));
+   }
+  }
+ }
+});
 test('localized account links lead to project profiles and distinguish transfer status',async()=>{
  const targets={
   'music-worlds':{de:'/#profil',en:'/en#profil'},

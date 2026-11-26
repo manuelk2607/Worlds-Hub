@@ -14,7 +14,7 @@ import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRoute
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
 
-export interface Env extends IdentityEnv,MigrationEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database;IT_WORLDS_MIGRATION_TASK?:{deliver():Promise<{acknowledged:number;conflict:number}>}}
+export interface Env extends IdentityEnv,MigrationEnv {SITE_ORIGIN?:string;PUBLIC_INDEXING?:string;PROJECTS_UNAVAILABLE?:string;GOOGLE_SITE_VERIFICATION?:string;AUTH_ENABLED?:string;OIDC_ISSUER?:string;OIDC_CLIENT_ID?:string;OIDC_CLIENT_SECRET?:string;OIDC_RESOURCE?:string;OIDC_REAUTH_ENABLED?:string;OIDC_TOKEN_AUTH_METHOD?:'client_secret_basic'|'client_secret_post';OIDC_ID_TOKEN_ALG?:string;OIDC_ACCOUNT_URL?:string;AUTH_DB?:D1Database;IT_WORLDS_MIGRATION_TASK?:{deliver():Promise<{acknowledged:number;conflict:number}>}}
 export const DEFAULT_ORIGIN='https://worlds-hub.maki26.workers.dev';
 export function authConfig(env:Env):AuthConfig|null {
  if(env.AUTH_ENABLED!=='true'||!env.SITE_ORIGIN||!env.OIDC_ISSUER||!env.OIDC_CLIENT_ID||!env.AUTH_DB||!env.OIDC_ID_TOKEN_ALG)return null;
@@ -123,8 +123,9 @@ export default {
   }
   if(request.method!=='GET'&&request.method!=='HEAD')return finish(text(t(locale,'error.method'),'text/plain',405));
   let body:string,title=t(locale,'meta.title'),titleKey:MessageKey='meta.title',titleValues:Values|undefined,description=t(locale,'meta.description'),descriptionKey:MessageKey='meta.description',statusCode=200,schema:unknown,routeId=matched?.id;
+  const unavailable=new Set(env.PROJECTS_UNAVAILABLE?.split(',').map(id=>id.trim()));
   if(matched?.id==='home'){
-   body=home(locale);schema={'@context':'https://schema.org','@type':'WebSite',name:'Worlds Hub',url:origin+route('home',locale),inLanguage:locale,description,hasPart:projects.filter(project=>project.url).map(project=>({'@type':'WebSite',name:project.name,url:project.url}))};
+   body=home(locale,unavailable);schema={'@context':'https://schema.org','@type':'WebSite',name:'Worlds Hub',url:origin+route('home',locale),inLanguage:locale,description,hasPart:projects.filter(project=>project.url).map(project=>({'@type':'WebSite',name:project.name,url:project.url}))};
   }else if(matched&&['account','signIn','signUp'].includes(matched.id)){
    let current:Awaited<ReturnType<typeof session>>;try{current=config?await session(request,config):null;}catch{return finish(text(t(locale,'error.accountUnavailable'),'text/plain',503));}
    let accountUrl:string|undefined;if(env.OIDC_ACCOUNT_URL){const candidate=new URL(env.OIDC_ACCOUNT_URL);if(candidate.protocol==='https:'&&!candidate.username&&!candidate.password)accountUrl=candidate.href;}
@@ -135,7 +136,7 @@ export default {
   else if(matched?.id.startsWith('world:')){
    const project=projects.find(candidate=>matched.id===`world:${candidate.id}`)!;
    titleKey='detail.metaTitle';titleValues={name:project.name,eyebrow:{key:`projects.${project.id}.eyebrow`}};
-   body=detail(project,locale);title=t(locale,titleKey,titleValues);descriptionKey=`projects.${project.id}.description`;description=t(locale,descriptionKey);
+   body=detail(project,locale,unavailable.has(project.id));title=t(locale,titleKey,titleValues);descriptionKey=`projects.${project.id}.description`;description=t(locale,descriptionKey);
   }else{statusCode=404;title=t(locale,'notFound.title');titleKey='notFound.title';body=notFound(locale);routeId=undefined;}
   const canonicalPath=matched?.canonical??path;
   const html=layout(body,{origin,path:canonicalPath,routeId,locale,title,titleKey,titleValues,description,descriptionKey,indexing:env.PUBLIC_INDEXING==='true'&&!isPrivate&&statusCode===200,verification:env.GOOGLE_SITE_VERIFICATION,schema,nonce});

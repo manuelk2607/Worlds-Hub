@@ -15,6 +15,16 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Kurzfristige Projektausfälle auf Landing- und Detailseiten
+
+`PROJECTS_UNAVAILABLE` zeigt bestätigte Ausfälle pro Welt in DE/EN.
+Kacheln und Detailseiten behalten ihre direkten Links. Die Texte zur
+vorhandenen Worlds-Anmeldung und zur Übernahme bestehender Profile
+sind in beiden Sprachen aktualisiert. 92 Tests, Typprüfung, Lint, Build
+und Artefaktprüfung bestanden. Chromium bei 1440 px und WebKit bei
+320 px prüften vier simulierte Statusmeldungen im Dark Mode, den
+Sprachwechsel und den Hinweis auf der Detailseite.
+
 ## Rücksprung von der Identitätsseite zum Hub-Konto
 
 „Zum Hub-Konto“ startet aus der aktiven zentralen Sitzung den vorhandenen
