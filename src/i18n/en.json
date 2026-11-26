@@ -276,6 +276,7 @@
   "status.verifiedDone": "Email verified. You can now sign in.",
   "status.nameSaved": "Name saved.",
   "status.signedIn": "You are signed in to the identity service.",
+  "error.authUnavailableTitle": "Sign-in temporarily unavailable",
   "error.authUnavailable": "Sign-in is currently unavailable. Please try again.",
   "error.identityUnavailable": "The identity service is currently unavailable.",
   "error.sessionUnavailable": "Your session status is currently unavailable. Please try again.",

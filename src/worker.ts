@@ -1,7 +1,7 @@
 import {identityConfig,identityProxy,identityCsrf,verifiedPreferenceSubject,type IdentityConfig,type IdentityEnv} from './identity.ts';
 import {identityPage} from './identity-pages.ts';
 import {css,identityCss} from './styles.ts';
-import {layout,home,detail,account,loggedOut,privacy,notFound} from './pages.ts';
+import {layout,home,detail,account,loggedOut,privacy,notFound,loginUnavailable} from './pages.ts';
 import {projects} from './projects.ts';
 import {escapeHtml} from './html.ts';
 import {migrationConfig, readMigrationStatus, receiveMigrationReceipt, type MigrationEnv} from './migration-receipts.ts';
@@ -111,11 +111,20 @@ export default {
   if((path.startsWith('/auth/')||path.startsWith('/api/')||matched?.id==='account')&&config&&url.origin!==config.origin)return finish(text(t(locale,'error.invalidHost'),'text/plain',421));
   if(path.startsWith('/auth/')){
    if(!config)return finish(Response.json({error:'SSO_NOT_CONFIGURED',message:t(locale,'error.notConfigured')},{status:503}));
-   try{
-    if(path==='/auth/login'){
+   if(path==='/auth/login'){
+    try{
      const response=await startLogin(request,config);
      return finish(response.status===503?text(t(locale,'error.reauth'),'text/plain',503):response);
+    }catch{
+     const titleKey='error.authUnavailableTitle',descriptionKey='error.authUnavailable';
+     const description=t(locale,descriptionKey);
+     if(request.headers.get('accept')?.includes('application/json')){
+      return finish(Response.json({error:'OIDC_LOGIN_UNAVAILABLE',message:description},{status:503}));
+     }
+     return finish(text(layout(loginUnavailable(locale),{origin,path,locale,title:t(locale,titleKey),titleKey,description,descriptionKey,indexing:false}),'text/html',503));
     }
+   }
+   try{
     if(path==='/auth/callback')return finish(await callback(request,config));
     if(path==='/auth/logout')return finish(await logout(request,config));
     if(path==='/auth/backchannel-logout')return finish(await backchannelLogout(request,config));

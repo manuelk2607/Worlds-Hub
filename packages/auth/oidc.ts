@@ -21,7 +21,7 @@ export async function session(request:Request,config:AuthConfig):Promise<Session
 async function metadata(config:AuthConfig) {
   const issuer=new URL(config.issuer);
   if (issuer.protocol!=='https:'||issuer.username||issuer.password||issuer.search||issuer.hash) throw new Error('Invalid issuer');
-  const response=await oauth.discoveryRequest(issuer,{algorithm:'oidc'});
+  const response=await oauth.discoveryRequest(issuer,{algorithm:'oidc',signal:AbortSignal.timeout(8000)});
   return oauth.processDiscoveryResponse(issuer,response);
 }
 const client = (config:AuthConfig):oauth.Client => ({client_id:config.clientId,id_token_signed_response_alg:config.algorithm});

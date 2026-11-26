@@ -198,6 +198,46 @@ test('the central account button starts the localized Hub session using the exis
  assert.doesNotMatch(relyingParty,/data-auth-login/);
 });
 
+test('a provider outage during login returns a localized and private retry response',async context=>{
+ const {db,binding}=await sqliteD1();
+ context.after(()=>db.close());
+ db.exec(await readFile('migrations/0001_auth.sql','utf8'));
+ const issuer='https://identity.test/auth';
+ const env={SITE_ORIGIN:origin,AUTH_ENABLED:'true',OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',
+  OIDC_ID_TOKEN_ALG:'EdDSA',AUTH_DB:binding};
+ let discoveryRequests=0;
+ context.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+  assert.equal(String(input),issuer+'/.well-known/openid-configuration');
+  assert.ok(init?.signal instanceof AbortSignal);
+  discoveryRequests++;
+  return new Response('details from the provider', {status:502});
+ });
+ for(const locale of ['de','en'] as const){
+  const path='/auth/login?ui_locales='+locale+'&next=https%3A%2F%2Felsewhere.test';
+  for(const accept of ['text/html','application/json']){
+   const response=await request(path,env,{method:'POST',headers:{origin,accept}});
+   assert.equal(response.status,503);
+   assert.equal(response.headers.get('cache-control'),'no-store');
+   assert.match(response.headers.get('x-robots-tag')!,/noindex/);
+   assert.equal(response.headers.get('set-cookie'),null);
+   assert.equal(response.headers.get('location'),null);
+   const body=await response.text();
+   assert.doesNotMatch(body,/details from the provider|elsewhere\.test/);
+   if(accept==='application/json')assert.deepEqual(JSON.parse(body),{error:'OIDC_LOGIN_UNAVAILABLE',message:t(locale,'error.authUnavailable')});
+   else{
+    assert.ok(body.includes(`<html lang="${locale}"`));
+    assert.ok(body.includes(t(locale,'error.authUnavailableTitle')));
+    assert.ok(body.includes(`href="${route('account',locale)}"`));
+   }
+  }
+ }
+ assert.equal((await request('/auth/login',env,{method:'POST',headers:{origin:'https://elsewhere.test'}})).status,403);
+ assert.equal((await request('/auth/callback?code=unissued',env)).status,400);
+ assert.equal(discoveryRequests,4);
+ assert.equal(db.prepare('SELECT COUNT(*) AS count FROM auth_transactions').get()?.count,0);
+ assert.equal(db.prepare('SELECT COUNT(*) AS count FROM auth_sessions').get()?.count,0);
+});
+
 test('both languages explain central login, project linkage and the identity data export',async()=>{
  const env={IDENTITY_ENABLED:'true',SITE_ORIGIN:origin,IDENTITY_AUTH_URL:'https://identity.test/auth',
   IDENTITY_COOKIE_SECRET:'test-only-cookie-key-at-least-32-characters',AUTH_DB:{} as D1Database};

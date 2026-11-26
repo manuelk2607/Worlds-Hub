@@ -15,6 +15,17 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Wiederanlauf bei vorübergehend gestörter Hub-Anmeldung
+
+Wenn die Anbieterkonfiguration beim Start der Anmeldung nicht erreichbar
+ist, antwortet der Hub mit lokalisiertem HTTP 503 und begrenzt die Abfrage
+auf acht Sekunden. Ohne JavaScript führt ein Link zurück zum Konto. Mit
+JavaScript bleibt das vorhandene Formular für einen neuen Versuch bereit.
+Eine gestörte Anfrage setzt keine Transaktions- oder Sitzungscookies.
+93 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium
+DE bei 1440 px und WebKit EN bei 320 px prüften den simulierten Ausfall mit
+und ohne JavaScript. Produktive Prüfung läuft über GitHub Actions.
+
 ## Kurzfristige Projektausfälle auf Landing- und Detailseiten
 
 `PROJECTS_UNAVAILABLE` zeigt bestätigte Ausfälle pro Welt in DE/EN.

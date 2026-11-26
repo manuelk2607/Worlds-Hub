@@ -276,6 +276,7 @@
   "status.verifiedDone": "E-Mail bestätigt. Du kannst dich jetzt anmelden.",
   "status.nameSaved": "Name gespeichert.",
   "status.signedIn": "Du bist beim Anmeldedienst angemeldet.",
+  "error.authUnavailableTitle": "Anmeldung vorübergehend nicht verfügbar",
   "error.authUnavailable": "Die Anmeldung ist gerade nicht erreichbar. Bitte versuche es erneut.",
   "error.identityUnavailable": "Der Anmeldedienst ist gerade nicht erreichbar.",
   "error.sessionUnavailable": "Der Sitzungsstatus ist gerade nicht verfügbar. Bitte versuche es erneut.",
