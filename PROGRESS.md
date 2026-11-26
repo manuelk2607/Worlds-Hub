@@ -21,13 +21,16 @@ Music-Worlds verlinkt den Hub bereits produktiv. Sprachwelten `5f8c04f`
 und IT-Worlds `a6ad092` ergänzen den lokalisierten Rückweg. Beide Commits
 auf `main` sind grün ([Sprachwelten](https://github.com/manuelk2607/Sprachwelten/actions/runs/45647577498),
 [IT-Worlds](https://github.com/manuelk2607/IT-Worlds/actions/runs/45647576735)).
-Slop Urself `9a686b4` ergänzt denselben Link. `05cb5b8` behebt eine
-Timing-Annahme des Revanche-Tests. Der Einzeltest bestand in Chromium
-und WebKit mit lokalem workerd. Der
-[neue CI-Lauf](https://github.com/manuelk2607/Slop_Urself/actions/runs/45792725831)
-läuft. Alle neuen Links wurden lokal in DE/EN bei Desktop- und Mobilbreite
-geprüft. Der Live-Abruf zeigt die Versionen vor diesen drei Änderungen.
-Wrangler meldet eine abgelaufene Cloudflare-Anmeldung.
+Slop Urself `9a686b4` ergänzt denselben Link. `05cb5b8` wartet im
+Revanche-Test auf den aktuellen Spielstand. Der Einzeltest bestand in
+Chromium und WebKit mit lokalem workerd. Beide Browser-Jobs des
+[GitHub-Laufs](https://github.com/manuelk2607/Slop_Urself/actions/runs/45792725831)
+sind grün. Alle neuen Links wurden lokal in DE/EN bei Desktop- und Mobilbreite
+geprüft. Lesende Neon-Prüfungen bestätigten die benötigten Tabellen in
+Sprachwelten und Slop Urself, die Slop-Auditspalte sowie IT-Migrationen 003–009
+und Laufzeitrechte mit RLS. Der öffentliche Abruf zeigte die drei bisherigen
+Versionen. Die Cloudflare-Gerätefreigabe ist ohne Bestätigung abgelaufen.
+Der nächste Upload wartet auf eine frische Gerätefreigabe.
 
 ## SEO und Search Console
 
