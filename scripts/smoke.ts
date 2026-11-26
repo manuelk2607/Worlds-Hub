@@ -62,6 +62,8 @@ for(const language of ['de','en']){
  assert.equal(settings.headers.get('cache-control'),'no-store');
  const body=await settings.text();
  assert.ok(body.includes('<html lang="'+language+'"'));
+ const account=language==='de'?'/konto':'/en/account';
+ assert.ok(body.includes(`action="/auth/login?next=${encodeURIComponent(account)}&amp;ui_locales=${language}" data-auth-login`));
  assert.match(body,/data-identity-form="change-password"/);
  assert.equal(body.includes('data-i18n="identity.passwordChangeWorldsNote"'),expectProduction);
  assert.match(body,/data-identity-export/);

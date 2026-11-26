@@ -15,6 +15,14 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Rücksprung von der Identitätsseite zum Hub-Konto
+
+„Zum Hub-Konto“ startet aus der aktiven zentralen Sitzung den vorhandenen
+OIDC-Ablauf mit PKCE. Das Ziel ist die DE/EN-Kontoseite mit eigener
+Hub-Sitzung. 91 Tests, Typprüfung, Lint und Build bestanden. Chromium bei
+1440 px und WebKit bei 320 px prüften Anmeldebeginn, temporären Fehler,
+Wiederholung und signierten Rücksprung mit simuliertem Anbieter.
+
 ## Sprachpräferenz bei zwei aktiven Sitzungen
 
 Identitätsseiten lesen und ändern die Sprache nur für das beim

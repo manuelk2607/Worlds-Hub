@@ -104,7 +104,7 @@ export default {
    if(!['/identity/login','/identity/consent','/identity/account','/identity/reset'].includes(path))return finish(text(t(locale,'notFound.body'),'text/plain',404));
    if(url.origin!==central.origin)return finish(text(t(locale,'error.invalidHost'),'text/plain',421));
    if(request.method!=='GET')return finish(text(t(locale,'error.method'),'text/plain',405));
-   const csrf=identityCsrf(request),page=identityPage(path,url.search.slice(1),csrf.value,central,locale);
+   const csrf=identityCsrf(request),page=identityPage(path,url.search.slice(1),csrf.value,central,locale,config?.issuer===central.baseUrl);
    const response=finish(text(layout(page.body,{origin:central.origin,path,locale,title:page.title,titleKey:page.titleKey,description:t(locale,'identity.metaDescription'),descriptionKey:'identity.metaDescription',indexing:false,nonce}),'text/html',page.status));
    response.headers.append('set-cookie',csrf.setCookie);return response;
   }

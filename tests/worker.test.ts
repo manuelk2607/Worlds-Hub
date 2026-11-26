@@ -155,6 +155,29 @@ test('verified central login stores locale without a separate Hub session',async
  assert.deepEqual(await (await request(path,env,{headers:onlyHub})).json(),{locale:'en'});
 });
 
+test('the central account button starts the localized Hub session using the existing OIDC form',async()=>{
+ const issuer='https://identity.test/auth';
+ const fixed={SITE_ORIGIN:origin,IDENTITY_ENABLED:'true',IDENTITY_AUTH_URL:issuer,
+  IDENTITY_COOKIE_SECRET:'test-only-cookie-key-at-least-32-characters',AUTH_DB:{} as D1Database};
+ const hub={...fixed,AUTH_ENABLED:'true',OIDC_ISSUER:issuer,OIDC_CLIENT_ID:'hub',OIDC_ID_TOKEN_ALG:'EdDSA'};
+ for(const locale of ['de','en'] as const){
+  const identityPath='/identity/account?ui_locales='+locale;
+  const identity=await (await request(identityPath,hub)).text();
+  const action='/auth/login?next='+encodeURIComponent(route('account',locale))+'&amp;ui_locales='+locale;
+  assert.ok(identity.includes(`action="${action}" data-auth-login`));
+  assert.match(identity,/class="button identity-primary" type="submit" data-identity-verified-action disabled/);
+  assert.ok(identity.includes(t(locale,'identity.toHubAccount')));
+  const account=await (await request(route('account',locale),hub)).text();
+  assert.ok(account.includes(`action="${action}" data-auth-login`));
+  assert.doesNotMatch(await (await request(identityPath,fixed)).text(),/data-auth-login/);
+ }
+ const app={clientId:'app',name:'App',redirects:['https://app.test/auth/callback'],resource:'https://app.test/api'};
+ const query=new URLSearchParams({client_id:app.clientId,scope:'openid profile email',redirect_uri:app.redirects[0],resource:app.resource});
+ const relyingParty=await (await request('/identity/login?'+query,{...hub,IDENTITY_CLIENTS:JSON.stringify([app])})).text();
+ assert.match(relyingParty,/data-identity-continue/);
+ assert.doesNotMatch(relyingParty,/data-auth-login/);
+});
+
 test('both languages explain central login, project linkage and the identity data export',async()=>{
  const env={IDENTITY_ENABLED:'true',SITE_ORIGIN:origin,IDENTITY_AUTH_URL:'https://identity.test/auth',
   IDENTITY_COOKIE_SECRET:'test-only-cookie-key-at-least-32-characters',AUTH_DB:{} as D1Database};
