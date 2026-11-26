@@ -15,6 +15,17 @@ passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
+## Übernahme bestehender Profile finden
+
+Die vier Hub-Detailseiten erklären den verfügbaren Übernahmeweg in DE/EN
+und verlinken direkt zum passenden Projektkonto. Der Hinweis für
+Music-Worlds setzt eine aktive Gastsitzung und ein angebotenes Verfahren
+voraus. Passwortlose Slop-Profile brauchen eine bestätigte Einzelfreigabe.
+94 Tests, Typprüfung, Lint, Build und Artefaktprüfung bestanden. Chromium
+bei 1440 px und WebKit bei 320 px prüften alle Hinweise, Links und ihren
+Sprachwechsel. Die Authentifizierung und die Zuordnungslogik sind von
+dieser Änderung unberührt.
+
 ## Wiederanlauf bei vorübergehend gestörter Hub-Anmeldung
 
 Auch ein Ausfall beim OIDC-Rücksprung führt zur lokalisierten Meldung mit

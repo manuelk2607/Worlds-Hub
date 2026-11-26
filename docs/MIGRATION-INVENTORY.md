@@ -52,10 +52,10 @@ keine Tokens. Verifikation wird als Aggregat aus neon_auth.user gelesen. Slop
 zählt ausschließlich NULL/nicht-NULL des Passwortfeldes, ohne Hashwerte zu lesen.
 Zeitpunktbezogene Zahlen können sich durch reguläre Nutzung später ändern.
 
-## Tatsächlich migriert und im Browser geprüft
+## Erster Slop-Pilot vor der Produktionsübernahme
 
-Nur der wiederhergestellte Slop-QA-Zweig br-sparkling-firefly-b1pssf1o enthält
-bisher eine angewendete, betreibergeprüfte Zuordnung: das ausdrücklich vom
+Zuerst wurde im wiederhergestellten Slop-QA-Zweig br-sparkling-firefly-b1pssf1o
+eine betreibergeprüfte Zuordnung angewendet: das ausdrücklich vom
 Eigentümer benannte passwortlose Profil Manuel. Die Zielidentität wurde beim
 zentralen Aussteller auf bestätigte E-Mail geprüft. Die einmalige Freigabe
 bindet exakte Quell-ID, Quellversion und zentralen Aussteller/Subject.

@@ -7,7 +7,7 @@ import {dateTime,route,t,type Locale,type MessageKey,type RouteId,type Values} f
 import {link,translated as tr,translatedAttribute as ta} from './i18n/html.ts';
 
 const brand=`<span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>worlds<span> hub</span></span>`;
-const projectKey=(project:Project,suffix:'eyebrow'|'description'|'title'|'detail'|`tag${0|1|2}`)=>`projects.${project.id}.${suffix}` as MessageKey;
+const projectKey=(project:Project,suffix:'eyebrow'|'description'|'title'|'detail'|'transfer'|`tag${0|1|2}`)=>`projects.${project.id}.${suffix}` as MessageKey;
 const projectText=(locale:Locale,project:Project,suffix:Parameters<typeof projectKey>[1])=>t(locale,projectKey(project,suffix));
 
 function localeSwitch(locale:Locale){return `<div class="locale-switch" role="group" ${ta(locale,'aria-label','locale.label')}><button type="button" data-locale="de" aria-pressed="${locale==='de'}" aria-current="${locale==='de'}" lang="de" aria-label="Deutsch (DE)">DE</button><span aria-hidden="true">/</span><button type="button" data-locale="en" aria-pressed="${locale==='en'}" aria-current="${locale==='en'}" lang="en" aria-label="English (EN)">EN</button></div><span class="sr-only" role="status" aria-live="polite" data-locale-status></span>`;}
@@ -33,8 +33,14 @@ export function home(locale:Locale,unavailable:ReadonlySet<string>){return `<div
 
 export function detail(project:Project,locale:Locale,unavailable:boolean){
  const url=projectUrl(project,locale);
+ const accountUrl=projectUrl(project,locale,'account');
  const notice=unavailable?`<div class="notice"><h2>${tr(locale,'project.unavailable')}</h2><p>${tr(locale,'detail.unavailableBody',{name:project.name})}</p></div>`:'';
- return `<div class="wrap content-page"><a class="back" ${link(locale,'home','#welten')}>${tr(locale,'detail.back')}</a><p class="eyebrow">${tr(locale,'detail.eyebrow',{number:project.number,status:{key:unavailable?'project.unavailable':project.url?'detail.available':'project.development'}})}</p><h1>${e(project.name)}</h1>${notice}<p>${tr(locale,projectKey(project,'detail'))}</p><div class="card-art ${project.color}" style="margin:30px 0;border-radius:14px"><div class="project-icon">${icon(project.id)}${tr(locale,projectKey(project,'eyebrow'))}</div><div class="art-title" data-i18n="${projectKey(project,'title')}">${e(projectText(locale,project,'title'))}</div>${artwork(project.id)}</div>${url?`<a class="button" data-project-home="${project.id}" href="${e(url)}">${tr(locale,'detail.open',{name:project.name})} ${arrow}</a><h2>${tr(locale,'detail.existingTitle')}</h2><p>${tr(locale,'detail.existingBody',{name:project.name})}</p>`:`<div class="notice"><h2>${tr(locale,'detail.pendingTitle')}</h2><p>${tr(locale,'detail.pendingBody')}</p></div>`}<p><a class="details-link" ${link(locale,'account')}>${tr(locale,'detail.accountMore')}</a></p></div>`;}
+ const actions=url&&accountUrl?`<a class="button" data-project-home="${project.id}" href="${e(url)}">${tr(locale,'detail.open',{name:project.name})} ${arrow}</a>
+ <h2>${tr(locale,'detail.existingTitle')}</h2><p>${tr(locale,projectKey(project,'transfer'))}</p>
+ <p><a class="details-link" data-project-account="${project.id}" href="${e(accountUrl)}">${tr(locale,'detail.openAccount',{name:project.name})}</a></p>`:
+ `<div class="notice"><h2>${tr(locale,'detail.pendingTitle')}</h2><p>${tr(locale,'detail.pendingBody')}</p></div>`;
+ return `<div class="wrap content-page"><a class="back" ${link(locale,'home','#welten')}>${tr(locale,'detail.back')}</a><p class="eyebrow">${tr(locale,'detail.eyebrow',{number:project.number,status:{key:unavailable?'project.unavailable':project.url?'detail.available':'project.development'}})}</p><h1>${e(project.name)}</h1>${notice}<p>${tr(locale,projectKey(project,'detail'))}</p><div class="card-art ${project.color}" style="margin:30px 0;border-radius:14px"><div class="project-icon">${icon(project.id)}${tr(locale,projectKey(project,'eyebrow'))}</div><div class="art-title" data-i18n="${projectKey(project,'title')}">${e(projectText(locale,project,'title'))}</div>${artwork(project.id)}</div>${actions}<p><a class="details-link" ${link(locale,'account')}>${tr(locale,'detail.accountMore')}</a></p></div>`;
+}
 
 function projectLinks(locale:Locale,{manage=false,migration}:{manage?:boolean;migration?:MigrationStatus}={}){
  const labels={confirmed:'account.linkConfirmed',revoked:'account.linkRevoked'} as const;

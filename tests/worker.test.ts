@@ -60,6 +60,12 @@ test('localized account links lead to project profiles and distinguish transfer 
    assert.ok(guestHtml.includes(link));
    assert.ok(signedIn.includes(link));
    assert.ok(publicLinks.includes(`data-project-home="${project.id}" href="${new URL(locale==='en'?localizedLaunchPaths[project.id]:'/',project.url).href}"`));
+   const detail=await (await request(route(`world:${project.id}`,locale))).text();
+   const transferKey=`projects.${project.id}.transfer` as const;
+   assert.ok(detail.includes(`data-i18n="${transferKey}"`));
+   assert.ok(detail.includes(t(locale,transferKey)));
+   assert.ok(detail.includes(link));
+   assert.ok(detail.includes(t(locale,'detail.openAccount',{name:project.name})));
   }
   assert.ok(guestHtml.includes(t(locale,'account.openProjectAccount')));
   for(const key of ['account.linkConfirmed','account.linkRevoked','account.linkUnreported'] as const){
