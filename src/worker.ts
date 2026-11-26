@@ -9,7 +9,7 @@ import {pruneHubRevocations} from './hub-session-revocation.ts';
 import {processAccountDeletion,pruneCompletedAccountDeletions} from './identity-deletion.ts';
 import {deliverProjectRevocations,pruneProjectRevocationDeliveries} from './project-session-events.ts';
 import {D1AuthStore} from '../packages/auth/store.ts';
-import {backchannelLogout,boundedBody,callback,logout,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
+import {backchannelLogout,boundedBody,callback,logout,OidcProviderUnavailable,sameOrigin,session,startLogin,type AuthConfig} from '../packages/auth/oidc.ts';
 import {browserLocale,cookieLocale,languageCookie,locales,matchRoute,publicRouteIds,requestLocale,route,t,type Locale,type MessageKey,type Values} from './i18n/core.ts';
 // Build injects the compiled browser script as a string; no runtime filesystem access.
 import clientScript from './client.ts?raw';
@@ -111,24 +111,28 @@ export default {
   if((path.startsWith('/auth/')||path.startsWith('/api/')||matched?.id==='account')&&config&&url.origin!==config.origin)return finish(text(t(locale,'error.invalidHost'),'text/plain',421));
   if(path.startsWith('/auth/')){
    if(!config)return finish(Response.json({error:'SSO_NOT_CONFIGURED',message:t(locale,'error.notConfigured')},{status:503}));
+   const loginServiceUnavailable=()=>{
+    const titleKey='error.authUnavailableTitle',descriptionKey='error.authUnavailable';
+    const description=t(locale,descriptionKey);
+    if(request.headers.get('accept')?.includes('application/json')){
+     return finish(Response.json({error:'OIDC_LOGIN_UNAVAILABLE',message:description},{status:503}));
+    }
+    return finish(text(layout(loginUnavailable(locale),{origin,path,locale,title:t(locale,titleKey),titleKey,description,descriptionKey,indexing:false}),'text/html',503));
+   };
    if(path==='/auth/login'){
     try{
      const response=await startLogin(request,config);
      return finish(response.status===503?text(t(locale,'error.reauth'),'text/plain',503):response);
-    }catch{
-     const titleKey='error.authUnavailableTitle',descriptionKey='error.authUnavailable';
-     const description=t(locale,descriptionKey);
-     if(request.headers.get('accept')?.includes('application/json')){
-      return finish(Response.json({error:'OIDC_LOGIN_UNAVAILABLE',message:description},{status:503}));
-     }
-     return finish(text(layout(loginUnavailable(locale),{origin,path,locale,title:t(locale,titleKey),titleKey,description,descriptionKey,indexing:false}),'text/html',503));
-    }
+    }catch{return loginServiceUnavailable();}
    }
    try{
     if(path==='/auth/callback')return finish(await callback(request,config));
     if(path==='/auth/logout')return finish(await logout(request,config));
     if(path==='/auth/backchannel-logout')return finish(await backchannelLogout(request,config));
-   }catch{return finish(text(t(locale,'error.callback'),'text/plain',400));}
+   }catch(error){
+    if(path==='/auth/callback'&&error instanceof OidcProviderUnavailable)return loginServiceUnavailable();
+    return finish(text(t(locale,'error.callback'),'text/plain',400));
+   }
   }
   if(request.method!=='GET'&&request.method!=='HEAD')return finish(text(t(locale,'error.method'),'text/plain',405));
   let body:string,title=t(locale,'meta.title'),titleKey:MessageKey='meta.title',titleValues:Values|undefined,description=t(locale,'meta.description'),descriptionKey:MessageKey='meta.description',statusCode=200,schema:unknown,routeId=matched?.id;

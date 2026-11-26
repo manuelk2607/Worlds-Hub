@@ -17,6 +17,13 @@ freigegebene Löschzugang zum Anmeldedienst.
 
 ## Wiederanlauf bei vorübergehend gestörter Hub-Anmeldung
 
+Auch ein Ausfall beim OIDC-Rücksprung führt zur lokalisierten Meldung mit
+Rückweg zum Konto. Jeder Abruf beim Anmeldedienst hat acht Sekunden Zeit.
+Der unterbrochene Rücksprung bleibt einmalig, vorhandene Hub-Sitzungen
+bleiben gültig. 94 Tests bestanden. Ein Dienstfehler beim Token-Abruf und
+ein Timeout beim Signaturschlüssel wurden simuliert. Der anschließende
+frische Anmeldestart funktionierte mit signiertem Rücksprung im Test.
+
 Wenn die Anbieterkonfiguration beim Start der Anmeldung nicht erreichbar
 ist, antwortet der Hub mit lokalisiertem HTTP 503 und begrenzt die Abfrage
 auf acht Sekunden. Ohne JavaScript führt ein Link zurück zum Konto. Mit

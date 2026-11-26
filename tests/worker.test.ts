@@ -5,6 +5,7 @@ import {resolve} from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {decodeJwt,exportJWK,generateKeyPair} from 'jose';
 import {sqliteD1} from './sqlite-helper.ts';
+import {cookieHeader,provider} from './helpers.ts';
 import {projects} from '../src/projects.ts';
 import {account,loggedOut} from '../src/pages.ts';
 import {hash} from '../packages/auth/store.ts';
@@ -236,6 +237,54 @@ test('a provider outage during login returns a localized and private retry respo
  assert.equal(discoveryRequests,4);
  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM auth_transactions').get()?.count,0);
  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM auth_sessions').get()?.count,0);
+});
+
+test('an interrupted callback offers a fresh start and preserves an existing Hub session',async context=>{
+ const {db,binding}=await sqliteD1();
+ context.after(()=>db.close());
+ db.exec(await readFile('migrations/0001_auth.sql','utf8'));
+ const idp=await provider('EdDSA');
+ const env={SITE_ORIGIN:origin,AUTH_ENABLED:'true',OIDC_ISSUER:idp.as.issuer,OIDC_CLIENT_ID:'hub',
+  OIDC_ID_TOKEN_ALG:'EdDSA',AUTH_DB:binding};
+ const existing='A'.repeat(40),sessionId=await hash(existing),expires=Date.now()+60_000;
+ const session={issuer:idp.as.issuer,sub:'existing-user',csrf:'fixture',expires};
+ db.prepare('INSERT INTO auth_sessions (id,issuer,subject,payload,expires) VALUES (?,?,?,?,?)')
+  .run(sessionId,session.issuer,session.sub,JSON.stringify(session),expires);
+ let failingEndpoint='';
+ context.mock.method(globalThis,'fetch',async(input:RequestInfo|URL,init?:RequestInit)=>{
+  assert.ok(init?.signal instanceof AbortSignal);
+  if(new URL(String(input)).pathname===failingEndpoint){
+   if(failingEndpoint==='/jwks')throw new DOMException('private failure details','TimeoutError');
+   return new Response('private failure details',{status:503});
+  }
+  return idp.fetch(input,init);
+ });
+ const start=()=>request('/auth/login?next=%2Fen%2Faccount&ui_locales=en',env,{method:'POST',headers:{origin}});
+ for(const endpoint of ['/token','/jwks']){
+  const first=await start();
+  const callbackUrl=idp.authorize(first.headers.get('location')!);
+  const complete=()=>worker.fetch(new Request(callbackUrl,{headers:{cookie:`${cookieHeader(first)}; __Host-worlds-locale=en; __Host-worlds-session=${existing}`}}),env) as Promise<Response>;
+  failingEndpoint=endpoint;
+  const failure=await complete();
+  assert.equal(failure.status,503);
+  assert.equal(failure.headers.get('referrer-policy'),'no-referrer');
+  assert.equal(failure.headers.get('set-cookie'),null);
+  const body=await failure.text();
+  assert.ok(body.includes(t('en','error.authUnavailableTitle')));
+  assert.match(body,/href="\/en\/account"/);
+  assert.doesNotMatch(body,/private failure details|\?code=/);
+  assert.ok(db.prepare('SELECT id FROM auth_sessions WHERE id=?').get(sessionId));
+  assert.equal(db.prepare('SELECT COUNT(*) AS count FROM auth_sessions').get()?.count,1);
+  failingEndpoint='';
+  assert.equal((await complete()).status,400);
+ }
+ const fresh=await start();
+ const completed=await worker.fetch(new Request(idp.authorize(fresh.headers.get('location')!),{
+  headers:{cookie:cookieHeader(fresh)},
+ }),env) as Response;
+ assert.equal(completed.status,303);
+ assert.equal(completed.headers.get('location'),'/en/account');
+ assert.match(completed.headers.get('set-cookie')!,/__Host-worlds-session=/);
 });
 
 test('both languages explain central login, project linkage and the identity data export',async()=>{
