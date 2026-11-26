@@ -25,6 +25,10 @@ voraus. Passwortlose Slop-Profile brauchen eine bestätigte Einzelfreigabe.
 bei 1440 px und WebKit bei 320 px prüften alle Hinweise, Links und ihren
 Sprachwechsel. Die Authentifizierung und die Zuordnungslogik sind von
 dieser Änderung unberührt.
+`d0141ef` läuft als Worker `428c8e48-258f-4384-91fe-fd531b77ca50`.
+Die [GitHub-Veröffentlichung](https://github.com/manuelk2607/Worlds-Hub/actions/runs/45855611529)
+bestand. Alle acht Detailseiten lieferten live den erwarteten Hinweis,
+Canonical und Kontolink. Die verlinkten Kontoseiten antworteten mit HTTP 200.
 
 ## Wiederanlauf bei vorübergehend gestörter Hub-Anmeldung
 
