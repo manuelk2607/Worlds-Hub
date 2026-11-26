@@ -32,10 +32,14 @@ Der Upload bestätigte die IT-Worlds-Dienstbindung. Rücknahmeversion
 
 ## Rückwege aus den Projekten zum Hub
 
-Music-Worlds verlinkt den Hub bereits produktiv. Sprachwelten `5f8c04f`
-und IT-Worlds `a6ad092` ergänzen den lokalisierten Rückweg. Beide Commits
-auf `main` sind grün ([Sprachwelten](https://github.com/manuelk2607/Sprachwelten/actions/runs/45647577498),
-[IT-Worlds](https://github.com/manuelk2607/IT-Worlds/actions/runs/45647576735)).
+Music-Worlds verlinkt den Hub bereits produktiv. Sprachwelten und
+IT-Worlds ergänzen den lokalisierten Rückweg. Sprachwelten `18a3a97`
+behebt zusätzlich den Überlauf bei 320 px auf Start- und Lernseiten in DE/EN.
+Chromium und WebKit bestätigten das Layout. Die
+[Sprachwelten-CI](https://github.com/manuelk2607/Sprachwelten/actions/runs/45826963140)
+bestand mit 156 allgemeinen und 48 Worlds-Browserfällen.
+[IT-Worlds `a6ad092`](https://github.com/manuelk2607/IT-Worlds/actions/runs/45647576735)
+ist ebenfalls grün.
 Slop Urself `9a686b4` ergänzt denselben Link. `05cb5b8` wartet im
 Revanche-Test auf den aktuellen Spielstand. Der Einzeltest bestand in
 Chromium und WebKit mit lokalem workerd. Beide Browser-Jobs des
