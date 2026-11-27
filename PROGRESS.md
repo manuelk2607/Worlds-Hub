@@ -12,8 +12,9 @@ Der lesende Produktionsabgleich vom 27.11. bestätigt vier Übernahmen bei
 verfügbar. Beim offenen Music-Worlds-Gastprofil mit acht Beiträgen und acht
 passwortlosen Slop-Profilen fehlt ein unabhängiger Eigentumsnachweis.
 [Migrationsbestand](docs/MIGRATION-INVENTORY.md)
-Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
-freigegebene Löschzugang zum Anmeldedienst.
+Die zentrale Kontolöschung ist mit echtem Neon-QA-Anmeldedienst und vier
+lokalen Projekt-Empfängern abgenommen. Produktiv fehlen die D1-Migrationen
+und der freigegebene Löschzugang zum Anmeldedienst.
 
 ## Übernahme bestehender Profile finden
 
@@ -112,7 +113,16 @@ normalisiert und lehnt Header-Trennzeichen weiter ab. 90 Tests, Typprüfung,
 Lint und Build bestanden. Die temporäre Rolle sowie alle drei Testkonten
 und Sitzungen wurden entfernt. Die 13 bestehenden QA-Konten und sieben
 Sitzungen waren vor und nach dem Test per Prüfsumme identisch.
-Die vollständige QA-Löschung und die Produktionsfreigabe stehen aus.
+Der freigegebene Wiederholungstest am 27.11. bestand mit drei neuen
+synthetischen Konten. Fehlender CSRF-Nachweis und falsches Passwort lösten
+keinen Löschauftrag aus. Das richtige Passwort löschte das Zielkonto in
+Neon und beendete seine zwei Sitzungen, während das Kontrollkonto aktiv
+blieb. Der Hub entfernte im lokalen D1-Modell Sitzungen, Sprachpräferenz und
+Migrationsnachweis des Ziels. Vier lokale Empfänger bestätigten die
+signierten Abmeldungen. Die temporäre QA-Admin-Rolle wurde zurückgenommen.
+Danach waren alle drei Testkonten und ihre Sitzungen entfernt. Die vorherigen
+13 Konten und sieben Sitzungen hatten identische Prüfsummen. Keine
+Produktivlöschung. D1-Migrationen 0007/0008 und Produktionszugang stehen aus.
 
 ## Lokalisierte öffentliche Projektziele
 

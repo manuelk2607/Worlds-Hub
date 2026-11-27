@@ -82,3 +82,21 @@ Self-Service-Gateway und Widerruf von Projekt-BFFs bleiben gesonderte Arbeit.
 Quellen: installierte SDK-Dateien `dist/server.js`/`dist/types.d.ts`,
 [Neon SDK](https://github.com/neondatabase/neon-js/blob/main/packages/auth/NEXT-JS.md),
 [Better Auth Admin-Vertrag](https://github.com/better-auth/better-auth/blob/main/docs/content/docs/plugins/admin.mdx).
+
+## Zentraler Hub-Löschablauf am 27.11.2026
+
+Im selben QA-Zweig bestätigte der ausdrücklich freigegebene Wiederholungstest
+die verifizierte Anmeldung und die dekodierte SDK-Cookieform. Das Hub-Formular
+wies falschen CSRF-Nachweis mit 403 und falsches Passwort mit 401 ab. Erst nach
+richtiger Eingabe löschte der Hub das neue Zielkonto über den echten Neon-Dienst.
+Die zwei Ziel-Sitzungen endeten, die Kontrollsitzung blieb gültig. Vier lokale
+Empfänger prüften Signatur, Ziel und Empfängerkontext der Widerrufe. Das lokale
+D1-Modell behielt ausschließlich die Sitzung, Präferenz und Übernahmedaten
+des Kontrollkontos. Der Löschauftrag wurde abgeschlossen und der Sperrvermerk
+für nachgereichte Übernahmenachweise gespeichert.
+
+Es verbleiben null Konten und null Sitzungen aus diesem Durchlauf. Die
+temporäre Rolle wurde zurückgenommen. Der SQL-Nachabgleich bestätigt exakt
+die Prüfsummen der 13 vorherigen Konten und sieben Sitzungen. Die echte
+Anbieterprüfung beschränkte sich auf QA. Projekt-Empfänger und Hub-Datenbank
+liefen lokal. D1- und Anbieterfreigaben für die Produktion bleiben separat.
