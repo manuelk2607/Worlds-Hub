@@ -1,10 +1,12 @@
 # Kontenübernahme: tatsächlicher Bestand und Freigabegrenzen
 
-## Produktiver Abgleich vom 24.11.2026
+## Produktiver Abgleich vom 27.11.2026
 
-Der Abgleich zählt nur Altprofile. In jedem Projekt ist eine bestätigte
-Übernahme gespeichert. Die Projektprofile und ihre Inhalte bleiben in den
-jeweiligen Datenbanken. Alle Abfragen unten liefern nur Summen.
+Lesende Summenabfragen auf allen vier Produktionszweigen bestätigen vier
+Übernahmen bei 20 Altprofilen und keine aktuell verknüpften neuen Worlds-Profile.
+Bei sieben der 16 offenen Profile steht die Selbstübernahme bereit. Bei neun
+fehlt ein unabhängiger Eigentumsnachweis. Die Abfragen gaben keine Konto-IDs,
+E-Mail-Adressen, Sitzungstokens oder Passwort-Hashes aus.
 
 | Projekt | Altprofile | Übernommen | Offen | Nächster möglicher Schritt |
 | --- | ---: | ---: | ---: | --- |
@@ -97,7 +99,7 @@ unterstützte zentrale Sitzungsausstellung. Unbestätigte E-Mail-Zustände werde
 nicht künstlich auf bestätigt gesetzt. Konten bleiben getrennt, bis der jeweilige
 Eigentumsnachweis vorliegt; niemand erhält dadurch fremde Inhalte oder Rechte.
 
-## Nächste Freigabekriterien
+## Weitere Übernahmen und zentrale Kontolöschung
 
 1. **Erledigt: kontrollierte Pilot-Deployment-Rücknahme.** Code 6bf3740,
    vollständige CI 42592633591, Veröffentlichung 42593695422 und abschließender
@@ -108,11 +110,16 @@ Eigentumsnachweis vorliegt; niemand erhält dadurch fremde Inhalte oder Rechte.
    sofortigen Nachkontrolle ist durch begrenzte Zustandsbestätigung behoben.
    Der alte Anbieter-Manifestvergleich bleibt streng; die zusätzliche Prüfung
    verlangt exakten Commit, vollständige Dateiprüfsummen und Laufzeitnachweis.
-2. Je Projekt aktuellen Backup-/Restore-/Mapping-/Rollen-/Datennachweis prüfen.
-3. Echte zentrale Providerabläufe der weiteren Anwendungen und unterstützte
-   Übernahme bestehender Identitäten/Sitzungen klären; keine Hash-/Cookiekopie.
-4. Zentrale Kontolöschung und Widerruf aller Projektsitzungen nachweisen.
-5. Erst dann produktive Zuordnungen und zentrale Anmelde-Flags aktivieren.
+2. **Erledigt: zentraler Login und projektübergreifende Abmeldung.** Alle vier
+   produktiven Projekte wurden im Browser geprüft. In jedem Projekt nutzt ein
+   bestätigtes Altprofil weiterhin seine ursprüngliche lokale ID.
+3. Die noch offenen Inhaber können die vorhandenen Übernahmedialoge nutzen,
+   sobald sie das Altprofil über seine bisherige Anmeldung nachweisen können.
+   Fehlt dieser Weg, bleibt die Übernahme bis zum unabhängigen Nachweis gesperrt.
+   Vor einer betreibergeführten Einzelübernahme Sicherung und Rücknahme prüfen.
+4. Den Hub-Löschablauf im vorhandenen QA-Zweig vom Passwortnachweis bis zum
+   Widerruf und zur Kontrollkonto-Prüfung abnehmen. Für die Produktion sind
+   ein freigegebener Löschzugang und die additive D1-Freigabe nötig.
 
 
 ## Rücknahmequellen geprüft am 08.11.2026

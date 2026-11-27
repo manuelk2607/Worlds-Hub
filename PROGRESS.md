@@ -7,11 +7,11 @@ Welten. Jede Welt hat einen bestätigten Migrationsnachweis an den Hub
 geliefert. Die getrennten Projektzuordnungen erhalten lokale IDs und
 Berechtigungen.
 
-IT-Worlds bietet die Selbstübernahme für das verbleibende Altprofil an.
-In Sprachwelten können zwei Inhaber ihr Altprofil übernehmen. Bei Slop
-Urself stehen vier passwortgeschützte Altprofile zur Selbstübernahme bereit.
-Für das offene Music-Worlds-Gastprofil mit acht Beiträgen und acht
-passwortlose Slop-Profile fehlt ein unabhängiger Eigentumsnachweis.
+Der lesende Produktionsabgleich vom 27.11. bestätigt vier Übernahmen bei
+20 Altprofilen. Für sieben der 16 offenen Profile ist die Selbstübernahme
+verfügbar. Beim offenen Music-Worlds-Gastprofil mit acht Beiträgen und acht
+passwortlosen Slop-Profilen fehlt ein unabhängiger Eigentumsnachweis.
+[Migrationsbestand](docs/MIGRATION-INVENTORY.md)
 Die zentrale Kontolöschung ist lokal getestet. Produktiv fehlt der
 freigegebene Löschzugang zum Anmeldedienst.
 
