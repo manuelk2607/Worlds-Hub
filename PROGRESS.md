@@ -1,6 +1,6 @@
 # Worlds Hub — Fortschritt
 
-Stand: 2026-11-26 (Europe/Helsinki)
+Stand: 2026-11-27 (Europe/Helsinki)
 
 Zentrale Anmeldung und projektübergreifende Abmeldung laufen in allen vier
 Welten. Jede Welt hat einen bestätigten Migrationsnachweis an den Hub
@@ -161,32 +161,22 @@ Der Upload bestätigte die IT-Worlds-Dienstbindung. Rücknahmeversion
 
 ## Rückwege aus den Projekten zum Hub
 
-Music-Worlds verlinkt den Hub bereits produktiv. Sprachwelten und
-IT-Worlds ergänzen den lokalisierten Rückweg. Sprachwelten `18a3a97`
-behebt zusätzlich den Überlauf bei 320 px auf Start- und Lernseiten in DE/EN.
-Chromium und WebKit bestätigten das Layout. Die
-[Sprachwelten-CI](https://github.com/manuelk2607/Sprachwelten/actions/runs/45826963140)
-bestand mit 156 allgemeinen und 48 Worlds-Browserfällen.
-[IT-Worlds `a6ad092`](https://github.com/manuelk2607/IT-Worlds/actions/runs/45647576735)
-ist ebenfalls grün.
-Slop Urself `9a686b4` ergänzt denselben Link. `05cb5b8` wartet im
-Revanche-Test auf den aktuellen Spielstand. Der Einzeltest bestand in
-Chromium und WebKit mit lokalem workerd. Beide Browser-Jobs des
-[GitHub-Laufs](https://github.com/manuelk2607/Slop_Urself/actions/runs/45792725831)
-sind grün. Alle neuen Links wurden lokal in DE/EN bei Desktop- und Mobilbreite
-geprüft. Lesende Neon-Prüfungen bestätigten die benötigten Tabellen in
-Sprachwelten und Slop Urself, die Slop-Auditspalte sowie IT-Migrationen 003–009
-und Laufzeitrechte mit RLS. Der öffentliche Abruf zeigte die drei bisherigen
-Versionen. Die Cloudflare-Gerätefreigabe ist ohne Bestätigung abgelaufen.
-Der nächste Upload wartet auf eine frische Gerätefreigabe.
-Der erneute Zugriff am 26.11. konnte die aktiven Worker-Versionen lesen
-(`a699a346` Sprachwelten, `96ea3c9b` IT-Worlds, `7a68c388` Slop Urself).
-Sprachwelten-Build und lesende Datenbankprüfung bestanden. Cloudflare
-lehnte danach den Upload vor der ersten Änderung bei beiden Wrangler-
-Versionen mit `10001` ab und verweigerte anschließend auch die Abfrage
-der Deployments. Die DE/EN-Startseiten antworten weiter mit HTTP 200
-und zeigen den bisherigen Stand. Nächster Versuch mit einem separaten,
-auf die drei bestehenden Worker beschränkten Deployment-Zugang.
+Alle vier Welten verlinken den Hub produktiv. Die DE/EN-Darstellung der
+neuen Links ist lokal bei Desktop- und Mobilbreite geprüft. Die drei am
+27.11. veröffentlichten Versionen erhalten jeweils 100 Prozent des Verkehrs.
+
+| Projekt | Code | Worker | Rücknahme | Prüfung |
+| --- | --- | --- | --- | --- |
+| Sprachwelten | `3278175` | `98dcddf7-a0dc-4001-92de-7dd9207f658e` | `a699a346-0847-47a5-a95e-da3dcc5d577b` | DE/EN-Start und Lernen mit Hub-Link. Unvollständige OAuth-Rücksprünge liefern HTTP 400 mit lokalisiertem Rückweg. Regulärer PKCE-Start in beiden Sprachen. [235 Tests und 204 Browserfälle](https://github.com/manuelk2607/Sprachwelten/actions/runs/45856720653) |
+| IT-Worlds | `a6ad092` | `829c21a6-f3fc-4249-9791-4a196195d212` | `96ea3c9b-5814-4a36-be61-0ac2cd9cb976` | DE/EN-Start und Konto, aktiver Abmeldeempfänger, 528 indexierbare Seiten bytegenau zum Build. Der erste unmittelbare Abruf von `/lernen/` wich ab. [GitHub Actions](https://github.com/manuelk2607/IT-Worlds/actions/runs/45647576735) |
+| Slop Urself | `05cb5b8` | `67db3ee6-a214-4e87-8de5-ebf77b5b72ff` | `7a68c388-8edf-4b6f-a031-c4f184339f7f` | Deutscher Hub-Link, englisches Ziel im Live-Skript, DE/EN-Anmeldung, Abmeldeempfänger und aktive persönliche Hugging-Face-Pflicht. [GitHub Actions](https://github.com/manuelk2607/Slop_Urself/actions/runs/45792725831) |
+
+Die drei Standard-Deployments prüften die bestehenden Datenbankstrukturen.
+Es wurden keine Migrationen angewendet. Nach der zuvor abgewiesenen
+Wrangler-Anmeldung gelang der Upload mit einem kontoeigenen Editor-Zugang
+ausschließlich für die drei Worker. Nach der Verifizierung wurde dieser
+Zugang widerrufen. Cloudflare bestätigte HTTP 401 für den widerrufenen Schlüssel,
+die temporäre lokale Kopie wurde entfernt.
 
 ## SEO und Search Console
 
