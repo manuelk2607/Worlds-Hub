@@ -13,8 +13,9 @@ verfügbar. Beim offenen Music-Worlds-Gastprofil mit acht Beiträgen und acht
 passwortlosen Slop-Profilen fehlt ein unabhängiger Eigentumsnachweis.
 [Migrationsbestand](docs/MIGRATION-INVENTORY.md)
 Die zentrale Kontolöschung ist mit echtem Neon-QA-Anmeldedienst und vier
-lokalen Projekt-Empfängern abgenommen. Produktiv fehlen die D1-Migrationen
-und der freigegebene Löschzugang zum Anmeldedienst.
+lokalen Projekt-Empfängern abgenommen. Die vorbereitenden D1-Migrationen
+sind produktiv. Für die Freischaltung fehlt der genehmigte Löschzugang
+zum Anmeldedienst und die gezielte Produktionsabnahme.
 
 ## Übernahme bestehender Profile finden
 
@@ -122,7 +123,15 @@ Migrationsnachweis des Ziels. Vier lokale Empfänger bestätigten die
 signierten Abmeldungen. Die temporäre QA-Admin-Rolle wurde zurückgenommen.
 Danach waren alle drei Testkonten und ihre Sitzungen entfernt. Die vorherigen
 13 Konten und sieben Sitzungen hatten identische Prüfsummen. Keine
-Produktivlöschung. D1-Migrationen 0007/0008 und Produktionszugang stehen aus.
+Produktivlöschung.
+
+Die separat freigegebenen D1-Migrationen 0007 und 0008 sind seit 27.11. auf
+`worlds-hub-auth` angewendet. Vorheriger Time-Travel-Wiederherstellungspunkt
+`0000027a-00000000-00005130-44caa3977668262fb732743be5e33a23`.
+Die Nachprüfung fand zwei leere Tabellen, einen Index und drei Trigger.
+Vier Übernahmenachweise und eine Sprachpräferenz blieben erhalten. Die
+Hub-Kontoseite und der PKCE-Start funktionierten live in DE und EN. Die
+öffentliche Löschroute blieb geschlossen und lieferte HTTP 404.
 
 ## Lokalisierte öffentliche Projektziele
 

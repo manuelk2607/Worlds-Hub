@@ -117,9 +117,10 @@ Eigentumsnachweis vorliegt; niemand erhält dadurch fremde Inhalte oder Rechte.
    sobald sie das Altprofil über seine bisherige Anmeldung nachweisen können.
    Fehlt dieser Weg, bleibt die Übernahme bis zum unabhängigen Nachweis gesperrt.
    Vor einer betreibergeführten Einzelübernahme Sicherung und Rücknahme prüfen.
-4. Den Hub-Löschablauf im vorhandenen QA-Zweig vom Passwortnachweis bis zum
-   Widerruf und zur Kontrollkonto-Prüfung abnehmen. Für die Produktion sind
-   ein freigegebener Löschzugang und die additive D1-Freigabe nötig.
+4. **Erledigt: QA-Löschabnahme und additive D1-Migrationen.** Die lokale
+   Hub-Instanz löschte ein synthetisches Konto im bestehenden QA-Zweig.
+   Für die produktive Aktion sind ein freigegebener Löschzugang und die
+   gezielte Abnahme am veröffentlichten Worker nötig.
 
 
 ## Rücknahmequellen geprüft am 08.11.2026
